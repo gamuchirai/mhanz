@@ -26,3 +26,8 @@ claude/
 *.njsproj
 *.sln
 *.sw?
+
+# Tauri and Rust
+src-tauri/target/
+src-tauri/gen/
+

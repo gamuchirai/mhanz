@@ -25,9 +25,9 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 ### 1. Stack & architecture · in-progress
 Decide the Tauri, Rust, Vite, and TypeScript project structure, scaffold a runnable desktop application shell.
 **Done when:** the stack is recorded in a spec, Tauri boots a desktop window running the Vite dev server, and cargo build succeeds.
-spec [0001](../specs/0001-stack-architecture.md)
+spec [0001](../specs/0001-stack-architecture/index.md) · code in src/ and src-tauri/
 - [x] Decide the stack (spec): `/architect stack & architecture`
-- [ ] Scaffold from the decision: `/develop stack & architecture`
+- [x] Scaffold from the decision: `/develop stack & architecture`
 - [ ] Verify it: `/check verify stack & architecture`
 - [ ] Test it: `/test stack & architecture`
 

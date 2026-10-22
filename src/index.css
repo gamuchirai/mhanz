@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --color-midnight-bg: #0b0706;
+  --color-midnight-panel: #18110f;
+  --color-midnight-text: #f4ebe4;
+  --color-midnight-muted: #a89b91;
+  --color-midnight-border: rgba(255, 255, 255, 0.09);
+  --color-midnight-accent: #f0a982;
+  --font-sans: 'Outfit', system-ui, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-script: 'Pinyon Script', cursive;
+}
+
+:root {
+  --t: #f4ebe4;
+  --m: #a89b91;
+  --l: rgba(255, 255, 255, 0.09);
+  --p: #18110f;
+  --accent: #f0a982;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  background-color: #0b0706;
+  color: var(--t);
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 14px;
+  overflow: hidden;
+  user-select: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+svg.i {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+
+input::placeholder {
+  color: #a89b91;
+}
+
+/* Custom scrollbars for Midnight UI */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
