@@ -217,12 +217,14 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       const isLiked = !state.likedTrackIds[trackId];
       const updatedLikes = { ...state.likedTrackIds, [trackId]: isLiked };
 
-      const updateTrack = (t: Track): Track =>
-        t.id === trackId ? { ...t, isLiked } : t;
+      const updateTrack = (t: Track): Track => (t.id === trackId ? { ...t, isLiked } : t);
 
       return {
         likedTrackIds: updatedLikes,
-        currentTrack: state.currentTrack?.id === trackId ? { ...state.currentTrack, isLiked } : state.currentTrack,
+        currentTrack:
+          state.currentTrack?.id === trackId
+            ? { ...state.currentTrack, isLiked }
+            : state.currentTrack,
         queue: state.queue.map(updateTrack),
         popularTracks: state.popularTracks.map(updateTrack),
       };

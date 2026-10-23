@@ -2,14 +2,14 @@ import { HeroBanner } from "../components/home/HeroBanner";
 import { CuratedGrid } from "../components/home/CuratedGrid";
 import { RecentCarousel } from "../components/home/RecentCarousel";
 import { TrackTable } from "../components/home/TrackTable";
-import {
-  useCuratedCollections,
-  usePopularTracks,
-  useRecentPlays,
-} from "../store/usePlayerStore";
+import { useCuratedCollections, usePopularTracks, useRecentPlays } from "../store/usePlayerStore";
 import { showcaseItem } from "../data/homeFixtures";
 
-export function Home() {
+interface HomeProps {
+  onNavigate?: (nav: string) => void;
+}
+
+export function Home({ onNavigate }: HomeProps = {}) {
   const curatedCollections = useCuratedCollections();
   const recentPlays = useRecentPlays();
   const popularTracks = usePopularTracks();
@@ -28,7 +28,8 @@ export function Home() {
         display: "flex",
         flexDirection: "column",
         gap: "30px",
-        background: "radial-gradient(900px 420px at 72% 0,rgba(214,122,84,.14),transparent 70%),#110c0a",
+        background:
+          "radial-gradient(900px 420px at 72% 0,rgba(214,122,84,.14),transparent 70%),#110c0a",
       }}
     >
       {/* Top Header */}
@@ -103,6 +104,8 @@ export function Home() {
             <input
               placeholder="Search songs, artists, playlists..."
               aria-label="Search songs, artists, playlists"
+              onClick={() => onNavigate?.("Search")}
+              onFocus={() => onNavigate?.("Search")}
               style={{
                 flex: 1,
                 minWidth: 0,

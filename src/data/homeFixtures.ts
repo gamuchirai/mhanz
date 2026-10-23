@@ -7,7 +7,8 @@ export const sampleTracks: Track[] = [
     artist: "Aiden Vale",
     album: "Midnight Sessions",
     durationSeconds: 252,
-    artworkUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80",
+    artworkUrl:
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80",
     playsCount: 4820000,
     isLiked: true,
     genre: "Indie Pop",
@@ -18,7 +19,8 @@ export const sampleTracks: Track[] = [
     artist: "Aiden Vale",
     album: "Midnight Sessions",
     durationSeconds: 225,
-    artworkUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80",
+    artworkUrl:
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80",
     playsCount: 3910000,
     isLiked: false,
     genre: "Indie Pop",
@@ -29,7 +31,8 @@ export const sampleTracks: Track[] = [
     artist: "Aiden Vale",
     album: "Neon Echoes",
     durationSeconds: 208,
-    artworkUrl: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop&q=80",
+    artworkUrl:
+      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop&q=80",
     playsCount: 2840000,
     isLiked: false,
     genre: "Chillwave",
@@ -40,7 +43,8 @@ export const sampleTracks: Track[] = [
     artist: "Hollow Coves",
     album: "Wanderlust",
     durationSeconds: 216,
-    artworkUrl: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=500&auto=format&fit=crop&q=80",
+    artworkUrl:
+      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=500&auto=format&fit=crop&q=80",
     playsCount: 5120000,
     isLiked: false,
     genre: "Acoustic",
@@ -51,7 +55,8 @@ export const sampleTracks: Track[] = [
     artist: "Adele",
     album: "21",
     durationSeconds: 285,
-    artworkUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&auto=format&fit=crop&q=80",
+    artworkUrl:
+      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&auto=format&fit=crop&q=80",
     playsCount: 9800000,
     isLiked: true,
     genre: "Soul",
@@ -62,7 +67,8 @@ export const sampleTracks: Track[] = [
     artist: "Tom Odell",
     album: "Monsters",
     durationSeconds: 198,
-    artworkUrl: "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=500&auto=format&fit=crop&q=80",
+    artworkUrl:
+      "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=500&auto=format&fit=crop&q=80",
     playsCount: 1650000,
     isLiked: false,
     genre: "Piano Pop",
@@ -73,7 +79,8 @@ export const sampleTracks: Track[] = [
     artist: "Billie Eilish",
     album: "Single",
     durationSeconds: 245,
-    artworkUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=80",
+    artworkUrl:
+      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=80",
     playsCount: 7400000,
     isLiked: false,
     genre: "Alt Pop",
@@ -85,7 +92,8 @@ export const showcaseItem: ShowcaseItem = {
   headline: "Perfect",
   subtitle: "Aiden Vale",
   badge: "NOW PLAYING",
-  bannerImageUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80",
+  bannerImageUrl:
+    "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80",
   actionType: "play_track",
   targetId: "track-1",
   track: sampleTracks[0],
@@ -96,7 +104,8 @@ export const curatedPlaylists: CuratedCard[] = [
     id: "curated-1",
     title: "Late Night Drive",
     subtitle: "Chill songs for city nights",
-    coverUrl: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=500&auto=format&fit=crop&q=80",
+    coverUrl:
+      "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=500&auto=format&fit=crop&q=80",
     trackCount: 24,
     type: "playlist",
     accentGradient: "linear-gradient(180deg,#12141e,#2b2230 62%,#5a3630)",
@@ -106,7 +115,8 @@ export const curatedPlaylists: CuratedCard[] = [
     id: "curated-2",
     title: "Falling in Love",
     subtitle: "Songs that hit different",
-    coverUrl: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500&auto=format&fit=crop&q=80",
+    coverUrl:
+      "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500&auto=format&fit=crop&q=80",
     trackCount: 18,
     type: "playlist",
     accentGradient: "linear-gradient(180deg,#4a3350,#c4655a 58%,#1b100d 59%)",
@@ -116,7 +126,8 @@ export const curatedPlaylists: CuratedCard[] = [
     id: "curated-3",
     title: "Acoustic Mornings",
     subtitle: "Soft, calm and beautiful",
-    coverUrl: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=500&auto=format&fit=crop&q=80",
+    coverUrl:
+      "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=500&auto=format&fit=crop&q=80",
     trackCount: 30,
     type: "playlist",
     accentGradient: "linear-gradient(160deg,#3a2c26,#15100e)",
@@ -126,7 +137,8 @@ export const curatedPlaylists: CuratedCard[] = [
     id: "curated-4",
     title: "Midnight Memories",
     subtitle: "Nostalgic tunes for the soul",
-    coverUrl: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=500&auto=format&fit=crop&q=80",
+    coverUrl:
+      "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=500&auto=format&fit=crop&q=80",
     trackCount: 42,
     type: "playlist",
     accentGradient: "linear-gradient(180deg,#171a26,#3a2a34 65%,#6b4034)",
@@ -136,7 +148,8 @@ export const curatedPlaylists: CuratedCard[] = [
     id: "curated-5",
     title: "Good Vibes",
     subtitle: "Feel good playlist",
-    coverUrl: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&auto=format&fit=crop&q=80",
+    coverUrl:
+      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&auto=format&fit=crop&q=80",
     trackCount: 35,
     type: "playlist",
     accentGradient: "linear-gradient(180deg,#4b2d4d,#dc7650 64%,#190d0b 65%)",
