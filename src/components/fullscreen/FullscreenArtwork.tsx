@@ -79,64 +79,67 @@ export function FullscreenArtwork({
         )}
       </div>
 
-      {/* Track metadata details */}
-      <div
+      {/* Title directly center aligned with cover art */}
+      <h1
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "16px",
-          marginTop: "28px",
-          maxWidth: "600px",
+          fontSize: "clamp(22px, 3.2vw, 32px)",
+          fontWeight: 700,
+          color: "var(--t)",
+          margin: "28px 0 0",
+          lineHeight: 1.2,
+          letterSpacing: "-0.01em",
           textAlign: "center",
+          maxWidth: "680px",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <h1
-            style={{
-              fontSize: "clamp(22px, 3.2vw, 32px)",
-              fontWeight: 700,
-              color: "var(--t)",
-              margin: 0,
-              lineHeight: 1.2,
-              letterSpacing: "-0.01em",
-            }}
-          >
-            {track.title}
-          </h1>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              marginTop: "8px",
-              fontSize: "clamp(14px, 2vw, 18px)",
-              color: "var(--m)",
-            }}
-          >
-            <span style={{ fontWeight: 500 }}>{track.artist}</span>
-            {track.album ? (
-              <>
-                <span style={{ opacity: 0.5 }}>•</span>
-                <span style={{ opacity: 0.85 }}>{track.album}</span>
-              </>
-            ) : null}
-          </div>
+        {track.title}
+      </h1>
+
+      {/* Subtitle row with Artist, Album perfectly centered, and like button on the same horizontal line */}
+      <div
+        style={{
+          position: "relative",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginTop: "10px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "clamp(14px, 2vw, 18px)",
+            color: "var(--m)",
+          }}
+        >
+          <span style={{ fontWeight: 500 }}>{track.artist}</span>
+          {track.album ? (
+            <>
+              <span style={{ opacity: 0.5 }}>•</span>
+              <span style={{ opacity: 0.85 }}>{track.album}</span>
+            </>
+          ) : null}
         </div>
 
-        {/* Favorite like button */}
+        {/* Favorite like button on the same horizontal line */}
         <button
           onClick={onToggleLike}
           aria-label={isLiked ? `Unlike ${track.title}` : `Like ${track.title}`}
           title={isLiked ? "Remove from Liked Songs" : "Save to Liked Songs"}
           style={{
+            position: "absolute",
+            left: "calc(100% + 12px)",
+            top: "50%",
+            transform: "translateY(-50%)",
             background: isLiked
               ? "rgba(240, 169, 130, 0.15)"
               : "rgba(255, 255, 255, 0.06)",
             border: "1px solid rgba(255, 255, 255, 0.12)",
             borderRadius: "50%",
-            width: "44px",
-            height: "44px",
+            width: "34px",
+            height: "34px",
             display: "grid",
             placeItems: "center",
             color: isLiked ? "var(--accent)" : "var(--m)",
@@ -147,8 +150,8 @@ export function FullscreenArtwork({
         >
           <svg
             className="i"
-            width="20"
-            height="20"
+            width="17"
+            height="17"
             aria-hidden="true"
             style={{ fill: isLiked ? "var(--accent)" : "none" }}
           >
