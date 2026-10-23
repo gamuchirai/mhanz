@@ -168,7 +168,7 @@ spec [0009](../specs/0009-artists-artist-profile/index.md)
   - [x] Page container Artists.tsx, App navigation shell wiring, and cross screen deep linking (AC-1, AC-4, AC-5, AC-6, AC-12)
   - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
         code in `src/pages/Artists.tsx`, `src/components/artists/`, `src/store/useArtistStore.ts`
-- [ ] Verify it: `/check verify artists & artist profile`
+- [x] Verify it: `/check verify artists & artist profile`
 
 ### 11. Queue, lyrics & settings overlays · in-progress
 
