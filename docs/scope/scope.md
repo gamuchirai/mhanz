@@ -22,11 +22,12 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 9   | Albums & album detail              | Phase 1    | in-progress |
 | 10  | Artists & artist profile           | Phase 1    | in-progress |
 | 11  | Queue, lyrics & settings overlays  | Phase 1    | in-progress |
-| 12  | Data model & SQLite storage        | Phase 2    | planned     |
-| 13  | Core audio playback engine         | Phase 2    | planned     |
-| 14  | Local library scanner & metadata   | Phase 2    | planned     |
-| 15  | Playlists & favorites persistence  | Phase 2    | planned     |
-| 16  | Fast local library search indexing | Phase 2    | planned     |
+| 12  | Now playing fullscreen view        | Phase 1    | planned     |
+| 13  | Data model & SQLite storage        | Phase 2    | planned     |
+| 14  | Core audio playback engine         | Phase 2    | planned     |
+| 15  | Local library scanner & metadata   | Phase 2    | planned     |
+| 16  | Playlists & favorites persistence  | Phase 2    | planned     |
+| 17  | Fast local library search indexing | Phase 2    | planned     |
 
 ## Foundations
 
@@ -187,37 +188,44 @@ spec [0010](../specs/0010-queue-lyrics-settings-overlays/index.md)
         code in `src/components/queue/`, `src/components/lyrics/`, `src/components/settings/`, `src/store/useOverlayStore.ts`, `src/store/useSettingsStore.ts`
 - [ ] Verify it: `/check verify queue, lyrics & settings overlays`
 
+### 12. Now playing fullscreen view · needs a decision
+
+Fullscreen immersion view for the active track with enlarged album artwork, full width timeline scrub bar, dedicated playback transport controls, and return navigation to the prior screen.
+**Done when:** clicking the track thumbnail or song title in PlayerFooter opens the fullscreen now playing view without sidebar or bottom player bar, and clicking the return button restores the previous screen.
+
+- [ ] Design it (spec): `/architect now playing fullscreen view`
+
 ## Phase 2: Backend wiring & persistence
 
-### 12. Data model & SQLite storage · needs a decision
+### 13. Data model & SQLite storage · needs a decision
 
 Define core Rust and TypeScript entities for Track, Album, Artist, Playlist, and PlaybackState, with SQLite schema migrations and connection pool.
 **Done when:** database migrations create tables with indices for fast search, and Rust models serialize to TypeScript types cleanly.
 
 - [ ] Design it (spec): `/architect data model & SQLite storage`
 
-### 13. Core audio playback engine · needs a decision
+### 14. Core audio playback engine · needs a decision
 
 Connect the player bar through Tauri IPC to the Rodio audio engine on a dedicated audio thread.
 **Done when:** clicking play loads local audio, sound plays through the output device, playback progress updates the UI bar in real time, and pause, resume, seek, and volume controls work.
 
 - [ ] Design it (spec): `/architect core audio playback engine`
 
-### 14. Local library scanner & metadata · needs a decision
+### 15. Local library scanner & metadata · needs a decision
 
 Scan music folders in a background worker thread, extract audio tags and embedded artwork with lofty, and persist records into SQLite.
 **Done when:** selecting a music folder recursively finds audio files, saves track tags and album art into SQLite, and populates the library view with real local music.
 
 - [ ] Design it (spec): `/architect local library scanner & metadata`
 
-### 15. Playlists & favorites persistence · needs a decision
+### 16. Playlists & favorites persistence · needs a decision
 
 Wire playlist creation, editing, track reordering, and liking songs to immediate SQLite database persistence.
 **Done when:** creating or editing playlists and clicking hearts updates SQLite records, and changes persist across application restarts.
 
 - [ ] Design it (spec): `/architect playlists & favorites persistence`
 
-### 16. Fast local library search indexing · needs a decision
+### 17. Fast local library search indexing · needs a decision
 
 Filter the music collection by title, artist, or album using indexed SQLite queries with debounced UI input.
 **Done when:** typing in the search box queries SQLite and updates visible tracks and albums with matching results in under fifty milliseconds.
