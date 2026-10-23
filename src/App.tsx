@@ -3,10 +3,16 @@ import { Home } from "./pages/Home";
 import { Search } from "./pages/Search";
 import { Library } from "./pages/Library";
 import { LikedSongs } from "./pages/LikedSongs";
+import { Playlists } from "./pages/Playlists";
 import { PlayerFooter } from "./components/player/PlayerFooter";
+import { useActivePlaylistId, usePlaylistStore, usePlaylists } from "./store/usePlaylistStore";
 
 export function App() {
   const [activeNav, setActiveNav] = useState("Home");
+  const playlists = usePlaylists();
+  const activePlaylistId = useActivePlaylistId();
+  const setActivePlaylistId = usePlaylistStore((state) => state.setActivePlaylistId);
+  const setCreateModalOpen = usePlaylistStore((state) => state.setCreateModalOpen);
 
   useEffect(() => {
     async function testBackend() {
@@ -176,6 +182,9 @@ export function App() {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
+                  if (item.id === "Playlists") {
+                    setActivePlaylistId(null);
+                  }
                   setActiveNav(item.id);
                 }}
                 style={{
@@ -215,6 +224,11 @@ export function App() {
           <span>YOUR PLAYLISTS</span>
           <button
             aria-label="New playlist"
+            onClick={() => {
+              setActiveNav("Playlists");
+              setActivePlaylistId(null);
+              setCreateModalOpen(true);
+            }}
             style={{
               background: "none",
               border: 0,
@@ -230,71 +244,79 @@ export function App() {
           </button>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px", color: "var(--t)" }}>
-          <a
-            href="#"
-            onClick={(e) => e.preventDefault()}
-            style={{ display: "flex", alignItems: "center", gap: "12px", padding: "6px 14px" }}
-          >
-            <span
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "6px",
-                background: "linear-gradient(180deg,#12141e,#2b2230 62%,#5a3630)",
-                flexShrink: 0,
-              }}
-            />
-            Late Night Drive
-          </a>
-          <a
-            href="#"
-            onClick={(e) => e.preventDefault()}
-            style={{ display: "flex", alignItems: "center", gap: "12px", padding: "6px 14px" }}
-          >
-            <span
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "6px",
-                background: "linear-gradient(160deg,#3a2c26,#15100e)",
-                flexShrink: 0,
-              }}
-            />
-            Acoustic Mornings
-          </a>
-          <a
-            href="#"
-            onClick={(e) => e.preventDefault()}
-            style={{ display: "flex", alignItems: "center", gap: "12px", padding: "6px 14px" }}
-          >
-            <span
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "6px",
-                background: "linear-gradient(180deg,#2a2a30,#121216)",
-                flexShrink: 0,
-              }}
-            />
-            Heartbreak Diaries
-          </a>
-          <a
-            href="#"
-            onClick={(e) => e.preventDefault()}
-            style={{ display: "flex", alignItems: "center", gap: "12px", padding: "6px 14px" }}
-          >
-            <span
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "6px",
-                background: "linear-gradient(180deg,#4b2d4d,#dc7650 64%,#190d0b 65%)",
-                flexShrink: 0,
-              }}
-            />
-            Good Vibes
-          </a>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "4px",
+            color: "var(--t)",
+            overflowY: "auto",
+            maxHeight: "260px",
+          }}
+        >
+          {playlists.map((playlist) => {
+            const isSelected = activeNav === "Playlists" && activePlaylistId === playlist.id;
+            return (
+              <a
+                key={playlist.id}
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActivePlaylistId(playlist.id);
+                  setActiveNav("Playlists");
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  padding: "6px 14px",
+                  borderRadius: "8px",
+                  background: isSelected ? "rgba(240, 169, 130, 0.12)" : "transparent",
+                  color: isSelected ? "var(--accent)" : "var(--t)",
+                  cursor: "pointer",
+                  transition: "background 0.15s ease, color 0.15s ease",
+                }}
+              >
+                <span
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "6px",
+                    background: playlist.coverGradient,
+                    flexShrink: 0,
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  {playlist.coverUrl && (
+                    <img
+                      src={playlist.coverUrl}
+                      alt=""
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  )}
+                </span>
+                <span
+                  style={{
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    fontSize: "13px",
+                  }}
+                >
+                  {playlist.title}
+                </span>
+              </a>
+            );
+          })}
         </div>
 
         <a
@@ -340,6 +362,8 @@ export function App() {
         <Library />
       ) : activeNav === "Liked Songs" ? (
         <LikedSongs onNavigate={setActiveNav} />
+      ) : activeNav === "Playlists" ? (
+        <Playlists />
       ) : (
         <main
           role="main"

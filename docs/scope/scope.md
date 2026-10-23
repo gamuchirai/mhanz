@@ -18,10 +18,10 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 5   | Search & explore screen            | Phase 1    | in-progress |
 | 6   | Your library & folder browser      | Phase 1    | in-progress |
 | 7   | Liked songs screen                 | Phase 1    | in-progress |
-| 8   | Playlists & playlist detail        | Phase 1    | planned     |
-| 9   | Albums & album detail              | Phase 1    | planned     |
-| 10  | Artists & artist profile           | Phase 1    | planned     |
-| 11  | Queue, lyrics & settings overlays  | Phase 1    | planned     |
+| 8   | Playlists & playlist detail        | Phase 1    | in-progress |
+| 9   | Albums & album detail              | Phase 1    | in-progress |
+| 10  | Artists & artist profile           | Phase 1    | in-progress |
+| 11  | Queue, lyrics & settings overlays  | Phase 1    | in-progress |
 | 12  | Data model & SQLite storage        | Phase 2    | planned     |
 | 13  | Core audio playback engine         | Phase 2    | planned     |
 | 14  | Local library scanner & metadata   | Phase 2    | planned     |
@@ -122,33 +122,67 @@ spec [0006](../specs/0006-liked-songs-screen/index.md)
         code in `src/pages/LikedSongs.tsx`, `src/components/liked/`, `src/store/useLikedSongsStore.ts`
 - [ ] Verify it: `/check verify liked songs screen`
 
-### 8. Playlists & playlist detail · needs a decision
+### 8. Playlists & playlist detail · in-progress
 
 Display user playlist cards grid, new playlist creation trigger, and dedicated playlist detail view with custom cover, tracklist, and action buttons.
 **Done when:** clicking Playlists renders the playlist collection, clicking a playlist opens its detail view with track list, and new playlist opens a creation prompt.
+spec [0007](../specs/0007-playlists-playlist-detail/index.md)
 
-- [ ] Design it (spec): `/architect playlists & playlist detail`
+- [x] Design it (spec): `/architect playlists & playlist detail`
+- [x] Build it: `/develop playlists & playlist detail`
+  - [x] Playlist types, gradient presets, and mock playlist fixtures (AC-1, AC-2, AC-4)
+  - [x] Zustand playlist store with CRUD, track curation, reordering, and playback queue coordination (AC-2, AC-3, AC-6, AC-7, AC-9, AC-10, AC-11, AC-12)
+  - [x] Modular components PlaylistHeader, PlaylistGrid, PlaylistCard, PlaylistModal, PlaylistDetailBanner, PlaylistSongTable, PlaylistEmptyState, DeletePlaylistDialog, and AddSongsDrawer (AC-1, AC-2, AC-4, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+  - [x] Page assembly in Playlists.tsx, App navigation shell wiring, and sidebar reactive playlists synchronization (AC-1, AC-3, AC-4, AC-5, AC-11, AC-12)
+  - [x] Unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+        code in `src/pages/Playlists.tsx`, `src/components/playlists/`, `src/store/usePlaylistStore.ts`
+- [ ] Verify it: `/check verify playlists & playlist detail`
 
-### 9. Albums & album detail · needs a decision
+### 9. Albums & album detail · in-progress
 
 Build the album collection grid with cover art, release year, and detailed album view featuring header metadata, artist link, and numbered tracklist.
 **Done when:** selecting Albums displays the album grid, clicking an album navigates to the album detail layout showing all tracks, durations, and release year.
+spec [0008](../specs/0008-albums-album-detail/index.md)
 
-- [ ] Design it (spec): `/architect albums & album detail`
+- [x] Design it (spec): `/architect albums & album detail`
+- [ ] Build it: `/develop albums & album detail`
+  - [ ] Album types and mock album fixtures with multi disc entries and fallback artwork (AC-1, AC-8, AC-11)
+  - [ ] Zustand album store with search, sort, active selection, favorite toggling, and playback queueing (AC-2, AC-3, AC-4, AC-5, AC-7, AC-10, AC-12)
+  - [ ] Modular components AlbumHeader, AlbumGrid, AlbumCard, AlbumDetailBanner, AlbumTrackList, AlbumDiscHeader, AlbumTrackRow, AlbumVinylPlaceholder, and AlbumEmptyState (AC-1, AC-2, AC-4, AC-8, AC-9, AC-10, AC-11)
+  - [ ] Page container Albums.tsx, App navigation shell wiring, and cross screen deep linking (AC-1, AC-4, AC-5, AC-6, AC-12)
+  - [ ] Comprehensive unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+- [ ] Verify it: `/check verify albums & album detail`
 
-### 10. Artists & artist profile · needs a decision
+### 10. Artists & artist profile · in-progress
 
 Present artists in a circular portrait grid with follower counts, along with an artist profile page showing hero banner, top tracks table, and album discography.
 **Done when:** selecting Artists shows artist cards, clicking an artist opens their profile with popular tracks, discography releases, and about blurb.
+spec [0009](../specs/0009-artists-artist-profile/index.md)
 
-- [ ] Design it (spec): `/architect artists & artist profile`
+- [x] Design it (spec): `/architect artists & artist profile`
+- [ ] Build it: `/develop artists & artist profile`
+  - [ ] Artist domain types, procedural avatar helpers, and rich artist fixtures (AC-1, AC-8, AC-11)
+  - [ ] Zustand artist store with catalog search, sort, active selection, follow toggle, and discography filtering (AC-2, AC-3, AC-4, AC-7, AC-10, AC-12)
+  - [ ] Modular components ArtistHeader, ArtistGrid, ArtistCard, ArtistProfileBanner, ArtistPopularTracks, ArtistPopularTrackRow, ArtistDiscography, ArtistBioCard, and ArtistEmptyState (AC-1, AC-2, AC-4, AC-5, AC-7, AC-8, AC-9, AC-10, AC-11)
+  - [ ] Page container Artists.tsx, App navigation shell wiring, and cross screen deep linking (AC-1, AC-4, AC-5, AC-6, AC-12)
+  - [ ] Comprehensive unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+- [ ] Verify it: `/check verify artists & artist profile`
 
-### 11. Queue, lyrics & settings overlays · needs a decision
+### 11. Queue, lyrics & settings overlays · in-progress
 
 Build the slide out now playing queue drawer, timed lyrics overlay modal, and audio preferences settings panel.
 **Done when:** clicking queue or lyrics in the player bar toggles their respective drawers or modals, and settings allows selecting mock audio devices and visualizer styles.
+spec [0010](../specs/0010-queue-lyrics-settings-overlays/index.md)
 
-- [ ] Design it (spec): `/architect queue, lyrics & settings overlays`
+- [x] Design it (spec): `/architect queue, lyrics & settings overlays`
+- [ ] Build it: `/develop queue, lyrics & settings overlays`
+  - [ ] Domain types and mock fixtures for queue, lyrics, and audio devices (AC-3, AC-8, AC-11, AC-12)
+  - [ ] Reactive Zustand overlay visibility and settings stores with local storage persistence (AC-1, AC-2, AC-12, AC-13)
+  - [ ] Player store queue extensions for reordering, adding, removing, and clearing upcoming tracks (AC-4, AC-5, AC-6, AC-7)
+  - [ ] Modular components for QueueDrawer, LyricsModal, and SettingsModal with smooth auto scroll and drag reordering (AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+  - [ ] PlayerFooter triggers, App sidebar gear trigger, escape key listener, and backdrop dismissal (AC-1, AC-2, AC-8, AC-12, AC-13)
+  - [ ] Comprehensive unit and component test suite (AC-1, AC-2, AC-4, AC-5, AC-6, AC-7, AC-9, AC-10, AC-12, AC-13)
+- [ ] Verify it: `/check verify queue, lyrics & settings overlays`
 
 ## Phase 2: Backend wiring & persistence
 
