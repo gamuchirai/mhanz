@@ -4,6 +4,7 @@ import { useSearchStore } from "../../store/useSearchStore";
 import type { Track } from "../../types/discovery";
 import type { AlbumCard, ArtistCard, GenreCard } from "../../types/search";
 import { useAlbumStore } from "../../store/useAlbumStore";
+import { useArtistStore } from "../../store/useArtistStore";
 
 function formatDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -56,6 +57,15 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
     );
     useAlbumStore.getState().setActiveAlbumId(match ? match.id : (storeAlbums[0]?.id ?? album.id));
     onNavigate?.("Albums");
+  };
+
+  const handleOpenArtist = (artist: ArtistCard) => {
+    const storeArtists = useArtistStore.getState().artists;
+    const match = storeArtists.find(
+      (a) => a.id === artist.id || a.name.toLowerCase() === artist.name.toLowerCase()
+    );
+    useArtistStore.getState().setActiveArtistId(match ? match.id : (storeArtists[0]?.id ?? artist.id));
+    onNavigate?.("Artists");
   };
 
   const topTrack = results.tracks[0];
@@ -578,7 +588,11 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
             }}
           >
             {results.artists.map((artist) => (
-              <ArtistCardItem key={artist.id} artist={artist} />
+              <ArtistCardItem
+                key={artist.id}
+                artist={artist}
+                onArtistClick={handleOpenArtist}
+              />
             ))}
           </div>
         </section>
@@ -741,11 +755,27 @@ function AlbumCardItem({
   );
 }
 
-function ArtistCardItem({ artist }: { artist: ArtistCard }) {
+function ArtistCardItem({
+  artist,
+  onArtistClick,
+}: {
+  artist: ArtistCard;
+  onArtistClick?: (artist: ArtistCard) => void;
+}) {
   const [hovered, setHovered] = useState(false);
 
   return (
     <div
+      onClick={() => onArtistClick?.(artist)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onArtistClick?.(artist);
+        }
+      }}
+      aria-label={`Artist ${artist.name}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -757,8 +787,10 @@ function ArtistCardItem({ artist }: { artist: ArtistCard }) {
         padding: "16px",
         borderRadius: "14px",
         background: hovered ? "rgba(255, 255, 255, 0.04)" : "rgba(24, 17, 15, 0.4)",
-        border: "1px solid var(--l)",
+        border: hovered ? "1px solid rgba(240, 169, 130, 0.3)" : "1px solid var(--l)",
+        cursor: "pointer",
         transition: "all 0.2s ease",
+        transform: hovered ? "translateY(-2px)" : "none",
       }}
     >
       <img

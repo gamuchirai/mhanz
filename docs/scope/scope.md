@@ -161,12 +161,13 @@ Present artists in a circular portrait grid with follower counts, along with an 
 spec [0009](../specs/0009-artists-artist-profile/index.md)
 
 - [x] Design it (spec): `/architect artists & artist profile`
-- [ ] Build it: `/develop artists & artist profile`
-  - [ ] Artist domain types, procedural avatar helpers, and rich artist fixtures (AC-1, AC-8, AC-11)
-  - [ ] Zustand artist store with catalog search, sort, active selection, follow toggle, and discography filtering (AC-2, AC-3, AC-4, AC-7, AC-10, AC-12)
-  - [ ] Modular components ArtistHeader, ArtistGrid, ArtistCard, ArtistProfileBanner, ArtistPopularTracks, ArtistPopularTrackRow, ArtistDiscography, ArtistBioCard, and ArtistEmptyState (AC-1, AC-2, AC-4, AC-5, AC-7, AC-8, AC-9, AC-10, AC-11)
-  - [ ] Page container Artists.tsx, App navigation shell wiring, and cross screen deep linking (AC-1, AC-4, AC-5, AC-6, AC-12)
-  - [ ] Comprehensive unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+- [x] Build it: `/develop artists & artist profile`
+  - [x] Artist domain types, procedural avatar helpers, and rich artist fixtures (AC-1, AC-8, AC-11)
+  - [x] Zustand artist store with catalog search, sort, active selection, follow toggle, and discography filtering (AC-2, AC-3, AC-4, AC-7, AC-10, AC-12)
+  - [x] Modular components ArtistHeader, ArtistGrid, ArtistCard, ArtistProfileBanner, ArtistPopularTracks, ArtistPopularTrackRow, ArtistDiscography, ArtistBioCard, and ArtistEmptyState (AC-1, AC-2, AC-4, AC-5, AC-7, AC-8, AC-9, AC-10, AC-11)
+  - [x] Page container Artists.tsx, App navigation shell wiring, and cross screen deep linking (AC-1, AC-4, AC-5, AC-6, AC-12)
+  - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+        code in `src/pages/Artists.tsx`, `src/components/artists/`, `src/store/useArtistStore.ts`
 - [ ] Verify it: `/check verify artists & artist profile`
 
 ### 11. Queue, lyrics & settings overlays · in-progress

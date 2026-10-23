@@ -1,7 +1,7 @@
 # 0009. Artists and artist profile
 
 **Date**: 2026-10-23
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 

@@ -153,6 +153,15 @@ export const mockAlbums: AlbumCard[] = [
 
 export const mockArtists: ArtistCard[] = [
   {
+    id: "artist-amina-v",
+    name: "Amina V",
+    avatarUrl:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80",
+    followersCount: 384210,
+    monthlyListeners: 1420500,
+    popularTracks: sampleTracks.filter((t) => t.artist === "Amina V"),
+  },
+  {
     id: "artist-aiden-vale",
     name: "Aiden Vale",
     avatarUrl:

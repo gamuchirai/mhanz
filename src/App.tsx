@@ -5,9 +5,11 @@ import { Library } from "./pages/Library";
 import { LikedSongs } from "./pages/LikedSongs";
 import { Playlists } from "./pages/Playlists";
 import { Albums } from "./pages/Albums";
+import { Artists } from "./pages/Artists";
 import { PlayerFooter } from "./components/player/PlayerFooter";
 import { useActivePlaylistId, usePlaylistStore, usePlaylists } from "./store/usePlaylistStore";
 import { useAlbumStore } from "./store/useAlbumStore";
+import { useArtistStore } from "./store/useArtistStore";
 
 export function App() {
   const [activeNav, setActiveNav] = useState("Home");
@@ -191,6 +193,9 @@ export function App() {
                   if (item.id === "Albums") {
                     setActiveAlbumId(null);
                   }
+                  if (item.id === "Artists") {
+                    useArtistStore.getState().setActiveArtistId(null);
+                  }
                   setActiveNav(item.id);
                 }}
                 style={{
@@ -371,7 +376,15 @@ export function App() {
       ) : activeNav === "Playlists" ? (
         <Playlists />
       ) : activeNav === "Albums" ? (
-        <Albums onNavigate={setActiveNav} onNavigateArtist={() => setActiveNav("Artists")} />
+        <Albums
+          onNavigate={setActiveNav}
+          onNavigateArtist={(artistId) => {
+            useArtistStore.getState().setActiveArtistId(artistId);
+            setActiveNav("Artists");
+          }}
+        />
+      ) : activeNav === "Artists" ? (
+        <Artists onNavigate={setActiveNav} />
       ) : (
         <main
           role="main"
