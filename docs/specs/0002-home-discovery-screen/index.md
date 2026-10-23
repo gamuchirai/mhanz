@@ -18,12 +18,14 @@ Implement the Home and discovery screen as a modular feature inside `src/compone
 ## Requirements
 
 **User stories**:
+
 - As a listener opening Mumhanzi, I want an inviting home view with featured releases, curated playlists, and recent tracks so that I can quickly jump into music.
 - As a listener browsing popular songs, I want to double click a row or click its play button so that playback starts immediately with the remaining tracks queued.
 - As a listener exploring cards and lists, I want long song titles to marquee on hover and missing artwork to fall back gracefully so that the interface always looks polished.
 - As a new listener without local music scanned yet, I want helpful empty state prompts so that I understand how to add music or preview sample tracks.
 
 **Acceptance criteria**:
+
 - **AC-1**: Navigating to Home displays the hero banner, curated playlist cards grid, recently played carousel, and popular tracks table using Midnight theme tokens.
 - **AC-2**: Clicking quick play on the hero showcase or any curated card replaces the current playback queue, starts playing the first track, and updates the player footer bar with title, artist, artwork, and active play state.
 - **AC-3**: Clicking the play button or double clicking any track row in the popular tracks table sets the queue to the popular tracks list, plays the selected track, and highlights the active row.
@@ -97,39 +99,42 @@ PlaybackState:
 
 In this Facade phase, the UI calls store actions. These actions define the surface that Phase 2 Tauri IPC commands will later back:
 
-| Store Action | Key inputs | Key outputs | Auth | Key errors |
-|---|---|---|---|---|
-| `playTrack` | `track: Track, queue?: Track[]` | updates active track and queue | Public local | Missing audio path |
-| `togglePlayPause` | none | toggles `isPlaying` boolean | Public local | No active track loaded |
-| `seekTo` | `seconds: number` | updates `currentTime` position | Public local | Position exceeds duration |
-| `toggleLike` | `trackId: string` | toggles boolean `isLiked` | Public local | Track not found |
-| `playCollection` | `tracks: Track[], startIndex?: number` | loads tracklist and starts first song | Public local | Empty collection |
+| Store Action      | Key inputs                             | Key outputs                           | Auth         | Key errors                |
+| ----------------- | -------------------------------------- | ------------------------------------- | ------------ | ------------------------- |
+| `playTrack`       | `track: Track, queue?: Track[]`        | updates active track and queue        | Public local | Missing audio path        |
+| `togglePlayPause` | none                                   | toggles `isPlaying` boolean           | Public local | No active track loaded    |
+| `seekTo`          | `seconds: number`                      | updates `currentTime` position        | Public local | Position exceeds duration |
+| `toggleLike`      | `trackId: string`                      | toggles boolean `isLiked`             | Public local | Track not found           |
+| `playCollection`  | `tracks: Track[], startIndex?: number` | loads tracklist and starts first song | Public local | Empty collection          |
 
 **Value sourcing**:
 
-| Action | Value produced / displayed | Source |
-|---|---|---|
-| Render hero banner | Headline, badge, cover image | Fixture in `src/data/homeFixtures.ts` |
-| Render curated card | Title, subtitle, cover art, track count | CuratedCard fixture list |
-| Render recent carousel | Track title, artist, played context | PlayHistoryItem list in Zustand store |
-| Render popular track row | Track number, title, artist, album, duration, plays | Popular track fixture list |
-| Quick play card | New queue array, current track index 0 | Card `tracks` property |
-| Hover track title | Auto scrolling marquee text offset | CSS animation triggered on hover when scroll width exceeds client width |
-| Empty history fallback | Friendly prompt and scan folder button | Static fallback component rendered when `recentPlays.length === 0` |
-| Image load error | Warm CSS gradient background | React `onError` state handler falling back to CSS tokens |
+| Action                   | Value produced / displayed                          | Source                                                                  |
+| ------------------------ | --------------------------------------------------- | ----------------------------------------------------------------------- |
+| Render hero banner       | Headline, badge, cover image                        | Fixture in `src/data/homeFixtures.ts`                                   |
+| Render curated card      | Title, subtitle, cover art, track count             | CuratedCard fixture list                                                |
+| Render recent carousel   | Track title, artist, played context                 | PlayHistoryItem list in Zustand store                                   |
+| Render popular track row | Track number, title, artist, album, duration, plays | Popular track fixture list                                              |
+| Quick play card          | New queue array, current track index 0              | Card `tracks` property                                                  |
+| Hover track title        | Auto scrolling marquee text offset                  | CSS animation triggered on hover when scroll width exceeds client width |
+| Empty history fallback   | Friendly prompt and scan folder button              | Static fallback component rendered when `recentPlays.length === 0`      |
+| Image load error         | Warm CSS gradient background                        | React `onError` state handler falling back to CSS tokens                |
 
 **Key invariants**:
+
 - The active track must always belong to the active playback queue when a queue exists.
 - Current playback time cannot exceed total track duration seconds.
 - Liking a track updates all visible instances of that track across hero, carousel, and table simultaneously via the shared store.
 - Missing or malformed image URLs must never break card geometry or cause white flashes.
 
 **Security model**:
+
 - All data resides locally on the user machine.
 - No remote credentials or private user authentication tokens are processed on this screen.
 - External artwork URLs from Unsplash are loaded over standard HTTPS.
 
 **Critical test scenarios**:
+
 - Happy path: Clicking quick play on the hero banner loads the showcase playlist into the queue, begins playback simulation, and reflects track details in the footer bar, verifies **AC-1**, **AC-2**.
 - Popular tracks play: Double clicking track three in the popular tracks table sets the queue to all popular tracks and starts playing track three, verifies **AC-3**.
 - Favorite toggle: Clicking the heart button on a popular track toggles its filled state and updates the liked state in the store, verifies **AC-4**.
@@ -155,15 +160,18 @@ Following the project Facade build approach, the implementation starts with data
 ## Consequences
 
 **Positive**:
+
 - Deconstructs the monolithic `App.tsx` mockup into maintainable, modular feature components.
 - Delivers an immediate, interactive discovery experience on launch.
 - Provides a clean Zustand store interface ready to connect to Tauri Rust commands in Phase 2.
 
 **Negative / tradeoffs**:
+
 - Audio playback in this phase is simulated via JavaScript timers until the Rust Rodio audio thread is wired in Phase 2.
 - Mock data fixtures require maintenance until SQLite migrations and local tag scanning are active.
 
 **Neutral**:
+
 - Team members working on Search, Library, and Playlists can reuse the newly established `Track`, `CuratedCard`, and `usePlayerStore` contracts.
 
 ## Follow-up

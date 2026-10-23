@@ -13,9 +13,11 @@ This specification designs the migration of the existing home UI elements into c
 Keep all discovery logic, mock records, and interaction state inside a single Home component without extracting reusable parts or external stores.
 
 **Pros**:
+
 - Fastest to write initially with no file splitting overhead.
 
 **Cons**:
+
 - Creates tightly coupled code that is difficult to test, hard to maintain, and awkward to connect to the player footer.
 
 ### Option 2: Feature folder architecture with Zustand discovery store (Recommended)
@@ -23,11 +25,13 @@ Keep all discovery logic, mock records, and interaction state inside a single Ho
 Organize the screen into focused components under `src/components/home/` powered by a typed Zustand store and centralized data fixtures, matching the Facade delivery strategy.
 
 **Pros**:
+
 - High cohesion with clear separation between presentation and state.
 - Direct alignment with the project Zustand conventions and Clean Architecture principles.
 - Enables effortless transition to Rust Tauri commands and SQLite queries in Phase 2.
 
 **Cons**:
+
 - Requires creating several focused files and interfaces up front.
 
 ### Option 3: Context API with mock service layer
@@ -35,9 +39,11 @@ Organize the screen into focused components under `src/components/home/` powered
 Use React Context providers wrapping the application root along with an asynchronous mock service simulating network delays.
 
 **Pros**:
+
 - Mimics remote web API fetching architectures closely.
 
 **Cons**:
+
 - Unnecessary boilerplate and re render performance overhead for a local desktop music player that reads directly from SQLite on the same machine.
 
 ## Rationale
