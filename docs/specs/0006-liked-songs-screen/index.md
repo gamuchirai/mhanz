@@ -1,7 +1,7 @@
 # 0006. Liked songs screen
 
 **Date**: 2026-10-23
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 
@@ -161,15 +161,15 @@ In this Facade phase, the UI calls `useLikedSongsStore` actions which connect to
 
 Following the project Facade build approach, the implementation begins with TypeScript contracts and fixture data, builds the reactive Zustand store, constructs modular UI components, assembles the page, and verifies through unit and component tests.
 
-- [ ] 1. Create TypeScript interfaces for LikedTrack, LikedSortColumn, LikedSortState, and LikedSongsState in `src/types/liked.ts`, satisfies **AC-1**, **AC-7**.
-- [ ] 2. Create initial mock data fixtures for liked songs populated with dateLiked timestamps in `src/data/likedFixtures.ts`, satisfies **AC-1**, **AC-2**, **AC-7**.
-- [ ] 3. Implement the Zustand store in `src/store/useLikedSongsStore.ts` supporting unliked pending retention, filter query, column sorting, unmount cleanup, and player store queueing, satisfies **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-7**, **AC-8**, **AC-9**, **AC-12**.
-- [ ] 4. Build `LikedBanner` displaying the illuminated heart badge, title, dynamically computed track count, formatted duration, and Play All and Shuffle buttons in `src/components/liked/LikedBanner.tsx`, satisfies **AC-1**, **AC-2**, **AC-3**, **AC-4**.
-- [ ] 5. Build `LikedFilterBar` providing real time text search input and sort selection controls in `src/components/liked/LikedFilterBar.tsx`, satisfies **AC-5**, **AC-7**.
-- [ ] 6. Build `LikedSongTable` with sortable columns, relative dateLiked formatting, row hover play, double click playback, and heart state toggling in `src/components/liked/LikedSongTable.tsx`, satisfies **AC-5**, **AC-6**, **AC-7**, **AC-8**, **AC-9**, **AC-10**.
-- [ ] 7. Build `EmptyLikedState` with glowing heart icon, guidance message, and Explore Music button in `src/components/liked/EmptyLikedState.tsx`, satisfies **AC-11**.
-- [ ] 8. Assemble the complete view in `src/pages/LikedSongs.tsx` and wire navigation in `src/App.tsx` so selecting Liked Songs renders this screen, satisfies **AC-1**, **AC-11**, **AC-12**.
-- [ ] 9. Add comprehensive unit and component test suite in `src/test/liked.test.tsx` verifying banner stats, playback actions, filtering, sorting, unlike retention, and empty state, satisfies **AC-1**, **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-6**, **AC-7**, **AC-8**, **AC-9**, **AC-10**, **AC-11**, **AC-12**.
+- [x] 1. Create TypeScript interfaces for LikedTrack, LikedSortColumn, LikedSortState, and LikedSongsState in `src/types/liked.ts`, satisfies **AC-1**, **AC-7**.
+- [x] 2. Create initial mock data fixtures for liked songs populated with dateLiked timestamps in `src/data/likedFixtures.ts`, satisfies **AC-1**, **AC-2**, **AC-7**.
+- [x] 3. Implement the Zustand store in `src/store/useLikedSongsStore.ts` supporting unliked pending retention, filter query, column sorting, unmount cleanup, and player store queueing, satisfies **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-7**, **AC-8**, **AC-9**, **AC-12**.
+- [x] 4. Build `LikedBanner` displaying the illuminated heart badge, title, dynamically computed track count, formatted duration, and Play All and Shuffle buttons in `src/components/liked/LikedBanner.tsx`, satisfies **AC-1**, **AC-2**, **AC-3**, **AC-4**.
+- [x] 5. Build `LikedFilterBar` providing real time text search input and sort selection controls in `src/components/liked/LikedFilterBar.tsx`, satisfies **AC-5**, **AC-7**.
+- [x] 6. Build `LikedSongTable` with sortable columns, relative dateLiked formatting, row hover play, double click playback, and heart state toggling in `src/components/liked/LikedSongTable.tsx`, satisfies **AC-5**, **AC-6**, **AC-7**, **AC-8**, **AC-9**, **AC-10**.
+- [x] 7. Build `EmptyLikedState` with glowing heart icon, guidance message, and Explore Music button in `src/components/liked/EmptyLikedState.tsx`, satisfies **AC-11**.
+- [x] 8. Assemble the complete view in `src/pages/LikedSongs.tsx` and wire navigation in `src/App.tsx` so selecting Liked Songs renders this screen, satisfies **AC-1**, **AC-11**, **AC-12**.
+- [x] 9. Add comprehensive unit and component test suite in `src/test/liked.test.tsx` verifying banner stats, playback actions, filtering, sorting, unlike retention, and empty state, satisfies **AC-1**, **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-6**, **AC-7**, **AC-8**, **AC-9**, **AC-10**, **AC-11**, **AC-12**.
 
 ## Consequences
 

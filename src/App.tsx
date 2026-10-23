@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Home } from "./pages/Home";
 import { Search } from "./pages/Search";
 import { Library } from "./pages/Library";
+import { LikedSongs } from "./pages/LikedSongs";
 import { PlayerFooter } from "./components/player/PlayerFooter";
 
 export function App() {
@@ -337,6 +338,8 @@ export function App() {
         <Search />
       ) : activeNav === "Your Library" ? (
         <Library />
+      ) : activeNav === "Liked Songs" ? (
+        <LikedSongs onNavigate={setActiveNav} />
       ) : (
         <main
           role="main"

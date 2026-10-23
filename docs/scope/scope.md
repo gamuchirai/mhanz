@@ -17,7 +17,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 4   | Home & discovery screen            | Phase 1    | in-progress |
 | 5   | Search & explore screen            | Phase 1    | in-progress |
 | 6   | Your library & folder browser      | Phase 1    | in-progress |
-| 7   | Liked songs screen                 | Phase 1    | planned     |
+| 7   | Liked songs screen                 | Phase 1    | in-progress |
 | 8   | Playlists & playlist detail        | Phase 1    | planned     |
 | 9   | Albums & album detail              | Phase 1    | planned     |
 | 10  | Artists & artist profile           | Phase 1    | planned     |
@@ -106,12 +106,21 @@ spec [0005](../specs/0005-your-library-folder-browser/index.md)
         code in `src/pages/Library.tsx`, `src/components/library/`, `src/store/useLibraryStore.ts`
 - [ ] Verify it: `/check verify your library & folder browser`
 
-### 7. Liked songs screen · needs a decision
+### 7. Liked songs screen · in-progress
 
 Assemble the liked tracks collection view with decorative header banner, track statistics, play all action, and favorited songs list.
 **Done when:** navigating to Liked Songs shows the heart hero banner, total count and duration, with interactive heart buttons that toggle track like states.
+spec [0006](../specs/0006-liked-songs-screen/index.md)
 
-- [ ] Design it (spec): `/architect liked songs screen`
+- [x] Design it (spec): `/architect liked songs screen`
+- [x] Build it: `/develop liked songs screen`
+  - [x] Liked songs types, sort contracts, and mock fixtures (AC-1, AC-7)
+  - [x] Zustand liked songs store with unlike retention, filtering, and sorting (AC-2, AC-3, AC-4, AC-5, AC-7, AC-8, AC-9, AC-12)
+  - [x] Modular components LikedBanner, LikedFilterBar, LikedSongTable, and EmptyLikedState (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11)
+  - [x] Page assembly in LikedSongs.tsx and App navigation shell wiring (AC-1, AC-11, AC-12)
+  - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+        code in `src/pages/LikedSongs.tsx`, `src/components/liked/`, `src/store/useLikedSongsStore.ts`
+- [ ] Verify it: `/check verify liked songs screen`
 
 ### 8. Playlists & playlist detail · needs a decision
 

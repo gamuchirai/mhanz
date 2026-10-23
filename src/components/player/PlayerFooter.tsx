@@ -1,6 +1,6 @@
 import { useState, type MouseEvent } from "react";
 import { usePlayerStore } from "../../store/usePlayerStore";
-import { formatDuration } from "../home/TrackTable";
+import { formatDuration } from "../../utils/format";
 import { MarqueeText } from "../home/MarqueeText";
 
 export function PlayerFooter() {
