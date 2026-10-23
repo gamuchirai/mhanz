@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { CuratedCard } from "../../types/discovery";
 import { usePlayerStore } from "../../store/usePlayerStore";
+import { useAlbumStore } from "../../store/useAlbumStore";
 
 interface CuratedGridProps {
   cards: CuratedCard[];
   title?: string;
+  onNavigate?: (nav: string) => void;
 }
 
-export function CuratedGrid({ cards, title = "Made for you" }: CuratedGridProps) {
+export function CuratedGrid({ cards, title = "Made for you", onNavigate }: CuratedGridProps) {
   const playCollection = usePlayerStore((state) => state.playCollection);
 
   return (
@@ -37,6 +39,7 @@ export function CuratedGrid({ cards, title = "Made for you" }: CuratedGridProps)
             key={card.id}
             card={card}
             onPlay={() => playCollection(card.tracks, 0)}
+            onNavigate={onNavigate}
           />
         ))}
       </div>
@@ -47,9 +50,10 @@ export function CuratedGrid({ cards, title = "Made for you" }: CuratedGridProps)
 interface CuratedCardItemProps {
   card: CuratedCard;
   onPlay: () => void;
+  onNavigate?: (nav: string) => void;
 }
 
-function CuratedCardItem({ card, onPlay }: CuratedCardItemProps) {
+function CuratedCardItem({ card, onPlay, onNavigate }: CuratedCardItemProps) {
   const [imageError, setImageError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -57,16 +61,29 @@ function CuratedCardItem({ card, onPlay }: CuratedCardItemProps) {
     card.accentGradient ??
     "linear-gradient(180deg,rgba(8,5,4,0) 30%,rgba(8,5,4,.9)),linear-gradient(180deg,#12141e,#2b2230 62%,#5a3630)";
 
+  const handleCardClick = () => {
+    if (card.type === "album") {
+      const storeAlbums = useAlbumStore.getState().albums;
+      const match = storeAlbums.find(
+        (a) => a.id === card.id || a.title.toLowerCase() === card.title.toLowerCase()
+      );
+      useAlbumStore.getState().setActiveAlbumId(match ? match.id : (storeAlbums[0]?.id ?? card.id));
+      onNavigate?.("Albums");
+    } else {
+      onPlay();
+    }
+  };
+
   return (
     <div
       role="button"
       tabIndex={0}
       aria-label={`Play playlist ${card.title}`}
-      onClick={onPlay}
+      onClick={handleCardClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          onPlay();
+          handleCardClick();
         }
       }}
       onMouseEnter={() => setIsHovered(true)}

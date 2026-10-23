@@ -1,7 +1,7 @@
 # 0008. Albums and album detail
 
 **Date**: 2026-10-23
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 
@@ -180,11 +180,11 @@ None. No new environment variables or secret keys are required.
 
 ## Build plan
 
-1. Album types, interfaces, and mock album fixture data with multi disc entries and realistic artwork in `src/types/album.ts` and `src/data/mockAlbums.ts`, satisfies **AC-1**, **AC-8**, **AC-11**
-2. Zustand album store (`src/store/useAlbumStore.ts`) managing albums list, search filtering, sorting, active album selection, favorite album toggling, and playback queue coordination with `usePlayerStore`, satisfies **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-7**, **AC-10**, **AC-12**
-3. Modular UI components in `src/components/albums/`: `AlbumHeader`, `AlbumGrid`, `AlbumCard`, `AlbumDetailBanner`, `AlbumTrackList`, `AlbumDiscHeader`, `AlbumTrackRow`, `AlbumVinylPlaceholder`, and `AlbumEmptyState`, satisfies **AC-1**, **AC-2**, **AC-4**, **AC-8**, **AC-9**, **AC-10**, **AC-11**
-4. Page assembly in `src/pages/Albums.tsx`, application shell navigation wiring in `src/App.tsx`, and deep linking from Home and Search screens, satisfies **AC-1**, **AC-4**, **AC-5**, **AC-6**, **AC-12**
-5. Comprehensive unit and component test suite covering album filtering, sorting, multi disc grouping, playback queueing, favorite toggling, and back navigation, satisfies **AC-1**, **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-6**, **AC-7**, **AC-8**, **AC-9**, **AC-10**, **AC-11**, **AC-12**
+- [x] 1. Album types, interfaces, and mock album fixture data with multi disc entries and realistic artwork in `src/types/album.ts` and `src/data/mockAlbums.ts`, satisfies **AC-1**, **AC-8**, **AC-11**
+- [x] 2. Zustand album store (`src/store/useAlbumStore.ts`) managing albums list, search filtering, sorting, active album selection, favorite album toggling, and playback queue coordination with `usePlayerStore`, satisfies **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-7**, **AC-10**, **AC-12**
+- [x] 3. Modular UI components in `src/components/albums/`: `AlbumHeader`, `AlbumGrid`, `AlbumCard`, `AlbumDetailBanner`, `AlbumTrackList`, `AlbumDiscHeader`, `AlbumTrackRow`, `AlbumVinylPlaceholder`, and `AlbumEmptyState`, satisfies **AC-1**, **AC-2**, **AC-4**, **AC-8**, **AC-9**, **AC-10**, **AC-11**
+- [x] 4. Page assembly in `src/pages/Albums.tsx`, application shell navigation wiring in `src/App.tsx`, and deep linking from Home and Search screens, satisfies **AC-1**, **AC-4**, **AC-5**, **AC-6**, **AC-12**
+- [x] 5. Comprehensive unit and component test suite covering album filtering, sorting, multi disc grouping, playback queueing, favorite toggling, and back navigation, satisfies **AC-1**, **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-6**, **AC-7**, **AC-8**, **AC-9**, **AC-10**, **AC-11**, **AC-12**
 
 ## Consequences
 

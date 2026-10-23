@@ -159,7 +159,7 @@ export function Home({ onNavigate }: HomeProps = {}) {
       <HeroBanner item={showcaseItem} />
 
       {/* Curated Grid Section */}
-      <CuratedGrid cards={curatedCollections} />
+      <CuratedGrid cards={curatedCollections} onNavigate={onNavigate} />
 
       {/* Recently Played and Popular Tracks Section */}
       <section

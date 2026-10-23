@@ -4,8 +4,10 @@ import { Search } from "./pages/Search";
 import { Library } from "./pages/Library";
 import { LikedSongs } from "./pages/LikedSongs";
 import { Playlists } from "./pages/Playlists";
+import { Albums } from "./pages/Albums";
 import { PlayerFooter } from "./components/player/PlayerFooter";
 import { useActivePlaylistId, usePlaylistStore, usePlaylists } from "./store/usePlaylistStore";
+import { useAlbumStore } from "./store/useAlbumStore";
 
 export function App() {
   const [activeNav, setActiveNav] = useState("Home");
@@ -13,6 +15,7 @@ export function App() {
   const activePlaylistId = useActivePlaylistId();
   const setActivePlaylistId = usePlaylistStore((state) => state.setActivePlaylistId);
   const setCreateModalOpen = usePlaylistStore((state) => state.setCreateModalOpen);
+  const setActiveAlbumId = useAlbumStore((state) => state.setActiveAlbumId);
 
   useEffect(() => {
     async function testBackend() {
@@ -184,6 +187,9 @@ export function App() {
                   e.preventDefault();
                   if (item.id === "Playlists") {
                     setActivePlaylistId(null);
+                  }
+                  if (item.id === "Albums") {
+                    setActiveAlbumId(null);
                   }
                   setActiveNav(item.id);
                 }}
@@ -357,13 +363,15 @@ export function App() {
       {activeNav === "Home" ? (
         <Home onNavigate={setActiveNav} />
       ) : activeNav === "Search" ? (
-        <Search />
+        <Search onNavigate={setActiveNav} />
       ) : activeNav === "Your Library" ? (
         <Library />
       ) : activeNav === "Liked Songs" ? (
         <LikedSongs onNavigate={setActiveNav} />
       ) : activeNav === "Playlists" ? (
         <Playlists />
+      ) : activeNav === "Albums" ? (
+        <Albums onNavigate={setActiveNav} onNavigateArtist={() => setActiveNav("Artists")} />
       ) : (
         <main
           role="main"

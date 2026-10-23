@@ -145,12 +145,13 @@ Build the album collection grid with cover art, release year, and detailed album
 spec [0008](../specs/0008-albums-album-detail/index.md)
 
 - [x] Design it (spec): `/architect albums & album detail`
-- [ ] Build it: `/develop albums & album detail`
-  - [ ] Album types and mock album fixtures with multi disc entries and fallback artwork (AC-1, AC-8, AC-11)
-  - [ ] Zustand album store with search, sort, active selection, favorite toggling, and playback queueing (AC-2, AC-3, AC-4, AC-5, AC-7, AC-10, AC-12)
-  - [ ] Modular components AlbumHeader, AlbumGrid, AlbumCard, AlbumDetailBanner, AlbumTrackList, AlbumDiscHeader, AlbumTrackRow, AlbumVinylPlaceholder, and AlbumEmptyState (AC-1, AC-2, AC-4, AC-8, AC-9, AC-10, AC-11)
-  - [ ] Page container Albums.tsx, App navigation shell wiring, and cross screen deep linking (AC-1, AC-4, AC-5, AC-6, AC-12)
-  - [ ] Comprehensive unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+- [x] Build it: `/develop albums & album detail`
+  - [x] Album types and mock album fixtures with multi disc entries and fallback artwork (AC-1, AC-8, AC-11)
+  - [x] Zustand album store with search, sort, active selection, favorite toggling, and playback queueing (AC-2, AC-3, AC-4, AC-5, AC-7, AC-10, AC-12)
+  - [x] Modular components AlbumHeader, AlbumGrid, AlbumCard, AlbumDetailBanner, AlbumTrackList, AlbumDiscHeader, AlbumTrackRow, AlbumVinylPlaceholder, and AlbumEmptyState (AC-1, AC-2, AC-4, AC-8, AC-9, AC-10, AC-11)
+  - [x] Page container Albums.tsx, App navigation shell wiring, and cross screen deep linking (AC-1, AC-4, AC-5, AC-6, AC-12)
+  - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+        code in `src/pages/Albums.tsx`, `src/components/albums/`, `src/store/useAlbumStore.ts`
 - [ ] Verify it: `/check verify albums & album detail`
 
 ### 10. Artists & artist profile · in-progress

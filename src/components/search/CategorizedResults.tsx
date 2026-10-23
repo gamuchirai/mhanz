@@ -3,6 +3,7 @@ import { usePlayerStore } from "../../store/usePlayerStore";
 import { useSearchStore } from "../../store/useSearchStore";
 import type { Track } from "../../types/discovery";
 import type { AlbumCard, ArtistCard, GenreCard } from "../../types/search";
+import { useAlbumStore } from "../../store/useAlbumStore";
 
 function formatDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -20,7 +21,11 @@ function formatListeners(count: number): string {
   return `${count} listeners`;
 }
 
-export function CategorizedResults() {
+interface CategorizedResultsProps {
+  onNavigate?: (nav: string) => void;
+}
+
+export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {}) {
   const results = useSearchStore((state) => state.results);
   const activeCategory = useSearchStore((state) => state.activeCategory);
   const selectGenre = useSearchStore((state) => state.selectGenre);
@@ -42,6 +47,15 @@ export function CategorizedResults() {
     if (album.tracks.length > 0) {
       playCollection(album.tracks, 0);
     }
+  };
+
+  const handleOpenAlbum = (album: AlbumCard) => {
+    const storeAlbums = useAlbumStore.getState().albums;
+    const match = storeAlbums.find(
+      (a) => a.id === album.id || a.title.toLowerCase() === album.title.toLowerCase()
+    );
+    useAlbumStore.getState().setActiveAlbumId(match ? match.id : (storeAlbums[0]?.id ?? album.id));
+    onNavigate?.("Albums");
   };
 
   const topTrack = results.tracks[0];
@@ -305,7 +319,12 @@ export function CategorizedResults() {
                 }}
               >
                 {results.albums.map((album) => (
-                  <AlbumCardItem key={album.id} album={album} onPlay={handlePlayAlbum} />
+                  <AlbumCardItem
+                    key={album.id}
+                    album={album}
+                    onPlay={handlePlayAlbum}
+                    onAlbumClick={handleOpenAlbum}
+                  />
                 ))}
               </div>
             </section>
@@ -537,7 +556,12 @@ export function CategorizedResults() {
             }}
           >
             {results.albums.map((album) => (
-              <AlbumCardItem key={album.id} album={album} onPlay={handlePlayAlbum} />
+              <AlbumCardItem
+                key={album.id}
+                album={album}
+                onPlay={handlePlayAlbum}
+                onAlbumClick={handleOpenAlbum}
+              />
             ))}
           </div>
         </section>
@@ -622,13 +646,31 @@ export function CategorizedResults() {
   );
 }
 
-function AlbumCardItem({ album, onPlay }: { album: AlbumCard; onPlay: (album: AlbumCard) => void }) {
+function AlbumCardItem({
+  album,
+  onPlay,
+  onAlbumClick,
+}: {
+  album: AlbumCard;
+  onPlay: (album: AlbumCard) => void;
+  onAlbumClick?: (album: AlbumCard) => void;
+}) {
   const [hovered, setHovered] = useState(false);
 
   return (
     <div
+      onClick={() => onAlbumClick?.(album)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onAlbumClick?.(album);
+        }
+      }}
+      aria-label={`Album ${album.title} by ${album.artist}`}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -637,6 +679,7 @@ function AlbumCardItem({ album, onPlay }: { album: AlbumCard; onPlay: (album: Al
         borderRadius: "12px",
         background: hovered ? "rgba(255, 255, 255, 0.04)" : "rgba(24, 17, 15, 0.5)",
         border: "1px solid var(--l)",
+        cursor: "pointer",
         transition: "all 0.2s ease",
       }}
     >
@@ -649,7 +692,10 @@ function AlbumCardItem({ album, onPlay }: { album: AlbumCard; onPlay: (album: Al
         {hovered && (
           <button
             type="button"
-            onClick={() => onPlay(album)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPlay(album);
+            }}
             aria-label={`Play album ${album.title}`}
             style={{
               position: "absolute",

@@ -5,7 +5,11 @@ import { CategorizedResults } from "../components/search/CategorizedResults";
 import { EmptySearchState } from "../components/search/EmptySearchState";
 import { useSearchStore } from "../store/useSearchStore";
 
-export function Search() {
+interface SearchProps {
+  onNavigate?: (nav: string) => void;
+}
+
+export function Search({ onNavigate }: SearchProps = {}) {
   const query = useSearchStore((state) => state.query);
   const results = useSearchStore((state) => state.results);
   const isSearching = useSearchStore((state) => state.isSearching);
@@ -52,7 +56,7 @@ export function Search() {
       ) : hasNoResults ? (
         <EmptySearchState />
       ) : (
-        <CategorizedResults />
+        <CategorizedResults onNavigate={onNavigate} />
       )}
     </main>
   );
