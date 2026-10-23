@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Home } from "./pages/Home";
+import { Search } from "./pages/Search";
+import { Library } from "./pages/Library";
 import { PlayerFooter } from "./components/player/PlayerFooter";
 
 export function App() {
@@ -90,7 +92,11 @@ export function App() {
             <path d="M12 3l1.800 5.200L19 10l-5.200 1.800L12 17l-1.800-5.200L5 10l5.200-1.800zM19 16l.8 2.200L22 19l-2.200.8L19 22l-.8-2.200L16 19l2.200-.8z" />
           </symbol>
           <symbol id="star" viewBox="0 0 24 24">
-            <path fill="currentColor" stroke="none" d="M12 2c.5 5.500 2.500 8.500 8 10-5.500 1.500-7.500 4.500-8 10-.5-5.500-2.500-8.500-8-10 5.500-1.500 7.500-4.500 8-10z" />
+            <path
+              fill="currentColor"
+              stroke="none"
+              d="M12 2c.5 5.500 2.500 8.500 8 10-5.500 1.500-7.500 4.500-8 10-.5-5.500-2.500-8.500-8-10 5.500-1.500 7.500-4.500 8-10z"
+            />
           </symbol>
           <symbol id="cl" viewBox="0 0 24 24">
             <path d="M15 5l-7 7 7 7" />
@@ -140,7 +146,14 @@ export function App() {
           <svg className="i" width="22" height="22" aria-hidden="true">
             <use href="#star" />
           </svg>
-          <span style={{ fontWeight: 300, fontSize: "16px", letterSpacing: ".34em", paddingLeft: ".34em" }}>
+          <span
+            style={{
+              fontWeight: 300,
+              fontSize: "16px",
+              letterSpacing: ".34em",
+              paddingLeft: ".34em",
+            }}
+          >
             MIDNIGHT
           </span>
         </div>
@@ -170,7 +183,9 @@ export function App() {
                   gap: "14px",
                   padding: "11px 14px",
                   borderRadius: "10px",
-                  background: isActive ? "linear-gradient(90deg,rgba(240,169,130,.22),rgba(240,169,130,.06))" : "none",
+                  background: isActive
+                    ? "linear-gradient(90deg,rgba(240,169,130,.22),rgba(240,169,130,.06))"
+                    : "none",
                   color: isActive ? "var(--t)" : "var(--m)",
                   cursor: "pointer",
                   transition: "background 0.15s ease, color 0.15s ease",
@@ -199,7 +214,14 @@ export function App() {
           <span>YOUR PLAYLISTS</span>
           <button
             aria-label="New playlist"
-            style={{ background: "none", border: 0, padding: 0, color: "var(--m)", display: "grid", cursor: "pointer" }}
+            style={{
+              background: "none",
+              border: 0,
+              padding: 0,
+              color: "var(--m)",
+              display: "grid",
+              cursor: "pointer",
+            }}
           >
             <svg className="i" width="16" height="16" aria-hidden="true">
               <use href="#plus" />
@@ -208,20 +230,68 @@ export function App() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "4px", color: "var(--t)" }}>
-          <a href="#" onClick={(e) => e.preventDefault()} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "6px 14px" }}>
-            <span style={{ width: "36px", height: "36px", borderRadius: "6px", background: "linear-gradient(180deg,#12141e,#2b2230 62%,#5a3630)", flexShrink: 0 }} />
+          <a
+            href="#"
+            onClick={(e) => e.preventDefault()}
+            style={{ display: "flex", alignItems: "center", gap: "12px", padding: "6px 14px" }}
+          >
+            <span
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "6px",
+                background: "linear-gradient(180deg,#12141e,#2b2230 62%,#5a3630)",
+                flexShrink: 0,
+              }}
+            />
             Late Night Drive
           </a>
-          <a href="#" onClick={(e) => e.preventDefault()} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "6px 14px" }}>
-            <span style={{ width: "36px", height: "36px", borderRadius: "6px", background: "linear-gradient(160deg,#3a2c26,#15100e)", flexShrink: 0 }} />
+          <a
+            href="#"
+            onClick={(e) => e.preventDefault()}
+            style={{ display: "flex", alignItems: "center", gap: "12px", padding: "6px 14px" }}
+          >
+            <span
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "6px",
+                background: "linear-gradient(160deg,#3a2c26,#15100e)",
+                flexShrink: 0,
+              }}
+            />
             Acoustic Mornings
           </a>
-          <a href="#" onClick={(e) => e.preventDefault()} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "6px 14px" }}>
-            <span style={{ width: "36px", height: "36px", borderRadius: "6px", background: "linear-gradient(180deg,#2a2a30,#121216)", flexShrink: 0 }} />
+          <a
+            href="#"
+            onClick={(e) => e.preventDefault()}
+            style={{ display: "flex", alignItems: "center", gap: "12px", padding: "6px 14px" }}
+          >
+            <span
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "6px",
+                background: "linear-gradient(180deg,#2a2a30,#121216)",
+                flexShrink: 0,
+              }}
+            />
             Heartbreak Diaries
           </a>
-          <a href="#" onClick={(e) => e.preventDefault()} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "6px 14px" }}>
-            <span style={{ width: "36px", height: "36px", borderRadius: "6px", background: "linear-gradient(180deg,#4b2d4d,#dc7650 64%,#190d0b 65%)", flexShrink: 0 }} />
+          <a
+            href="#"
+            onClick={(e) => e.preventDefault()}
+            style={{ display: "flex", alignItems: "center", gap: "12px", padding: "6px 14px" }}
+          >
+            <span
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "6px",
+                background: "linear-gradient(180deg,#4b2d4d,#dc7650 64%,#190d0b 65%)",
+                flexShrink: 0,
+              }}
+            />
             Good Vibes
           </a>
         </div>
@@ -238,9 +308,23 @@ export function App() {
             borderTop: "1px solid var(--l)",
           }}
         >
-          <span style={{ width: "36px", height: "36px", borderRadius: "50%", background: "linear-gradient(160deg,#6b5548,#241a16)", flexShrink: 0 }} />
+          <span
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              background: "linear-gradient(160deg,#6b5548,#241a16)",
+              flexShrink: 0,
+            }}
+          />
           <span style={{ flex: 1 }}>madebyadah</span>
-          <svg className="i" width="16" height="16" style={{ color: "var(--m)" }} aria-hidden="true">
+          <svg
+            className="i"
+            width="16"
+            height="16"
+            style={{ color: "var(--m)" }}
+            aria-hidden="true"
+          >
             <use href="#cd" />
           </svg>
         </a>
@@ -248,7 +332,11 @@ export function App() {
 
       {/* Main Container */}
       {activeNav === "Home" ? (
-        <Home />
+        <Home onNavigate={setActiveNav} />
+      ) : activeNav === "Search" ? (
+        <Search />
+      ) : activeNav === "Your Library" ? (
+        <Library />
       ) : (
         <main
           role="main"

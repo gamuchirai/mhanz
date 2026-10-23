@@ -54,8 +54,11 @@ export function RecentCarousel({ items }: RecentCarouselProps) {
             <div style={{ fontWeight: 500, fontSize: "15px", color: "var(--t)" }}>
               No recent listening history yet
             </div>
-            <div style={{ fontSize: "13px", color: "var(--m)", marginTop: "4px", maxWidth: "340px" }}>
-              Listen to songs from your library or explore curated tracks to build your listening history.
+            <div
+              style={{ fontSize: "13px", color: "var(--m)", marginTop: "4px", maxWidth: "340px" }}
+            >
+              Listen to songs from your library or explore curated tracks to build your listening
+              history.
             </div>
           </div>
           <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
@@ -99,7 +102,14 @@ export function RecentCarousel({ items }: RecentCarouselProps) {
 
   return (
     <div style={{ minWidth: 0 }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "14px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+          marginBottom: "14px",
+        }}
+      >
         <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 500, color: "var(--t)" }}>
           Recently played
         </h2>
@@ -231,7 +241,16 @@ function RecentItemCard({ item, isActive, isPlaying, onPlay }: RecentItemCardPro
             color: isActive ? "var(--accent)" : "var(--t)",
           }}
         />
-        <div style={{ fontSize: "12px", color: "var(--m)", marginTop: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div
+          style={{
+            fontSize: "12px",
+            color: "var(--m)",
+            marginTop: "2px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
           {item.track.artist}
         </div>
       </div>

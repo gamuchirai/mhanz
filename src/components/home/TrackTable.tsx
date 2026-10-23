@@ -3,15 +3,11 @@ import { Track } from "../../types/discovery";
 import { usePlayerStore } from "../../store/usePlayerStore";
 import { MarqueeText } from "./MarqueeText";
 
+import { formatDuration } from "../../utils/format";
+
 interface TrackTableProps {
   tracks: Track[];
   title?: string;
-}
-
-export function formatDuration(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
 }
 
 export function TrackTable({ tracks, title = "Popular tracks" }: TrackTableProps) {
@@ -32,7 +28,14 @@ export function TrackTable({ tracks, title = "Popular tracks" }: TrackTableProps
 
   return (
     <div style={{ minWidth: 0 }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "8px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+          marginBottom: "8px",
+        }}
+      >
         <h2 style={{ margin: 0, fontSize: "16px", fontWeight: 500, color: "var(--t)" }}>{title}</h2>
         <a
           href="#"
@@ -45,7 +48,11 @@ export function TrackTable({ tracks, title = "Popular tracks" }: TrackTableProps
         </a>
       </div>
 
-      <div role="table" aria-label="Popular tracks table" style={{ display: "flex", flexDirection: "column" }}>
+      <div
+        role="table"
+        aria-label="Popular tracks table"
+        style={{ display: "flex", flexDirection: "column" }}
+      >
         {tracks.map((track, idx) => {
           const isCurrent = currentTrack?.id === track.id;
           const isRowPlaying = isCurrent && isPlaying;
@@ -119,14 +126,25 @@ function TrackRow({
         gap: "14px",
         padding: "8px 10px",
         borderRadius: "8px",
-        background: isCurrent ? "rgba(240,169,130,0.08)" : isHovered ? "rgba(255,255,255,0.03)" : "transparent",
+        background: isCurrent
+          ? "rgba(240,169,130,0.08)"
+          : isHovered
+            ? "rgba(255,255,255,0.03)"
+            : "transparent",
         cursor: "pointer",
         transition: "background-color 0.15s ease",
         userSelect: "none",
       }}
     >
       {/* Rank or Play Icon */}
-      <div style={{ color: isCurrent ? "var(--accent)" : "var(--m)", fontSize: "12px", display: "grid", placeItems: "center" }}>
+      <div
+        style={{
+          color: isCurrent ? "var(--accent)" : "var(--m)",
+          fontSize: "12px",
+          display: "grid",
+          placeItems: "center",
+        }}
+      >
         {isHovered ? (
           <button
             aria-label={`Play ${track.title}`}
@@ -198,7 +216,16 @@ function TrackRow({
             color: isCurrent ? "var(--accent)" : "var(--t)",
           }}
         />
-        <div style={{ fontSize: "12px", color: "var(--m)", marginTop: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div
+          style={{
+            fontSize: "12px",
+            color: "var(--m)",
+            marginTop: "1px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
           {track.artist}
         </div>
       </div>

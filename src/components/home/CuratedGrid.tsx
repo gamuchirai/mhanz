@@ -12,7 +12,14 @@ export function CuratedGrid({ cards, title = "Made for you" }: CuratedGridProps)
 
   return (
     <section aria-label={title}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "14px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+          marginBottom: "14px",
+        }}
+      >
         <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 500, color: "var(--t)" }}>{title}</h2>
         <a
           href="#"
@@ -26,7 +33,11 @@ export function CuratedGrid({ cards, title = "Made for you" }: CuratedGridProps)
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "16px" }}>
         {cards.map((card) => (
-          <CuratedCardItem key={card.id} card={card} onPlay={() => playCollection(card.tracks, 0)} />
+          <CuratedCardItem
+            key={card.id}
+            card={card}
+            onPlay={() => playCollection(card.tracks, 0)}
+          />
         ))}
       </div>
     </section>
@@ -107,9 +118,7 @@ function CuratedCardItem({ card, onPlay }: CuratedCardItemProps) {
         <div style={{ fontWeight: 500, fontSize: "14px", lineHeight: 1.2, color: "var(--t)" }}>
           {card.title}
         </div>
-        <div style={{ fontSize: "11px", color: "#c9bbb0", marginTop: "3px" }}>
-          {card.subtitle}
-        </div>
+        <div style={{ fontSize: "11px", color: "#c9bbb0", marginTop: "3px" }}>{card.subtitle}</div>
       </div>
 
       <button

@@ -71,7 +71,8 @@ export function HeroBanner({ item }: HeroBannerProps) {
           height: "276px",
           borderRadius: "14px",
           overflow: "hidden",
-          background: "linear-gradient(180deg,#2f2742 0%,#8a4560 36%,#e0714f 62%,#f4a86a 70%,#150c0a 71%)",
+          background:
+            "linear-gradient(180deg,#2f2742 0%,#8a4560 36%,#e0714f 62%,#f4a86a 70%,#150c0a 71%)",
           boxShadow: "0 24px 60px rgba(0,0,0,.55)",
         }}
       >
@@ -120,8 +121,18 @@ export function HeroBanner({ item }: HeroBannerProps) {
       </div>
 
       {/* Details */}
-      <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: "4px", minWidth: 0 }}>
-        <div style={{ fontSize: "11px", letterSpacing: ".26em", color: "#e0916c", fontWeight: 600 }}>
+      <div
+        style={{
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          gap: "4px",
+          minWidth: 0,
+        }}
+      >
+        <div
+          style={{ fontSize: "11px", letterSpacing: ".26em", color: "#e0916c", fontWeight: 600 }}
+        >
           {item.badge}
         </div>
         <h1
@@ -136,10 +147,26 @@ export function HeroBanner({ item }: HeroBannerProps) {
         >
           {item.headline}
         </h1>
-        <div style={{ fontFamily: "'Pinyon Script', cursive", fontSize: "46px", lineHeight: 1.1, color: "#e8d7ca" }}>
+        <div
+          style={{
+            fontFamily: "'Pinyon Script', cursive",
+            fontSize: "46px",
+            lineHeight: 1.1,
+            color: "#e8d7ca",
+          }}
+        >
           {item.subtitle}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--m)", fontSize: "13px", marginTop: "8px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            color: "var(--m)",
+            fontSize: "13px",
+            marginTop: "8px",
+          }}
+        >
           <svg
             className="i"
             width="14"
