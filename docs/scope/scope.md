@@ -177,13 +177,14 @@ Build the slide out now playing queue drawer, timed lyrics overlay modal, and au
 spec [0010](../specs/0010-queue-lyrics-settings-overlays/index.md)
 
 - [x] Design it (spec): `/architect queue, lyrics & settings overlays`
-- [ ] Build it: `/develop queue, lyrics & settings overlays`
-  - [ ] Domain types and mock fixtures for queue, lyrics, and audio devices (AC-3, AC-8, AC-11, AC-12)
-  - [ ] Reactive Zustand overlay visibility and settings stores with local storage persistence (AC-1, AC-2, AC-12, AC-13)
-  - [ ] Player store queue extensions for reordering, adding, removing, and clearing upcoming tracks (AC-4, AC-5, AC-6, AC-7)
-  - [ ] Modular components for QueueDrawer, LyricsModal, and SettingsModal with smooth auto scroll and drag reordering (AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
-  - [ ] PlayerFooter triggers, App sidebar gear trigger, escape key listener, and backdrop dismissal (AC-1, AC-2, AC-8, AC-12, AC-13)
-  - [ ] Comprehensive unit and component test suite (AC-1, AC-2, AC-4, AC-5, AC-6, AC-7, AC-9, AC-10, AC-12, AC-13)
+- [x] Build it: `/develop queue, lyrics & settings overlays`
+  - [x] Domain types and mock fixtures for queue, lyrics, and audio devices (AC-3, AC-8, AC-11, AC-12)
+  - [x] Reactive Zustand overlay visibility and settings stores with local storage persistence (AC-1, AC-2, AC-12, AC-13)
+  - [x] Player store queue extensions for reordering, adding, removing, and clearing upcoming tracks (AC-4, AC-5, AC-6, AC-7)
+  - [x] Modular components for QueueDrawer, LyricsModal, and SettingsModal with smooth auto scroll and drag reordering (AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+  - [x] PlayerFooter triggers, App sidebar gear trigger, escape key listener, and backdrop dismissal (AC-1, AC-2, AC-8, AC-12, AC-13)
+  - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-4, AC-5, AC-6, AC-7, AC-9, AC-10, AC-12, AC-13)
+        code in `src/components/queue/`, `src/components/lyrics/`, `src/components/settings/`, `src/store/useOverlayStore.ts`, `src/store/useSettingsStore.ts`
 - [ ] Verify it: `/check verify queue, lyrics & settings overlays`
 
 ## Phase 2: Backend wiring & persistence

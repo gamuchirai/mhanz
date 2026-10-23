@@ -7,6 +7,10 @@ import { Playlists } from "./pages/Playlists";
 import { Albums } from "./pages/Albums";
 import { Artists } from "./pages/Artists";
 import { PlayerFooter } from "./components/player/PlayerFooter";
+import { QueueDrawer } from "./components/queue/QueueDrawer";
+import { LyricsModal } from "./components/lyrics/LyricsModal";
+import { SettingsModal } from "./components/settings/SettingsModal";
+import { useActiveOverlay, useOverlayStore } from "./store/useOverlayStore";
 import { useActivePlaylistId, usePlaylistStore, usePlaylists } from "./store/usePlaylistStore";
 import { useAlbumStore } from "./store/useAlbumStore";
 import { useArtistStore } from "./store/useArtistStore";
@@ -18,6 +22,19 @@ export function App() {
   const setActivePlaylistId = usePlaylistStore((state) => state.setActivePlaylistId);
   const setCreateModalOpen = usePlaylistStore((state) => state.setCreateModalOpen);
   const setActiveAlbumId = useAlbumStore((state) => state.setActiveAlbumId);
+
+  const activeOverlay = useActiveOverlay();
+  const toggleOverlay = useOverlayStore((state) => state.toggleOverlay);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        useOverlayStore.getState().closeOverlay();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   useEffect(() => {
     async function testBackend() {
@@ -330,38 +347,72 @@ export function App() {
           })}
         </div>
 
-        <a
-          href="#"
-          onClick={(e) => e.preventDefault()}
+        <div
           style={{
             marginTop: "auto",
             display: "flex",
             alignItems: "center",
-            gap: "12px",
+            justifyContent: "space-between",
             padding: "10px 14px",
             borderTop: "1px solid var(--l)",
           }}
         >
-          <span
+          <a
+            href="#"
+            onClick={(e) => e.preventDefault()}
             style={{
-              width: "36px",
-              height: "36px",
-              borderRadius: "50%",
-              background: "linear-gradient(160deg,#6b5548,#241a16)",
-              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              minWidth: 0,
             }}
-          />
-          <span style={{ flex: 1 }}>madebyadah</span>
-          <svg
-            className="i"
-            width="16"
-            height="16"
-            style={{ color: "var(--m)" }}
-            aria-hidden="true"
           >
-            <use href="#cd" />
-          </svg>
-        </a>
+            <span
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                background: "linear-gradient(160deg,#6b5548,#241a16)",
+                flexShrink: 0,
+              }}
+            />
+            <span
+              style={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                fontSize: "13px",
+              }}
+            >
+              madebyadah
+            </span>
+          </a>
+
+          <button
+            aria-label="Open audio preferences settings"
+            onClick={() => toggleOverlay("settings")}
+            style={{
+              background: "none",
+              border: 0,
+              padding: "6px",
+              color: activeOverlay === "settings" ? "var(--accent)" : "var(--m)",
+              cursor: "pointer",
+              borderRadius: "6px",
+              display: "grid",
+              transition: "color 0.15s ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t)")}
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color =
+                activeOverlay === "settings" ? "var(--accent)" : "var(--m)")
+            }
+          >
+            <svg className="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+        </div>
       </aside>
 
       {/* Main Container */}
@@ -438,6 +489,25 @@ export function App() {
 
       {/* Persistent Player Footer */}
       <PlayerFooter />
+
+      {/* Overlays portal and backdrop */}
+      {activeOverlay === "queue" && (
+        <>
+          <div
+            role="presentation"
+            onClick={() => useOverlayStore.getState().closeOverlay()}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 35,
+              background: "rgba(0, 0, 0, 0.45)",
+            }}
+          />
+          <QueueDrawer />
+        </>
+      )}
+      {activeOverlay === "lyrics" && <LyricsModal />}
+      {activeOverlay === "settings" && <SettingsModal />}
     </div>
   );
 }

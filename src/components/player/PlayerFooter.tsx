@@ -1,5 +1,6 @@
 import { useState, type MouseEvent } from "react";
 import { usePlayerStore } from "../../store/usePlayerStore";
+import { useOverlayStore } from "../../store/useOverlayStore";
 import { formatDuration } from "../../utils/format";
 import { MarqueeText } from "../home/MarqueeText";
 
@@ -12,6 +13,9 @@ export function PlayerFooter() {
   const isShuffle = usePlayerStore((state) => state.isShuffle);
   const repeatMode = usePlayerStore((state) => state.repeatMode);
   const likedTrackIds = usePlayerStore((state) => state.likedTrackIds);
+
+  const activeOverlay = useOverlayStore((state) => state.activeOverlay);
+  const toggleOverlay = useOverlayStore((state) => state.toggleOverlay);
 
   const togglePlayPause = usePlayerStore((state) => state.togglePlayPause);
   const nextTrack = usePlayerStore((state) => state.nextTrack);
@@ -316,6 +320,47 @@ export function PlayerFooter() {
             }}
           />
         </div>
+
+        {/* Lyrics toggle button */}
+        <button
+          aria-label="Toggle lyrics overlay"
+          onClick={() => toggleOverlay("lyrics")}
+          style={{
+            background: "none",
+            border: 0,
+            padding: "8px",
+            color: activeOverlay === "lyrics" ? "var(--accent)" : "var(--m)",
+            cursor: "pointer",
+            display: "grid",
+            borderRadius: "6px",
+            marginLeft: "6px",
+          }}
+          title="Lyrics"
+        >
+          <svg className="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 6h16M4 12h10M4 18h14" />
+          </svg>
+        </button>
+
+        {/* Queue toggle button */}
+        <button
+          aria-label="Toggle playback queue drawer"
+          onClick={() => toggleOverlay("queue")}
+          style={{
+            background: "none",
+            border: 0,
+            padding: "8px",
+            color: activeOverlay === "queue" ? "var(--accent)" : "var(--m)",
+            cursor: "pointer",
+            display: "grid",
+            borderRadius: "6px",
+          }}
+          title="Queue"
+        >
+          <svg className="i" width="18" height="18" aria-hidden="true">
+            <use href="#list" />
+          </svg>
+        </button>
       </div>
     </footer>
   );
