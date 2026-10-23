@@ -1,9 +1,9 @@
 # Scope: Mumhanzi
 
-A lightweight, modern desktop music player inspired by Windows Groove Music and the Midnight UI design, built with Tauri, Rust, Vite, and TypeScript.
+A lightweight modern desktop music player inspired by Windows Groove Music and the Midnight visual layout, built with Tauri, Rust, Vite, and TypeScript.
 
-**Build approach:** Tracer Bullet (vertical slices; each feature built end to end through every layer, working).
-**Workflow:** Beta (after /develop, /check verify then /test). The project default level of rigor. `/architect` is the recommended first stop for a feature with a real decision, but skippable when you already know the build. Any feature can carry its own tag (e.g. `· GA`) to do more or less.
+**Build approach:** Facade (UI first clickable shell on placeholder data, then wire the backend).
+**Workflow:** Alpha (after /develop, /check verify on the running app). The project default level of rigor. `/architect` is the recommended first stop for a feature with a real decision, but skippable when you already know the build. Any feature can carry its own tag (e.g. `· GA`) to do more or less.
 
 _These are recommendations to keep your build orderly, not requirements. Skip anything that does not fit: if you already know how to build a feature, use `/develop` and skip `/architect`. You decide when a feature is `done`._
 
@@ -11,72 +11,124 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 
 | # | Feature | Phase | Status |
 |---|---------|-------|--------|
-| 1 | Stack & architecture | Foundation | in-progress |
+| 1 | Stack & architecture | Foundation | done |
 | 2 | Coding standards & tooling | Foundation | planned |
-| 3 | Data model | Foundation | planned |
-| 4 | Design system & UI foundation | Foundation | planned |
-| 5 | Core playback loop | Slice 1 | planned |
-| 6 | Local library scanner | Slice 2 | planned |
-| 7 | Playlists & favorites | Slice 3 | planned |
-| 8 | Library search & filtering | Slice 4 | planned |
+| 3 | Design system & navigation shell | Foundation | planned |
+| 4 | Home & discovery screen | Phase 1 | in-progress |
+| 5 | Search & explore screen | Phase 1 | planned |
+| 6 | Your library & folder browser | Phase 1 | planned |
+| 7 | Liked songs screen | Phase 1 | planned |
+| 8 | Playlists & playlist detail | Phase 1 | planned |
+| 9 | Albums & album detail | Phase 1 | planned |
+| 10 | Artists & artist profile | Phase 1 | planned |
+| 11 | Queue, lyrics & settings overlays | Phase 1 | planned |
+| 12 | Data model & SQLite storage | Phase 2 | planned |
+| 13 | Core audio playback engine | Phase 2 | planned |
+| 14 | Local library scanner & metadata | Phase 2 | planned |
+| 15 | Playlists & favorites persistence | Phase 2 | planned |
+| 16 | Fast local library search indexing | Phase 2 | planned |
 
 ## Foundations
 
-### 1. Stack & architecture · in-progress
-Decide the Tauri, Rust, Vite, and TypeScript project structure, scaffold a runnable desktop application shell.
+### 1. Stack & architecture · done
+Decide the Tauri, Rust, Vite, and TypeScript project structure, and scaffold a runnable desktop application shell.
 **Done when:** the stack is recorded in a spec, Tauri boots a desktop window running the Vite dev server, and cargo build succeeds.
 spec [0001](../specs/0001-stack-architecture/index.md) · code in src/ and src-tauri/
 - [x] Decide the stack (spec): `/architect stack & architecture`
 - [x] Scaffold from the decision: `/develop stack & architecture`
-- [ ] Verify it: `/check verify stack & architecture`
-- [ ] Test it: `/test stack & architecture`
+- [x] Verify it: `/check verify stack & architecture`
 
 ### 2. Coding standards & tooling
 Capture conventions, then configure TypeScript checks, Rust clippy, formatting, and test commands from the scaffold.
 **Done when:** root `AGENTS.md` reflects the project stack, and typecheck, lint, and formatting run clean.
 - [ ] Capture conventions and tooling choices: `/audit`
 
-### 3. Data model · needs a decision
-Define core Rust and TypeScript entities for Track, Album, Artist, Playlist, and PlaybackState, plus SQLite schema and migrations.
+### 3. Design system & navigation shell · needs a decision
+Extract the Midnight styling tokens and build the application shell with sidebar navigation, view switching state, and player footer container.
+**Done when:** the sidebar items switch the active view container, navigation buttons update, and the dark Midnight theme variables render consistently across all views.
+- [ ] Design it (spec): `/architect design system & navigation shell`
+
+## Phase 1: Clickable UI prototype
+
+### 4. Home & discovery screen · in-progress
+Build the home discovery view with hero showcase banner, playlist recommendation cards, recently played carousel, and popular tracks table.
+**Done when:** clicking Home displays the hero card, curated playlist cards, recently played items, and popular track list with mock data and play button triggers.
+spec [0002](../specs/0002-home-discovery-screen/index.md)
+- [x] Design it (spec): `/architect home & discovery screen`
+- [x] Build it: `/develop home & discovery screen`
+  - [x] Discovery types and mock fixtures (AC-1, AC-6)
+  - [x] Zustand discovery and playback store with simulated timer (AC-2, AC-3, AC-4, AC-8)
+  - [x] Modular Home components HeroBanner, CuratedGrid, RecentCarousel, TrackTable with marquee and fallbacks (AC-1, AC-3, AC-5, AC-7)
+  - [x] Page assembly in Home.tsx and App.tsx shell navigation integration (AC-1, AC-2, AC-8)
+  - [x] Interactive unit and component tests (AC-2, AC-3, AC-4)
+  code in `src/pages/Home.tsx`, `src/components/home/`, `src/store/usePlayerStore.ts`
+- [ ] Verify it: `/check verify home & discovery screen`
+
+### 5. Search & explore screen · needs a decision
+Create the search interface with instant query input, filter category pills, and categorized result cards for tracks, albums, and artists.
+**Done when:** selecting Search opens the search screen, typing filters mock music items by title, artist, or genre, and category chips update visible cards.
+- [ ] Design it (spec): `/architect search & explore screen`
+
+### 6. Your library & folder browser · needs a decision
+Construct the local library overview screen displaying indexed songs table, folder paths list, and folder picker action button.
+**Done when:** selecting Your Library presents the song table with sortable columns, total track count, and a clickable add music folder action card.
+- [ ] Design it (spec): `/architect your library & folder browser`
+
+### 7. Liked songs screen · needs a decision
+Assemble the liked tracks collection view with decorative header banner, track statistics, play all action, and favorited songs list.
+**Done when:** navigating to Liked Songs shows the heart hero banner, total count and duration, with interactive heart buttons that toggle track like states.
+- [ ] Design it (spec): `/architect liked songs screen`
+
+### 8. Playlists & playlist detail · needs a decision
+Display user playlist cards grid, new playlist creation trigger, and dedicated playlist detail view with custom cover, tracklist, and action buttons.
+**Done when:** clicking Playlists renders the playlist collection, clicking a playlist opens its detail view with track list, and new playlist opens a creation prompt.
+- [ ] Design it (spec): `/architect playlists & playlist detail`
+
+### 9. Albums & album detail · needs a decision
+Build the album collection grid with cover art, release year, and detailed album view featuring header metadata, artist link, and numbered tracklist.
+**Done when:** selecting Albums displays the album grid, clicking an album navigates to the album detail layout showing all tracks, durations, and release year.
+- [ ] Design it (spec): `/architect albums & album detail`
+
+### 10. Artists & artist profile · needs a decision
+Present artists in a circular portrait grid with follower counts, along with an artist profile page showing hero banner, top tracks table, and album discography.
+**Done when:** selecting Artists shows artist cards, clicking an artist opens their profile with popular tracks, discography releases, and about blurb.
+- [ ] Design it (spec): `/architect artists & artist profile`
+
+### 11. Queue, lyrics & settings overlays · needs a decision
+Build the slide out now playing queue drawer, timed lyrics overlay modal, and audio preferences settings panel.
+**Done when:** clicking queue or lyrics in the player bar toggles their respective drawers or modals, and settings allows selecting mock audio devices and visualizer styles.
+- [ ] Design it (spec): `/architect queue, lyrics & settings overlays`
+
+## Phase 2: Backend wiring & persistence
+
+### 12. Data model & SQLite storage · needs a decision
+Define core Rust and TypeScript entities for Track, Album, Artist, Playlist, and PlaybackState, with SQLite schema migrations and connection pool.
 **Done when:** database migrations create tables with indices for fast search, and Rust models serialize to TypeScript types cleanly.
-- [ ] Design it (spec): `/architect data model`
+- [ ] Design it (spec): `/architect data model & SQLite storage`
 
-### 4. Design system & UI foundation · needs a decision
-Port the Midnight HTML layout and CSS styling from demo-ui into structured, reusable web components with theme tokens.
-**Done when:** the desktop window renders the Midnight layout (collapsible sidebar, hero showcase, album grid, bottom player bar) with responsive scaling.
-- [ ] Design it (spec): `/architect design system & UI foundation`
+### 13. Core audio playback engine · needs a decision
+Connect the player bar through Tauri IPC to the Rodio audio engine on a dedicated audio thread.
+**Done when:** clicking play loads local audio, sound plays through the output device, playback progress updates the UI bar in real time, and pause, resume, seek, and volume controls work.
+- [ ] Design it (spec): `/architect core audio playback engine`
 
-## Slice 1: Core playback loop
+### 14. Local library scanner & metadata · needs a decision
+Scan music folders in a background worker thread, extract audio tags and embedded artwork with lofty, and persist records into SQLite.
+**Done when:** selecting a music folder recursively finds audio files, saves track tags and album art into SQLite, and populates the library view with real local music.
+- [ ] Design it (spec): `/architect local library scanner & metadata`
 
-### 5. Core playback loop · needs a decision
-Build the thin end to end playback thread from the player bar through Tauri IPC to the Rodio audio engine.
-**Done when:** clicking play loads a local audio file, sound plays through the output device, playback progress updates the UI bar in real time, and pause, resume, seek, and volume controls work.
-- [ ] Design it (spec): `/architect core playback loop`
+### 15. Playlists & favorites persistence · needs a decision
+Wire playlist creation, editing, track reordering, and liking songs to immediate SQLite database persistence.
+**Done when:** creating or editing playlists and clicking hearts updates SQLite records, and changes persist across application restarts.
+- [ ] Design it (spec): `/architect playlists & favorites persistence`
 
-## Slice 2: Local library scanner
-
-### 6. Local library scanner · needs a decision
-Scan music folders in a background thread, extract metadata and embedded cover art using lofty, and persist records to SQLite.
-**Done when:** selecting a music folder recursively finds supported audio files, saves track tags and album art into SQLite, and populates the library view.
-- [ ] Design it (spec): `/architect local library scanner`
-
-## Slice 3: Playlists & favorites
-
-### 7. Playlists & favorites · needs a decision
-Create and manage user playlists, add or remove tracks, and toggle favorite songs with immediate SQLite persistence.
-**Done when:** a user can create a playlist, add songs to it, reorder tracks, and see liked songs marked in the UI.
-- [ ] Design it (spec): `/architect playlists & favorites`
-
-## Slice 4: Library search & filtering
-
-### 8. Library search & filtering · needs a decision
-Filter the music collection instantly by title, artist, or album using indexed SQLite queries with debounced UI input.
-**Done when:** typing in the search box updates the visible track and album list with matching results under fifty milliseconds.
-- [ ] Design it (spec): `/architect library search & filtering`
+### 16. Fast local library search indexing · needs a decision
+Filter the music collection by title, artist, or album using indexed SQLite queries with debounced UI input.
+**Done when:** typing in the search box queries SQLite and updates visible tracks and albums with matching results in under fifty milliseconds.
+- [ ] Design it (spec): `/architect fast local library search indexing`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
-- **Synchronized lyrics**: fetch and display timed lyrics beside the now playing hero · needs a decision
+- **Synchronized lyrics online fetch**: fetch and display timed lyrics from online lyrics providers · needs a decision
 - **Audio equalizer**: multi band graphic equalizer and audio DSP filters in the Rodio pipeline · needs a decision
 - **Operating system media keys**: integrate Windows system media transport controls and global shortcut keys · needs a decision
 - **Mini player overlay**: compact picture in picture floating widget for background desktop listening · needs a decision
