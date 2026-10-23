@@ -22,7 +22,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 9   | Albums & album detail              | Phase 1    | in-progress |
 | 10  | Artists & artist profile           | Phase 1    | in-progress |
 | 11  | Queue, lyrics & settings overlays  | Phase 1    | in-progress |
-| 12  | Now playing fullscreen view        | Phase 1    | planned     |
+| 12  | Now playing fullscreen view        | Phase 1    | in-progress |
 | 13  | Data model & SQLite storage        | Phase 2    | planned     |
 | 14  | Core audio playback engine         | Phase 2    | planned     |
 | 15  | Local library scanner & metadata   | Phase 2    | planned     |
@@ -188,12 +188,22 @@ spec [0010](../specs/0010-queue-lyrics-settings-overlays/index.md)
         code in `src/components/queue/`, `src/components/lyrics/`, `src/components/settings/`, `src/store/useOverlayStore.ts`, `src/store/useSettingsStore.ts`
 - [ ] Verify it: `/check verify queue, lyrics & settings overlays`
 
-### 12. Now playing fullscreen view · needs a decision
+### 12. Now playing fullscreen view · in-progress
 
 Fullscreen immersion view for the active track with enlarged album artwork, full width timeline scrub bar, dedicated playback transport controls, and return navigation to the prior screen.
 **Done when:** clicking the track thumbnail or song title in PlayerFooter opens the fullscreen now playing view without sidebar or bottom player bar, and clicking the return button restores the previous screen.
+spec [0011](../specs/0011-now-playing-fullscreen-view/index.md)
 
-- [ ] Design it (spec): `/architect now playing fullscreen view`
+- [x] Design it (spec): `/architect now playing fullscreen view`
+- [x] Build it: `/develop now playing fullscreen view`
+  - [x] Extended domain models, ambient color types, and persistent user settings (AC-5, AC-14)
+  - [x] Reactive Zustand overlay store extensions and view mode selectors (AC-2, AC-14)
+  - [x] Modular fullscreen subcomponents for header, artwork hero, synchronized lyrics, 720p visualizer, and bottom deck (AC-4, AC-6, AC-7, AC-8, AC-9, AC-10)
+  - [x] NowPlayingFullscreen overlay container with auto hide timers, scoped keyboard listeners, and accessibility dialog trap (AC-2, AC-3, AC-5, AC-8, AC-11, AC-12, AC-13, AC-15)
+  - [x] PlayerFooter entry triggers and root App integration (AC-1, AC-2, AC-13)
+  - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-4, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12, AC-13, AC-14, AC-15)
+        code in `src/components/fullscreen/`, `src/store/useOverlayStore.ts`, `src/types/discovery.ts`, `src/types/overlays.ts`
+- [ ] Verify it: `/check verify now playing fullscreen view`
 
 ## Phase 2: Backend wiring & persistence
 

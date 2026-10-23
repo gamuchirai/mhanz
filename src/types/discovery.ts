@@ -2,6 +2,12 @@
  * Discovery and playback interfaces for the Home screen and player controls.
  */
 
+export interface AmbientColorPalette {
+  primary: string;
+  secondary: string;
+  accent: string;
+}
+
 export interface Track {
   id: string;
   title: string;
@@ -13,6 +19,7 @@ export interface Track {
   isLiked: boolean;
   filePath?: string;
   genre?: string;
+  ambientColors?: AmbientColorPalette;
 }
 
 export interface ShowcaseItem {

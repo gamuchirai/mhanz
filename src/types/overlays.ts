@@ -49,6 +49,11 @@ export interface AudioDevice {
 export type VisualizerStyle = "bars" | "wave" | "glow" | "off";
 
 /**
+ * Fullscreen view center stage display mode.
+ */
+export type FullscreenViewMode = "artwork" | "lyrics" | "visualizer";
+
+/**
  * Persistent user preferences for audio playback and overlays.
  */
 export interface UserSettings {
@@ -59,10 +64,12 @@ export interface UserSettings {
   visualizerStyle: VisualizerStyle;
   notificationsEnabled: boolean;
   lyricsFontSize: "small" | "medium" | "large";
+  fullscreenDefaultView: FullscreenViewMode;
+  fullscreenAutoHideChrome: boolean;
   updatedAt: number;
 }
 
 /**
  * Active application overlay modal or drawer view.
  */
-export type OverlayType = "none" | "queue" | "lyrics" | "settings";
+export type OverlayType = "none" | "queue" | "lyrics" | "settings" | "fullscreen";

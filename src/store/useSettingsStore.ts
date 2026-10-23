@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { AudioDevice, UserSettings, VisualizerStyle } from "../types/overlays";
+import type { AudioDevice, FullscreenViewMode, UserSettings, VisualizerStyle } from "../types/overlays";
 import { defaultUserSettings, mockAudioDevices } from "../data/mockAudioDevices";
 
 const SETTINGS_STORAGE_KEY = "mumhanzi:settings:v1";
@@ -46,6 +46,17 @@ function sanitizeLoadedSettings(raw: unknown): UserSettings {
       ? obj.lyricsFontSize
       : defaultUserSettings.lyricsFontSize;
 
+  const validViewModes: FullscreenViewMode[] = ["artwork", "lyrics", "visualizer"];
+  const fullscreenDefaultView =
+    obj.fullscreenDefaultView && validViewModes.includes(obj.fullscreenDefaultView)
+      ? obj.fullscreenDefaultView
+      : defaultUserSettings.fullscreenDefaultView;
+
+  const fullscreenAutoHideChrome =
+    typeof obj.fullscreenAutoHideChrome === "boolean"
+      ? obj.fullscreenAutoHideChrome
+      : defaultUserSettings.fullscreenAutoHideChrome;
+
   return {
     id: "active-settings",
     outputDeviceId,
@@ -54,6 +65,8 @@ function sanitizeLoadedSettings(raw: unknown): UserSettings {
     visualizerStyle,
     notificationsEnabled,
     lyricsFontSize,
+    fullscreenDefaultView,
+    fullscreenAutoHideChrome,
     updatedAt: typeof obj.updatedAt === "number" ? obj.updatedAt : Date.now(),
   };
 }
@@ -98,6 +111,8 @@ interface SettingsState {
   setVisualizerStyle: (style: VisualizerStyle) => void;
   setNotificationsEnabled: (enabled: boolean) => void;
   setLyricsFontSize: (size: "small" | "medium" | "large") => void;
+  setFullscreenDefaultView: (mode: FullscreenViewMode) => void;
+  setFullscreenAutoHideChrome: (enabled: boolean) => void;
   resetToDefaults: () => void;
 }
 
@@ -180,6 +195,30 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     });
   },
 
+  setFullscreenDefaultView: (mode: FullscreenViewMode) => {
+    set((state) => {
+      const next: UserSettings = {
+        ...state.settings,
+        fullscreenDefaultView: mode,
+        updatedAt: Date.now(),
+      };
+      persistSettings(next);
+      return { settings: next };
+    });
+  },
+
+  setFullscreenAutoHideChrome: (enabled: boolean) => {
+    set((state) => {
+      const next: UserSettings = {
+        ...state.settings,
+        fullscreenAutoHideChrome: enabled,
+        updatedAt: Date.now(),
+      };
+      persistSettings(next);
+      return { settings: next };
+    });
+  },
+
   resetToDefaults: () => {
     const next: UserSettings = {
       ...defaultUserSettings,
@@ -195,3 +234,7 @@ export const useUserSettings = () => useSettingsStore((state) => state.settings)
 export const useAvailableAudioDevices = () => useSettingsStore((state) => state.availableDevices);
 export const useActiveVisualizerStyle = () =>
   useSettingsStore((state) => state.settings.visualizerStyle);
+export const useFullscreenDefaultView = () =>
+  useSettingsStore((state) => state.settings.fullscreenDefaultView);
+export const useFullscreenAutoHideChrome = () =>
+  useSettingsStore((state) => state.settings.fullscreenAutoHideChrome);

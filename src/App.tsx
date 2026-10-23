@@ -10,6 +10,7 @@ import { PlayerFooter } from "./components/player/PlayerFooter";
 import { QueueDrawer } from "./components/queue/QueueDrawer";
 import { LyricsModal } from "./components/lyrics/LyricsModal";
 import { SettingsModal } from "./components/settings/SettingsModal";
+import { NowPlayingFullscreen } from "./components/fullscreen/NowPlayingFullscreen";
 import { useActiveOverlay, useOverlayStore } from "./store/useOverlayStore";
 import { useActivePlaylistId, usePlaylistStore, usePlaylists } from "./store/usePlaylistStore";
 import { useAlbumStore } from "./store/useAlbumStore";
@@ -508,6 +509,7 @@ export function App() {
       )}
       {activeOverlay === "lyrics" && <LyricsModal />}
       {activeOverlay === "settings" && <SettingsModal />}
+      {activeOverlay === "fullscreen" && <NowPlayingFullscreen />}
     </div>
   );
 }

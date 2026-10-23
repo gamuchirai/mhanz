@@ -64,7 +64,10 @@ export function PlayerFooter() {
     >
       {/* Current Track Info */}
       <div style={{ display: "flex", alignItems: "center", gap: "14px", minWidth: 0 }}>
-        <div
+        <button
+          onClick={() => currentTrack && toggleOverlay("fullscreen")}
+          aria-label={currentTrack ? `Open fullscreen view from album cover for ${currentTrack.title}` : "Open fullscreen view"}
+          title="Open fullscreen view"
           style={{
             width: "52px",
             height: "52px",
@@ -73,6 +76,10 @@ export function PlayerFooter() {
             background: defaultBg,
             overflow: "hidden",
             position: "relative",
+            border: 0,
+            padding: 0,
+            cursor: currentTrack ? "pointer" : "default",
+            display: "block",
           }}
         >
           {!imageError && currentTrack?.artworkUrl ? (
@@ -87,12 +94,27 @@ export function PlayerFooter() {
               }}
             />
           ) : null}
-        </div>
+        </button>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <MarqueeText
-            text={currentTrack?.title ?? "No track selected"}
-            style={{ fontSize: "14px", fontWeight: 500, color: "var(--t)" }}
-          />
+          <button
+            onClick={() => currentTrack && toggleOverlay("fullscreen")}
+            aria-label={currentTrack ? `Open fullscreen view from song title for ${currentTrack.title}` : "Open fullscreen view"}
+            title="Open fullscreen view"
+            style={{
+              background: "none",
+              border: 0,
+              padding: 0,
+              textAlign: "left",
+              cursor: currentTrack ? "pointer" : "default",
+              display: "block",
+              width: "100%",
+            }}
+          >
+            <MarqueeText
+              text={currentTrack?.title ?? "No track selected"}
+              style={{ fontSize: "14px", fontWeight: 500, color: "var(--t)" }}
+            />
+          </button>
           <div style={{ fontSize: "12px", color: "var(--m)", marginTop: "1px" }}>
             {currentTrack?.artist ?? "Mumhanzi"}
           </div>
@@ -359,6 +381,26 @@ export function PlayerFooter() {
         >
           <svg className="i" width="18" height="18" aria-hidden="true">
             <use href="#list" />
+          </svg>
+        </button>
+
+        {/* Fullscreen expand button */}
+        <button
+          aria-label="Open fullscreen view"
+          onClick={() => currentTrack && toggleOverlay("fullscreen")}
+          style={{
+            background: "none",
+            border: 0,
+            padding: "8px",
+            color: activeOverlay === "fullscreen" ? "var(--accent)" : "var(--m)",
+            cursor: currentTrack ? "pointer" : "default",
+            display: "grid",
+            borderRadius: "6px",
+          }}
+          title="Fullscreen (expand view)"
+        >
+          <svg className="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
           </svg>
         </button>
       </div>

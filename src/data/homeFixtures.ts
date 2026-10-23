@@ -12,6 +12,11 @@ export const sampleTracks: Track[] = [
     playsCount: 4820000,
     isLiked: true,
     genre: "Indie Pop",
+    ambientColors: {
+      primary: "rgba(162, 79, 90, 0.45)",
+      secondary: "rgba(232, 149, 95, 0.35)",
+      accent: "#f0a982",
+    },
   },
   {
     id: "track-2",
@@ -24,6 +29,11 @@ export const sampleTracks: Track[] = [
     playsCount: 3910000,
     isLiked: false,
     genre: "Indie Pop",
+    ambientColors: {
+      primary: "rgba(79, 70, 229, 0.40)",
+      secondary: "rgba(236, 72, 153, 0.30)",
+      accent: "#e0aaff",
+    },
   },
   {
     id: "track-3",
@@ -36,6 +46,11 @@ export const sampleTracks: Track[] = [
     playsCount: 2840000,
     isLiked: false,
     genre: "Chillwave",
+    ambientColors: {
+      primary: "rgba(20, 184, 166, 0.40)",
+      secondary: "rgba(59, 130, 246, 0.35)",
+      accent: "#5eead4",
+    },
   },
   {
     id: "track-4",
@@ -48,6 +63,11 @@ export const sampleTracks: Track[] = [
     playsCount: 5120000,
     isLiked: false,
     genre: "Acoustic",
+    ambientColors: {
+      primary: "rgba(245, 158, 11, 0.40)",
+      secondary: "rgba(239, 68, 68, 0.30)",
+      accent: "#fde68a",
+    },
   },
   {
     id: "track-5",

@@ -45,5 +45,7 @@ export const defaultUserSettings: UserSettings = {
   visualizerStyle: "bars",
   notificationsEnabled: true,
   lyricsFontSize: "medium",
+  fullscreenDefaultView: "artwork",
+  fullscreenAutoHideChrome: true,
   updatedAt: Date.now(),
 };
