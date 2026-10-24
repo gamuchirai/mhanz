@@ -23,7 +23,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 10  | Artists & artist profile           | Phase 1    | in-progress |
 | 11  | Queue, lyrics & settings overlays  | Phase 1    | in-progress |
 | 12  | Now playing fullscreen view        | Phase 1    | in-progress |
-| 13  | Data model & SQLite storage        | Phase 2    | planned     |
+| 13  | Data model & SQLite storage        | Phase 2    | in-progress |
 | 14  | Core audio playback engine         | Phase 2    | planned     |
 | 15  | Local library scanner & metadata   | Phase 2    | planned     |
 | 16  | Playlists & favorites persistence  | Phase 2    | planned     |
@@ -207,12 +207,21 @@ spec [0011](../specs/0011-now-playing-fullscreen-view/index.md)
 
 ## Phase 2: Backend wiring & persistence
 
-### 13. Data model & SQLite storage · needs a decision
+### 13. Data model & SQLite storage · in-progress
 
 Define core Rust and TypeScript entities for Track, Album, Artist, Playlist, and PlaybackState, with SQLite schema migrations and connection pool.
 **Done when:** database migrations create tables with indices for fast search, and Rust models serialize to TypeScript types cleanly.
+spec [0012](../specs/0012-data-model-sqlite-storage/index.md)
 
-- [ ] Design it (spec): `/architect data model & SQLite storage`
+- [x] Design it (spec): `/architect data model & SQLite storage`
+- [x] Build it: `/develop data model & SQLite storage`
+  - [x] Cargo dependencies, initial SQL migrations, and connection manager with WAL mode (AC-1, AC-2, AC-3, AC-4, AC-5, AC-11)
+  - [x] Rust domain models, DTOs, and error serialization contracts (AC-2, AC-6)
+  - [x] Folder, track, catalog, playlist, and settings repositories (AC-7, AC-8, AC-9, AC-10, AC-12)
+  - [x] Tauri IPC command handlers, capabilities permissions, and app setup lifecycle (AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+  - [x] Frontend TypeScript database service and integration test suite (AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+        code in `src-tauri/src/db/`, `src-tauri/src/commands/db.rs`, `src/services/db.ts`, `src/types/database.ts`
+- [ ] Verify it: `/check verify data model & SQLite storage`
 
 ### 14. Core audio playback engine · needs a decision
 

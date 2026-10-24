@@ -4,7 +4,6 @@ import { useArtistStore } from "../../store/useArtistStore";
 import {
   getArtistGradient,
   getArtistInitials,
-  formatCompactNumber,
 } from "../../utils/avatarUtils";
 
 interface ArtistCardProps {
