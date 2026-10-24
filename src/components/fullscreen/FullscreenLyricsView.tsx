@@ -101,7 +101,7 @@ export function FullscreenLyricsView({
       onWheel={handleUserScroll}
       onTouchMove={handleUserScroll}
       role="region"
-      aria-label="Synchronized lyrics stream"
+      aria-label="Synchronized lyrics"
       style={{
         display: "flex",
         flexDirection: "column",

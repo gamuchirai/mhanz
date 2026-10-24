@@ -188,7 +188,7 @@ describe("Now Playing Fullscreen View", () => {
     });
 
     expect(useOverlayStore.getState().fullscreenViewMode).toBe("lyrics");
-    const lyricsRegion = dlg.getByRole("region", { name: "Synchronized lyrics stream" });
+    const lyricsRegion = dlg.getByRole("region", { name: "Synchronized lyrics" });
     expect(lyricsRegion).toBeInTheDocument();
 
     const lineBtn = dlg.getByRole("button", { name: /Jump to I found a love for me/i });

@@ -66,7 +66,7 @@ export function ArtistPopularTracks({ artistId }: ArtistPopularTracksProps) {
         <span style={{ textAlign: "center" }}>#</span>
         <span />
         <span>Title</span>
-        <span style={{ textAlign: "right" }}>Streams</span>
+        <span style={{ textAlign: "right" }}>Plays</span>
         <span style={{ textAlign: "right" }}>
           <svg className="i" width="14" height="14" aria-hidden="true">
             <path d="M12 6v6l4 2" stroke="currentColor" fill="none" />

@@ -182,7 +182,7 @@ export function ArtistPopularTrackRow({ track, rank, onPlay }: ArtistPopularTrac
           fontVariantNumeric: "tabular-nums",
           whiteSpace: "nowrap",
         }}
-        title={`${track.playCount} streams`}
+        title={`${track.playCount} plays`}
       >
         {formatWithCommas(track.playCount)}
       </div>

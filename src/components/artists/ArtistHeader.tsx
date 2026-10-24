@@ -172,7 +172,7 @@ export function ArtistHeader() {
               }}
             >
               <option value="popularity" style={{ background: "#1c1411", color: "#fff" }}>
-                Popularity (Listeners)
+                Most Played
               </option>
               <option value="name" style={{ background: "#1c1411", color: "#fff" }}>
                 Name

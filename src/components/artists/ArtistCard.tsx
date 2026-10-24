@@ -209,8 +209,8 @@ export function ArtistCard({ artist }: ArtistCardProps) {
           </span>
           {artist.verified && (
             <span
-              title="Verified Artist"
-              aria-label="Verified Artist"
+              title="In Library"
+              aria-label="In Library"
               style={{
                 display: "inline-grid",
                 placeItems: "center",
@@ -236,15 +236,15 @@ export function ArtistCard({ artist }: ArtistCardProps) {
             fontWeight: 400,
           }}
         >
-          {formatCompactNumber(artist.followerCount)} followers
+          {artist.albumIds.length} {artist.albumIds.length === 1 ? "album" : "albums"}
         </span>
       </div>
 
-      {/* Follow / Following Button (AC-1, AC-10) */}
+      {/* Favorite Button (AC-1, AC-10) */}
       <button
         type="button"
         onClick={handleFollowClick}
-        aria-label={artist.isFollowed ? `Following ${artist.name}` : `Follow ${artist.name}`}
+        aria-label={artist.isFollowed ? `Favorited ${artist.name}` : `Favorite ${artist.name}`}
         aria-pressed={artist.isFollowed}
         style={{
           marginTop: "2px",
@@ -279,7 +279,7 @@ export function ArtistCard({ artist }: ArtistCardProps) {
           }
         }}
       >
-        {artist.isFollowed ? "Following" : "Follow"}
+        {artist.isFollowed ? "Favorited" : "Favorite"}
       </button>
     </article>
   );

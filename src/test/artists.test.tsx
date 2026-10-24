@@ -162,12 +162,12 @@ describe("Artists and Artist Profile Screen", () => {
     // Profile hero banner
     expect(screen.getByRole("region", { name: /amina v hero profile/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1, name: "Amina V" })).toBeInTheDocument();
-    expect(screen.getByText(/1,420,500 monthly listeners/i)).toBeInTheDocument();
-    expect(screen.getByText(/Verified Artist/i)).toBeInTheDocument();
+    expect(screen.getByText(/1,420,500 plays/i)).toBeInTheDocument();
+    expect(screen.getByText(/In Library/i)).toBeInTheDocument();
 
     // Action controls
     expect(screen.getByRole("button", { name: /play top tracks by amina v/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /following amina v/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /favorited amina v/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /more artist options/i })).toBeInTheDocument();
   });
 
@@ -308,9 +308,9 @@ describe("Artists and Artist Profile Screen", () => {
     render(<Artists />);
 
     const tadiwaCard = screen.getByRole("article", { name: /artist tadiwa nyoni/i });
-    const followBtn = within(tadiwaCard).getByRole("button", { name: /follow tadiwa nyoni/i });
+    const followBtn = within(tadiwaCard).getByRole("button", { name: /favorite tadiwa nyoni/i });
 
-    expect(followBtn).toHaveTextContent("Follow");
+    expect(followBtn).toHaveTextContent("Favorite");
     const initialFollowers = useArtistStore.getState().getArtistById("artist-tadiwa-nyoni")?.followerCount ?? 0;
 
     // Follow Tadiwa
@@ -318,17 +318,17 @@ describe("Artists and Artist Profile Screen", () => {
       fireEvent.click(followBtn);
     });
 
-    expect(within(tadiwaCard).getByRole("button", { name: /following tadiwa nyoni/i })).toHaveTextContent("Following");
+    expect(within(tadiwaCard).getByRole("button", { name: /favorited tadiwa nyoni/i })).toHaveTextContent("Favorited");
     const updatedFollowers = useArtistStore.getState().getArtistById("artist-tadiwa-nyoni")?.followerCount ?? 0;
     expect(updatedFollowers).toBe(initialFollowers + 1);
 
     // Unfollow Tadiwa
-    const unfollowBtn = within(tadiwaCard).getByRole("button", { name: /following tadiwa nyoni/i });
+    const unfollowBtn = within(tadiwaCard).getByRole("button", { name: /favorited tadiwa nyoni/i });
     act(() => {
       fireEvent.click(unfollowBtn);
     });
 
-    expect(within(tadiwaCard).getByRole("button", { name: /follow tadiwa nyoni/i })).toHaveTextContent("Follow");
+    expect(within(tadiwaCard).getByRole("button", { name: /favorite tadiwa nyoni/i })).toHaveTextContent("Favorite");
     expect(useArtistStore.getState().getArtistById("artist-tadiwa-nyoni")?.followerCount).toBe(initialFollowers);
   });
 

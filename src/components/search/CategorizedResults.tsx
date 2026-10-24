@@ -14,12 +14,12 @@ function formatDuration(seconds: number): string {
 
 function formatListeners(count: number): string {
   if (count >= 1000000) {
-    return `${(count / 1000000).toFixed(1)}M monthly listeners`;
+    return `${(count / 1000000).toFixed(1)}M plays`;
   }
   if (count >= 1000) {
-    return `${(count / 1000).toFixed(0)}K monthly listeners`;
+    return `${(count / 1000).toFixed(0)}K plays`;
   }
-  return `${count} listeners`;
+  return `${count} plays`;
 }
 
 interface CategorizedResultsProps {

@@ -183,7 +183,7 @@ export function ArtistProfileBanner({ artist }: ArtistProfileBannerProps) {
                   textTransform: "uppercase",
                 }}
               >
-                <span>✓</span> Verified Artist
+                <span>✓</span> In Library
               </span>
             ) : (
               <span
@@ -229,7 +229,7 @@ export function ArtistProfileBanner({ artist }: ArtistProfileBannerProps) {
             {artist.name}
           </h1>
 
-          {/* Listener & Follower Statistics */}
+          {/* Library & Play Statistics */}
           <div
             style={{
               display: "flex",
@@ -241,10 +241,12 @@ export function ArtistProfileBanner({ artist }: ArtistProfileBannerProps) {
             }}
           >
             <span style={{ color: "var(--t)", fontWeight: 500 }}>
-              {formatWithCommas(artist.monthlyListeners)} monthly listeners
+              {artist.albumIds.length} {artist.albumIds.length === 1 ? "album" : "albums"}
             </span>
             <span>•</span>
-            <span>{formatWithCommas(artist.followerCount)} followers</span>
+            <span>{artist.popularTrackIds.length} tracks</span>
+            <span>•</span>
+            <span>{formatWithCommas(artist.monthlyListeners)} plays</span>
           </div>
 
           {/* Action Controls Row */}
@@ -286,12 +288,12 @@ export function ArtistProfileBanner({ artist }: ArtistProfileBannerProps) {
               <span>Play</span>
             </button>
 
-            {/* Follow / Following Toggle Button (AC-10) */}
+            {/* Favorite Toggle Button (AC-10) */}
             <button
               type="button"
               onClick={() => toggleFollowArtist(artist.id)}
               aria-label={
-                artist.isFollowed ? `Following ${artist.name}` : `Follow ${artist.name}`
+                artist.isFollowed ? `Favorited ${artist.name}` : `Favorite ${artist.name}`
               }
               aria-pressed={artist.isFollowed}
               style={{
@@ -326,7 +328,7 @@ export function ArtistProfileBanner({ artist }: ArtistProfileBannerProps) {
                 }
               }}
             >
-              {artist.isFollowed ? "Following" : "Follow"}
+              {artist.isFollowed ? "Favorited" : "Favorite"}
             </button>
 
             {/* Options Menu Button */}

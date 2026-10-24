@@ -90,16 +90,16 @@ export function ArtistBioCard({ artist }: ArtistBioCardProps) {
             <div style={{ fontSize: "22px", fontWeight: 700, color: "var(--t)" }}>
               {formatWithCommas(artist.monthlyListeners)}
             </div>
-            <div style={{ fontSize: "12px", color: "var(--m)" }}>Monthly Listeners</div>
+            <div style={{ fontSize: "12px", color: "var(--m)" }}>Total Plays</div>
           </div>
 
           <div style={{ height: "1px", background: "rgba(255, 255, 255, 0.06)" }} />
 
           <div>
             <div style={{ fontSize: "20px", fontWeight: 700, color: "var(--t)" }}>
-              {formatWithCommas(artist.followerCount)}
+              {artist.albumIds.length}
             </div>
-            <div style={{ fontSize: "12px", color: "var(--m)" }}>Followers</div>
+            <div style={{ fontSize: "12px", color: "var(--m)" }}>Albums</div>
           </div>
         </div>
       </div>
