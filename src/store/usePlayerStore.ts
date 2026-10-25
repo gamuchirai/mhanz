@@ -9,6 +9,18 @@ import {
   sampleTracks,
   showcaseItem,
 } from "../data/homeFixtures";
+import {
+  audioPause,
+  audioPlayTrack,
+  audioResume,
+  audioSeek,
+  audioSetMuted,
+  audioSetVolume,
+  audioStop,
+  listenAudioPosition,
+  listenAudioStateChanged,
+  listenAudioTrackEnded,
+} from "../services/audio";
 
 let queueIdCounter = 0;
 function createUniqueQueueId(prefix = "queue"): string {
@@ -144,10 +156,13 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     }));
 
     startPlaybackTimer(get);
+
+    const filePath = track.filePath || `mock://${track.id}.mp3`;
+    audioPlayTrack(track.id, filePath, 0, track.durationSeconds).catch(() => {});
   },
 
   togglePlayPause: () => {
-    const { isPlaying, currentTrack, queue } = get();
+    const { isPlaying, currentTrack, queue, currentTime } = get();
     if (!currentTrack && queue.length > 0) {
       get().playTrack(queue[0]);
       return;
@@ -157,8 +172,15 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
 
     if (nextPlaying) {
       startPlaybackTimer(get);
+      if (currentTrack) {
+        audioResume().catch(() => {
+          const filePath = currentTrack.filePath || `mock://${currentTrack.id}.mp3`;
+          audioPlayTrack(currentTrack.id, filePath, currentTime, currentTrack.durationSeconds).catch(() => {});
+        });
+      }
     } else {
       stopPlaybackTimer();
+      audioPause().catch(() => {});
     }
   },
 
@@ -168,6 +190,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
 
     if (repeatMode === "one") {
       set({ currentTime: 0, isPlaying: true });
+      audioSeek(0).catch(() => {});
       return;
     }
 
@@ -184,6 +207,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       } else {
         set({ isPlaying: false, currentTime: 0 });
         stopPlaybackTimer();
+        audioStop().catch(() => {});
         return;
       }
     }
@@ -196,6 +220,9 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       isPlaying: true,
     });
     startPlaybackTimer(get);
+
+    const filePath = nextTrackItem.filePath || `mock://${nextTrackItem.id}.mp3`;
+    audioPlayTrack(nextTrackItem.id, filePath, 0, nextTrackItem.durationSeconds).catch(() => {});
   },
 
   previousTrack: () => {
@@ -204,17 +231,22 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
 
     if (currentTime > 3) {
       set({ currentTime: 0 });
+      audioSeek(0).catch(() => {});
       return;
     }
 
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : queue.length - 1;
+    const prevTrackItem = queue[prevIndex];
     set({
       currentIndex: prevIndex,
-      currentTrack: queue[prevIndex],
+      currentTrack: prevTrackItem,
       currentTime: 0,
       isPlaying: true,
     });
     startPlaybackTimer(get);
+
+    const filePath = prevTrackItem.filePath || `mock://${prevTrackItem.id}.mp3`;
+    audioPlayTrack(prevTrackItem.id, filePath, 0, prevTrackItem.durationSeconds).catch(() => {});
   },
 
   seekTo: (seconds: number) => {
@@ -222,15 +254,19 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     if (!currentTrack) return;
     const clamped = Math.max(0, Math.min(seconds, currentTrack.durationSeconds));
     set({ currentTime: clamped });
+    audioSeek(clamped).catch(() => {});
   },
 
   setVolume: (vol: number) => {
     const clamped = Math.max(0, Math.min(vol, 1));
     set({ volume: clamped, isMuted: clamped === 0 });
+    audioSetVolume(clamped).catch(() => {});
   },
 
   toggleMute: () => {
-    set((state) => ({ isMuted: !state.isMuted }));
+    const nextMuted = !get().isMuted;
+    set({ isMuted: nextMuted });
+    audioSetMuted(nextMuted).catch(() => {});
   },
 
   toggleShuffle: () => {
@@ -452,6 +488,9 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     }));
 
     startPlaybackTimer(get);
+
+    const filePath = targetItem.track.filePath || `mock://${targetItem.track.id}.mp3`;
+    audioPlayTrack(targetItem.track.id, filePath, 0, targetItem.track.durationSeconds).catch(() => {});
   },
 
   seekToLyricLine: (timeSeconds: number) => {
@@ -459,8 +498,68 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     if (!currentTrack) return;
     const clamped = Math.max(0, Math.min(timeSeconds, currentTrack.durationSeconds));
     set({ currentTime: clamped });
+    audioSeek(clamped).catch(() => {});
   },
 }));
+
+let audioUnlisteners: Array<() => void> = [];
+
+/**
+ * Initializes listeners bridging native audio engine events to usePlayerStore.
+ */
+export function initPlayerAudioSync(): () => void {
+  cleanupPlayerAudioSync();
+
+  const p1 = listenAudioPosition((pos) => {
+    const state = usePlayerStore.getState();
+    if (state.currentTrack && state.currentTrack.id === pos.track_id) {
+      usePlayerStore.setState({ currentTime: pos.position_seconds });
+    }
+  });
+
+  const p2 = listenAudioTrackEnded((event) => {
+    if (event.completed) {
+      usePlayerStore.getState().nextTrack();
+    }
+  });
+
+  const p3 = listenAudioStateChanged((audioState) => {
+    const state = usePlayerStore.getState();
+    if (audioState.status === "playing" && !state.isPlaying) {
+      usePlayerStore.setState({ isPlaying: true });
+    } else if (
+      (audioState.status === "paused" || audioState.status === "stopped") &&
+      state.isPlaying
+    ) {
+      usePlayerStore.setState({ isPlaying: false });
+    }
+  });
+
+  Promise.all([p1, p2, p3]).then((unlisteners) => {
+    audioUnlisteners = unlisteners;
+  });
+
+  return cleanupPlayerAudioSync;
+}
+
+/**
+ * Cleans up registered audio event unlisteners.
+ */
+export function cleanupPlayerAudioSync(): void {
+  audioUnlisteners.forEach((unlisten) => {
+    try {
+      unlisten();
+    } catch {
+      // safe
+    }
+  });
+  audioUnlisteners = [];
+}
+
+// Auto-initialize audio listeners in browser/desktop environment
+if (typeof window !== "undefined") {
+  initPlayerAudioSync();
+}
 
 // Typed selector hooks for performance optimization
 export const useCurrentTrack = () => usePlayerStore((state) => state.currentTrack);

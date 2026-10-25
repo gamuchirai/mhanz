@@ -2,6 +2,9 @@
 
 use tauri::{Emitter, Manager};
 
+use std::sync::Arc;
+
+pub mod audio;
 pub mod commands;
 pub mod db;
 
@@ -23,7 +26,14 @@ pub fn run() {
                 let _ = app.emit("db:corrupt-backup-restored", ());
             }
 
-            app.manage(db::DbState::new(db_manager));
+            let db_mgr_arc = Arc::new(db_manager);
+
+            let audio_engine = audio::AudioEngine::new();
+            audio_engine.set_app_handle(app.handle().clone());
+            audio_engine.set_db_manager(db_mgr_arc.clone());
+
+            app.manage(db::DbState(db_mgr_arc));
+            app.manage(audio::AudioState::new(audio_engine));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -49,6 +59,14 @@ pub fn run() {
             commands::db::db_reorder_playlist_tracks,
             commands::db::db_get_setting,
             commands::db::db_set_setting,
+            commands::audio::audio_play_track,
+            commands::audio::audio_pause,
+            commands::audio::audio_resume,
+            commands::audio::audio_stop,
+            commands::audio::audio_seek,
+            commands::audio::audio_set_volume,
+            commands::audio::audio_set_muted,
+            commands::audio::audio_get_state,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -24,10 +24,11 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 11  | Queue, lyrics & settings overlays  | Phase 1    | in-progress |
 | 12  | Now playing fullscreen view        | Phase 1    | in-progress |
 | 13  | Data model & SQLite storage        | Phase 2    | in-progress |
-| 14  | Core audio playback engine         | Phase 2    | planned     |
-| 15  | Local library scanner & metadata   | Phase 2    | planned     |
-| 16  | Playlists & favorites persistence  | Phase 2    | planned     |
-| 17  | Fast local library search indexing | Phase 2    | planned     |
+| 14  | Core audio playback engine         | Phase 2    | in-progress |
+| 15  | Local library scanner & metadata   | Phase 2    | in-progress |
+| 16  | Playlists & favorites persistence  | Phase 2    | in-progress |
+| 17  | Fast local library search indexing | Phase 2    | in-progress |
+| 18  | Desktop UI responsiveness          | Foundation | in-progress |
 
 ## Foundations
 
@@ -56,6 +57,20 @@ Extract the Midnight styling tokens and build the application shell with sidebar
 **Done when:** the sidebar items switch the active view container, navigation buttons update, and the dark Midnight theme variables render consistently across all views.
 
 - [ ] Design it (spec): `/architect design system & navigation shell`
+
+### 18. Desktop UI responsiveness · in-progress
+
+Standardize desktop window responsiveness and interaction performance across all pages and components with Tailwind CSS v4, collapsible navigation, virtualized tables, and isolated playback timer state.
+**Done when:** the desktop window resizes fluidly down to 640px by 480px without layout breakage, sidebar collapses to a 68px icon rail under 1024px, player footer adapts below 900px, track tables virtualize smoothly at 60 FPS via @tanstack/react-virtual, and audio timer ticks do not trigger whole page re renders.
+spec [0017](../specs/0017-desktop-ui-responsiveness/index.md)
+
+- [x] Design it (spec): `/architect desktop UI responsiveness`
+- [ ] Build it: `/develop desktop UI responsiveness`
+  - [ ] Tauri window boundaries and responsive App shell with 68px icon rail navigation (AC-1, AC-2, AC-8, AC-9)
+  - [ ] Compact PlayerFooter deck with volume popover and isolated scrubber timer selectors (AC-3, AC-7, AC-8, AC-9)
+  - [ ] Progressive column hiding and virtualized song tables using @tanstack/react-virtual (AC-4, AC-6, AC-9)
+  - [ ] Fluid auto fill card grids and page container Tailwind v4 responsive styling (AC-5, AC-8, AC-9)
+- [ ] Verify it: `/check verify desktop UI responsiveness`
 
 ## Phase 1: Clickable UI prototype
 
@@ -223,33 +238,65 @@ spec [0012](../specs/0012-data-model-sqlite-storage/index.md)
         code in `src-tauri/src/db/`, `src-tauri/src/commands/db.rs`, `src/services/db.ts`, `src/types/database.ts`
 - [ ] Verify it: `/check verify data model & SQLite storage`
 
-### 14. Core audio playback engine · needs a decision
+### 14. Core audio playback engine · in-progress
 
 Connect the player bar through Tauri IPC to the Rodio audio engine on a dedicated audio thread.
 **Done when:** clicking play loads local audio, sound plays through the output device, playback progress updates the UI bar in real time, and pause, resume, seek, and volume controls work.
+spec [0013](../specs/0013-core-audio-playback-engine/index.md)
 
-- [ ] Design it (spec): `/architect core audio playback engine`
+- [x] Design it (spec): `/architect core audio playback engine`
+- [x] Build it: `/develop core audio playback engine`
+  - [x] Cargo Rodio dependency, audio domain models, and thread safe AudioEngine container (AC-1, AC-2, AC-8)
+  - [x] Format validation, audio playback, seeking, and transport control command handlers (AC-3, AC-4, AC-5, AC-6, AC-10)
+  - [x] Background progress timer thread, track completion monitor, and SQLite play count milestone updates (AC-7, AC-9, AC-11)
+  - [x] Frontend AudioService with browser mock fallback and usePlayerStore real time IPC integration (AC-12)
+  - [x] Rust unit test suite and Vitest frontend integration tests (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+        code in `src-tauri/src/audio/`, `src-tauri/src/commands/audio.rs`, `src/services/audio.ts`, `src/types/audio.ts`, `src/store/usePlayerStore.ts`
+- [x] Verify it: `/check verify core audio playback engine`
 
-### 15. Local library scanner & metadata · needs a decision
+### 15. Local library scanner & metadata · in-progress
 
 Scan music folders in a background worker thread, extract audio tags and embedded artwork with lofty, and persist records into SQLite.
 **Done when:** selecting a music folder recursively finds audio files, saves track tags and album art into SQLite, and populates the library view with real local music.
+spec [0016](../specs/0016-local-library-scanner-metadata/index.md)
 
-- [ ] Design it (spec): `/architect local library scanner & metadata`
+- [x] Design it (spec): `/architect local library scanner & metadata`
+- [ ] Build it: `/develop local library scanner & metadata`
+  - [ ] Cargo dependencies lofty, walkdir, and rayon with recursive discovery and in memory differential check (AC-1, AC-2, AC-3, AC-9)
+  - [ ] Lofty metadata parsing, tag fallbacks, and SHA256 deduplicated cover art disk caching (AC-3, AC-4, AC-5, AC-10)
+  - [ ] Catalog reconciliation, atomic upsert persistence, chunked transactions, and cancellation safe pruning (AC-6, AC-7, AC-8)
+  - [ ] Scanner service coordinator with worker threads, busy rejection, and throttled Tauri progress events (AC-10, AC-11)
+  - [ ] Frontend scanner client service and useLibraryStore integration with live scanning feedback and track table refresh (AC-11, AC-12)
+- [ ] Verify it: `/check verify local library scanner & metadata`
 
-### 16. Playlists & favorites persistence · needs a decision
+### 16. Playlists & favorites persistence · in-progress
 
 Wire playlist creation, editing, track reordering, and liking songs to immediate SQLite database persistence.
 **Done when:** creating or editing playlists and clicking hearts updates SQLite records, and changes persist across application restarts.
+spec [0015](../specs/0015-playlists-favorites-persistence/index.md)
 
-- [ ] Design it (spec): `/architect playlists & favorites persistence`
+- [x] Design it (spec): `/architect playlists & favorites persistence`
+- [ ] Build it: `/develop playlists & favorites persistence`
+  - [ ] Schema migration and Rust backend persistence: Migration V002 schema additions, updated repository methods, transactional container seeding, and Tauri IPC command contracts (AC-1, AC-2, AC-3, AC-4, AC-8)
+  - [ ] Centralized favorite synchronization: Shared coordinator service with in flight request serialization, instant SQLite persistence, and cross store heart state sync (AC-1, AC-9, AC-10, AC-11)
+  - [ ] Frontend playlist and liked songs stores: SQLite hydration on boot, lazy detail fetching, optimistic CRUD, and atomic drag reordering (AC-5, AC-6, AC-7, AC-8)
+  - [ ] Playback context coordination and test suite: Player store context cleanup on playlist deletion, optimistic rollback handling, and comprehensive unit and integration tests (AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+- [ ] Verify it: `/check verify playlists & favorites persistence`
 
-### 17. Fast local library search indexing · needs a decision
+### 17. Fast local library search indexing · in-progress
 
 Filter the music collection by title, artist, or album using indexed SQLite queries with debounced UI input.
 **Done when:** typing in the search box queries SQLite and updates visible tracks and albums with matching results in under fifty milliseconds.
+spec [0014](../specs/0014-fast-local-library-search-indexing/index.md)
 
-- [ ] Design it (spec): `/architect fast local library search indexing`
+- [x] Design it (spec): `/architect fast local library search indexing`
+- [ ] Build it: `/develop fast local library search indexing`
+  - [ ] rusqlite full extension dependency and V002 search index migration with B Tree locator table and targeted triggers (AC-1, AC-2, AC-3, AC-4, AC-5)
+  - [ ] Rust search repository with query sanitization, tokenization, BM25 scoring, exact match boosting, and dynamic genre aggregation (AC-6, AC-7, AC-8, AC-9, AC-10)
+  - [ ] Tauri IPC command db_search_library, client service helper, and frontend model adapters (AC-7, AC-11, AC-17)
+  - [ ] Zustand search store wiring with debounced IPC queries, monotonic request tokens, and badge count preservation (AC-12, AC-13, AC-14, AC-16)
+  - [ ] Search UI playlist filter pill and playlist card grid integration with queue playback (AC-14, AC-15)
+- [ ] Verify it: `/check verify fast local library search indexing`
 
 ## Deferred
 
