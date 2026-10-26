@@ -13,12 +13,7 @@ export interface LikedTrack {
   dateLiked: string;
 }
 
-export type LikedSortColumn =
-  | "title"
-  | "artist"
-  | "album"
-  | "durationSeconds"
-  | "dateLiked";
+export type LikedSortColumn = "title" | "artist" | "album" | "durationSeconds" | "dateLiked";
 
 export type SortDirection = "asc" | "desc";
 

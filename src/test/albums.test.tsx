@@ -126,7 +126,9 @@ describe("Albums and Album Detail Screen", () => {
 
     // In detail view, All Albums back button appears
     expect(screen.getByRole("button", { name: /back to all albums/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /timeless vibrations/i, level: 1 })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /timeless vibrations/i, level: 1 })
+    ).toBeInTheDocument();
     expect(screen.getByText(/midnight soundworks/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /play all/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /shuffle/i })).toBeInTheDocument();
@@ -142,14 +144,18 @@ describe("Albums and Album Detail Screen", () => {
     const card = screen.getByRole("article", { name: /timeless vibrations/i });
     fireEvent.click(card);
 
-    expect(screen.getByRole("heading", { name: /timeless vibrations/i, level: 1 })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /timeless vibrations/i, level: 1 })
+    ).toBeInTheDocument();
 
     // Click back button
     const backBtn = screen.getByRole("button", { name: /back to all albums/i });
     fireEvent.click(backBtn);
 
     // Back in overview grid, search query "Amina" is preserved
-    const restoredInput = screen.getByPlaceholderText(/search albums or artists\.\.\./i) as HTMLInputElement;
+    const restoredInput = screen.getByPlaceholderText(
+      /search albums or artists\.\.\./i
+    ) as HTMLInputElement;
     expect(restoredInput.value).toBe("Amina");
     expect(screen.getByRole("article", { name: /timeless vibrations/i })).toBeInTheDocument();
   });
@@ -250,7 +256,9 @@ describe("Albums and Album Detail Screen", () => {
     fireEvent.click(favBtn);
 
     expect(useAlbumStore.getState().favoriteAlbumIds).toContain("album-2");
-    expect(screen.getByRole("button", { name: /remove album from favorites/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /remove album from favorites/i })
+    ).toBeInTheDocument();
 
     // Click again to unfavorite
     fireEvent.click(screen.getByRole("button", { name: /remove album from favorites/i }));

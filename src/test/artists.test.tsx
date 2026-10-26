@@ -193,7 +193,9 @@ describe("Artists and Artist Profile Screen", () => {
     });
 
     // Returned to grid with search query preserved
-    const restoredInput = screen.getByRole("textbox", { name: /search artists/i }) as HTMLInputElement;
+    const restoredInput = screen.getByRole("textbox", {
+      name: /search artists/i,
+    }) as HTMLInputElement;
     expect(restoredInput.value).toBe("Amina");
     expect(screen.getByText("Amina V")).toBeInTheDocument();
   });
@@ -251,9 +253,15 @@ describe("Artists and Artist Profile Screen", () => {
     expect(popularSection).toBeInTheDocument();
 
     // Verify top 5 tracks are rendered initially
-    expect(within(popularSection).getByRole("row", { name: /popular track 1\. solitary horizon/i })).toBeInTheDocument();
-    expect(within(popularSection).getByRole("row", { name: /popular track 5\. dusk whispers/i })).toBeInTheDocument();
-    expect(within(popularSection).queryByRole("row", { name: /popular track 6\. neon safari/i })).not.toBeInTheDocument();
+    expect(
+      within(popularSection).getByRole("row", { name: /popular track 1\. solitary horizon/i })
+    ).toBeInTheDocument();
+    expect(
+      within(popularSection).getByRole("row", { name: /popular track 5\. dusk whispers/i })
+    ).toBeInTheDocument();
+    expect(
+      within(popularSection).queryByRole("row", { name: /popular track 6\. neon safari/i })
+    ).not.toBeInTheDocument();
 
     // Click Show More
     const showMoreBtn = screen.getByRole("button", { name: /show more popular songs/i });
@@ -262,8 +270,12 @@ describe("Artists and Artist Profile Screen", () => {
     });
 
     // Now 10 tracks are shown
-    expect(within(popularSection).getByRole("row", { name: /popular track 6\. neon safari/i })).toBeInTheDocument();
-    expect(within(popularSection).getByRole("row", { name: /popular track 10\. midnight prelude/i })).toBeInTheDocument();
+    expect(
+      within(popularSection).getByRole("row", { name: /popular track 6\. neon safari/i })
+    ).toBeInTheDocument();
+    expect(
+      within(popularSection).getByRole("row", { name: /popular track 10\. midnight prelude/i })
+    ).toBeInTheDocument();
 
     // Toggle button changes to Show Less
     const showLessBtn = screen.getByRole("button", { name: /show fewer popular songs/i });
@@ -274,7 +286,9 @@ describe("Artists and Artist Profile Screen", () => {
     });
 
     // Collapsed back to 5
-    expect(within(popularSection).queryByRole("row", { name: /popular track 6\. neon safari/i })).not.toBeInTheDocument();
+    expect(
+      within(popularSection).queryByRole("row", { name: /popular track 6\. neon safari/i })
+    ).not.toBeInTheDocument();
   });
 
   it("popular track rows support playing and liking tracks (AC-9)", () => {
@@ -311,15 +325,19 @@ describe("Artists and Artist Profile Screen", () => {
     const followBtn = within(tadiwaCard).getByRole("button", { name: /favorite tadiwa nyoni/i });
 
     expect(followBtn).toHaveTextContent("Favorite");
-    const initialFollowers = useArtistStore.getState().getArtistById("artist-tadiwa-nyoni")?.followerCount ?? 0;
+    const initialFollowers =
+      useArtistStore.getState().getArtistById("artist-tadiwa-nyoni")?.followerCount ?? 0;
 
     // Follow Tadiwa
     act(() => {
       fireEvent.click(followBtn);
     });
 
-    expect(within(tadiwaCard).getByRole("button", { name: /favorited tadiwa nyoni/i })).toHaveTextContent("Favorited");
-    const updatedFollowers = useArtistStore.getState().getArtistById("artist-tadiwa-nyoni")?.followerCount ?? 0;
+    expect(
+      within(tadiwaCard).getByRole("button", { name: /favorited tadiwa nyoni/i })
+    ).toHaveTextContent("Favorited");
+    const updatedFollowers =
+      useArtistStore.getState().getArtistById("artist-tadiwa-nyoni")?.followerCount ?? 0;
     expect(updatedFollowers).toBe(initialFollowers + 1);
 
     // Unfollow Tadiwa
@@ -328,8 +346,12 @@ describe("Artists and Artist Profile Screen", () => {
       fireEvent.click(unfollowBtn);
     });
 
-    expect(within(tadiwaCard).getByRole("button", { name: /favorite tadiwa nyoni/i })).toHaveTextContent("Favorite");
-    expect(useArtistStore.getState().getArtistById("artist-tadiwa-nyoni")?.followerCount).toBe(initialFollowers);
+    expect(
+      within(tadiwaCard).getByRole("button", { name: /favorite tadiwa nyoni/i })
+    ).toHaveTextContent("Favorite");
+    expect(useArtistStore.getState().getArtistById("artist-tadiwa-nyoni")?.followerCount).toBe(
+      initialFollowers
+    );
   });
 
   it("renders procedural gradient avatar fallback when avatar is missing or fails (AC-11)", () => {

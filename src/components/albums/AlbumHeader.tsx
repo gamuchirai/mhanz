@@ -152,9 +152,7 @@ export function AlbumHeader() {
               boxSizing: "border-box",
             }}
           >
-            <span style={{ fontSize: "12px", color: "var(--m)", whiteSpace: "nowrap" }}>
-              Sort:
-            </span>
+            <span style={{ fontSize: "12px", color: "var(--m)", whiteSpace: "nowrap" }}>Sort:</span>
             <select
               value={sortBy}
               onChange={(e) => setSort(e.target.value as AlbumSortOption)}

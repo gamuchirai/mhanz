@@ -27,9 +27,7 @@ export function AlbumCard({ album }: AlbumCardProps) {
         gap: "12px",
         padding: "12px",
         borderRadius: "14px",
-        background: isHovered
-          ? "rgba(255, 255, 255, 0.05)"
-          : "rgba(255, 255, 255, 0.02)",
+        background: isHovered ? "rgba(255, 255, 255, 0.05)" : "rgba(255, 255, 255, 0.02)",
         border: isHovered
           ? "1px solid rgba(240, 169, 130, 0.25)"
           : "1px solid rgba(255, 255, 255, 0.04)",

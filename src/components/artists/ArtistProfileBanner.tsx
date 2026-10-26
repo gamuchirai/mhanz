@@ -1,11 +1,7 @@
 import { useState } from "react";
 import type { Artist } from "../../types/artists";
 import { useArtistStore } from "../../store/useArtistStore";
-import {
-  getArtistGradient,
-  getArtistInitials,
-  formatWithCommas,
-} from "../../utils/avatarUtils";
+import { getArtistGradient, getArtistInitials, formatWithCommas } from "../../utils/avatarUtils";
 
 interface ArtistProfileBannerProps {
   artist: Artist;
@@ -399,7 +395,9 @@ export function ArtistProfileBanner({ artist }: ArtistProfileBannerProps) {
                       borderRadius: "6px",
                       cursor: "pointer",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)")}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)")
+                    }
                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                   >
                     Play Artist Radio
@@ -421,7 +419,9 @@ export function ArtistProfileBanner({ artist }: ArtistProfileBannerProps) {
                       borderRadius: "6px",
                       cursor: "pointer",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)")}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)")
+                    }
                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                   >
                     Copy Artist Link

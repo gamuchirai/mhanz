@@ -16,19 +16,7 @@ export function Playlists() {
     <main
       role="main"
       aria-label="Playlists screen"
-      style={{
-        gridColumn: 2,
-        gridRow: 1,
-        minWidth: 0,
-        overflowY: "auto",
-        overflowX: "hidden",
-        padding: "24px 32px 32px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "24px",
-        background:
-          "radial-gradient(1000px 480px at 60% 0, rgba(240, 169, 130, 0.12), transparent 70%), #110c0a",
-      }}
+      className="min-w-0 h-full overflow-y-auto overflow-x-hidden p-6 max-lg:p-4 max-sm:p-3 flex flex-col gap-6 bg-[radial-gradient(1000px_480px_at_60%_0,rgba(240,169,130,0.12),transparent_70%)] bg-[#110c0a]"
     >
       {/* Overview Grid or Detail Layout */}
       {!activePlaylist ? (

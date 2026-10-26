@@ -7,11 +7,7 @@ interface FullscreenArtworkProps {
   onToggleLike: () => void;
 }
 
-export function FullscreenArtwork({
-  track,
-  isLiked,
-  onToggleLike,
-}: FullscreenArtworkProps) {
+export function FullscreenArtwork({ track, isLiked, onToggleLike }: FullscreenArtworkProps) {
   const [imageError, setImageError] = useState(false);
 
   const fallbackGradient =
@@ -39,8 +35,7 @@ export function FullscreenArtwork({
           borderRadius: "20px",
           overflow: "hidden",
           position: "relative",
-          boxShadow:
-            "0 24px 60px rgba(0, 0, 0, 0.65), 0 0 50px rgba(240, 169, 130, 0.18)",
+          boxShadow: "0 24px 60px rgba(0, 0, 0, 0.65), 0 0 50px rgba(240, 169, 130, 0.18)",
           border: "1px solid rgba(255, 255, 255, 0.12)",
           background: fallbackGradient,
           display: "grid",
@@ -133,9 +128,7 @@ export function FullscreenArtwork({
             left: "calc(100% + 12px)",
             top: "50%",
             transform: "translateY(-50%)",
-            background: isLiked
-              ? "rgba(240, 169, 130, 0.15)"
-              : "rgba(255, 255, 255, 0.06)",
+            background: isLiked ? "rgba(240, 169, 130, 0.15)" : "rgba(255, 255, 255, 0.06)",
             border: "1px solid rgba(255, 255, 255, 0.12)",
             borderRadius: "50%",
             width: "34px",

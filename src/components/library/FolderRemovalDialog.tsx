@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  useFolderPendingRemoval,
-  useLibraryStore,
-} from "../../store/useLibraryStore";
+import { useFolderPendingRemoval, useLibraryStore } from "../../store/useLibraryStore";
 
 export function FolderRemovalDialog() {
   const folder = useFolderPendingRemoval();
@@ -98,15 +95,14 @@ export function FolderRemovalDialog() {
             >
               Remove Monitored Folder
             </h2>
-            <div style={{ fontSize: "12px", color: "var(--m)" }}>
-              {folder.displayName}
-            </div>
+            <div style={{ fontSize: "12px", color: "var(--m)" }}>{folder.displayName}</div>
           </div>
         </div>
 
         <p style={{ margin: 0, fontSize: "13px", color: "var(--m)", lineHeight: 1.5 }}>
-          Are you sure you want to remove <strong style={{ color: "var(--t)" }}>{folder.displayName}</strong>?
-          The actual audio files on your hard drive will never be deleted.
+          Are you sure you want to remove{" "}
+          <strong style={{ color: "var(--t)" }}>{folder.displayName}</strong>? The actual audio
+          files on your hard drive will never be deleted.
         </p>
 
         {/* Folder details box */}

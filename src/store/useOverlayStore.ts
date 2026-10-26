@@ -55,5 +55,4 @@ export const useOverlayStore = create<OverlayState>()((set) => ({
 export const useActiveOverlay = () => useOverlayStore((state) => state.activeOverlay);
 export const useIsOverlayOpen = (overlay: OverlayType) =>
   useOverlayStore((state) => state.activeOverlay === overlay);
-export const useFullscreenViewMode = () =>
-  useOverlayStore((state) => state.fullscreenViewMode);
+export const useFullscreenViewMode = () => useOverlayStore((state) => state.fullscreenViewMode);

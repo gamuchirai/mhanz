@@ -15,38 +15,44 @@ In addition to layout flexibility, desktop applications must maintain smooth int
 Adopt a three tier layout standard that automatically collapses the sidebar to a 68px icon rail under 1024px and adjusts the player footer to a compact deck under 900px. Replace inline layout styles with Tailwind CSS v4 responsive classes. Integrate `@tanstack/react-virtual` for all song tables, and decouple high frequency playback progress updates using fine grained Zustand store selectors.
 
 **Pros**:
-* Smooth, fluid layout adaptation across all desktop window dimensions down to 640px.
-* 60 frames per second scrolling and resizing regardless of song library size.
-* Minimal CPU and memory footprint during continuous audio playback.
-* Standardizes clean declarative styling across all components.
+
+- Smooth, fluid layout adaptation across all desktop window dimensions down to 640px.
+- 60 frames per second scrolling and resizing regardless of song library size.
+- Minimal CPU and memory footprint during continuous audio playback.
+- Standardizes clean declarative styling across all components.
 
 **Cons**:
-* Introduces one lightweight external dependency (`@tanstack/react-virtual`).
+
+- Introduces one lightweight external dependency (`@tanstack/react-virtual`).
 
 ### Option 2: Fixed layout with container overflow scrollbars and unvirtualized CSS content visibility
 
 Maintain the current fixed layout dimensions and wrap page containers in horizontal scroll areas, using CSS `content-visibility: auto` to defer off screen row rendering.
 
 **Pros**:
-* Zero new npm dependencies.
-* Requires minimal changes to existing grid column definitions.
+
+- Zero new npm dependencies.
+- Requires minimal changes to existing grid column definitions.
 
 **Cons**:
-* Poor desktop user experience with awkward horizontal scrollbars.
-* High DOM node overhead still causes resize lag and memory spikes with large collections.
-* Does not isolate audio playback timer re renders.
+
+- Poor desktop user experience with awkward horizontal scrollbars.
+- High DOM node overhead still causes resize lag and memory spikes with large collections.
+- Does not isolate audio playback timer re renders.
 
 ### Option 3: Custom React window resize hook with dynamic inline style calculations
 
 Keep inline styles and create a custom React hook that tracks window dimensions, calculating and injecting pixel widths dynamically across components.
 
 **Pros**:
-* Avoids migrating from inline styles to Tailwind classes.
+
+- Avoids migrating from inline styles to Tailwind classes.
 
 **Cons**:
-* High JavaScript overhead from window resize event listeners.
-* Fragile and difficult to maintain across multiple pages and nested components.
-* Fails to address table DOM bloat or playback timer re render cascades.
+
+- High JavaScript overhead from window resize event listeners.
+- Fragile and difficult to maintain across multiple pages and nested components.
+- Fails to address table DOM bloat or playback timer re render cascades.
 
 ## Rationale
 

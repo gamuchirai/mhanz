@@ -118,20 +118,7 @@ export function LikedSongTable() {
       }}
     >
       {/* Table Header Row */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "48px 3fr 2fr 2fr 1.6fr 80px 48px",
-          alignItems: "center",
-          padding: "10px 16px",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-          color: "var(--m)",
-          fontSize: "12px",
-          fontWeight: 600,
-          letterSpacing: ".08em",
-          textTransform: "uppercase",
-        }}
-      >
+      <div className="grid grid-cols-[48px_3fr_2fr_2fr_1.6fr_80px_48px] max-[1150px]:grid-cols-[48px_3fr_2fr_2fr_80px_48px] max-[950px]:grid-cols-[40px_3fr_2fr_80px_40px] items-center px-4 py-2.5 border-b border-white/[0.08] text-[#a89b91] text-xs font-semibold tracking-[0.08em] uppercase select-none sticky top-0 z-10 bg-[#18110f]">
         <span>#</span>
 
         <button
@@ -175,6 +162,7 @@ export function LikedSongTable() {
         <button
           onClick={() => setSortColumn("album")}
           aria-label={`Sort by album column ${sortState.column === "album" ? sortState.direction : ""}`}
+          className="max-[950px]:hidden"
           style={{
             background: "none",
             border: 0,
@@ -194,6 +182,7 @@ export function LikedSongTable() {
         <button
           onClick={() => setSortColumn("dateLiked")}
           aria-label={`Sort by date liked column ${sortState.column === "dateLiked" ? sortState.direction : ""}`}
+          className="max-[1150px]:hidden"
           style={{
             background: "none",
             border: 0,
@@ -263,22 +252,11 @@ export function LikedSongTable() {
               onMouseEnter={() => setHoveredTrackId(track.id)}
               onMouseLeave={() => setHoveredTrackId(null)}
               onDoubleClick={() => playTrackAtIndex(index)}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "48px 3fr 2fr 2fr 1.6fr 80px 48px",
-                alignItems: "center",
-                padding: "8px 16px",
-                borderRadius: "8px",
-                background: isHovered
-                  ? "rgba(255, 255, 255, 0.05)"
-                  : isCurrent
-                  ? "rgba(240, 169, 130, 0.08)"
-                  : "transparent",
-                color: isCurrent ? "var(--accent)" : "var(--t)",
-                opacity: isPendingUnliked ? 0.6 : 1,
-                cursor: "pointer",
-                transition: "background 0.12s ease, opacity 0.15s ease",
-              }}
+              className={`grid grid-cols-[48px_3fr_2fr_2fr_1.6fr_80px_48px] max-[1150px]:grid-cols-[48px_3fr_2fr_2fr_80px_48px] max-[950px]:grid-cols-[40px_3fr_2fr_80px_40px] items-center px-4 py-2 rounded-lg cursor-pointer transition-colors duration-150 ${
+                isHovered ? "bg-white/[0.05]" : isCurrent ? "bg-[#f0a982]/10" : "bg-transparent"
+              } ${isCurrent ? "text-[#f0a982]" : "text-[#f4ebe4]"} ${
+                isPendingUnliked ? "opacity-60" : "opacity-100"
+              }`}
             >
               {/* Index Number or Hover Play Button */}
               <div
@@ -414,30 +392,12 @@ export function LikedSongTable() {
               </div>
 
               {/* Album Column */}
-              <div
-                style={{
-                  fontSize: "13px",
-                  color: "var(--m)",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  paddingRight: "16px",
-                }}
-              >
+              <div className="max-[950px]:hidden text-[13px] text-[#a89b91] overflow-hidden text-ellipsis whitespace-nowrap pr-4">
                 {track.album}
               </div>
 
               {/* Date Liked Column */}
-              <div
-                style={{
-                  fontSize: "13px",
-                  color: "var(--m)",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  paddingRight: "16px",
-                }}
-              >
+              <div className="max-[1150px]:hidden text-[13px] text-[#a89b91] overflow-hidden text-ellipsis whitespace-nowrap pr-4">
                 {formatRelativeDate(track.dateLiked)}
               </div>
 
@@ -466,11 +426,7 @@ export function LikedSongTable() {
                     e.stopPropagation();
                     toggleLikeTrack(track.id);
                   }}
-                  aria-label={
-                    isLiked
-                      ? `Unlike ${track.title}`
-                      : `Restore like for ${track.title}`
-                  }
+                  aria-label={isLiked ? `Unlike ${track.title}` : `Restore like for ${track.title}`}
                   style={{
                     background: "none",
                     border: 0,

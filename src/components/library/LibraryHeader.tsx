@@ -48,7 +48,8 @@ export function LibraryHeader({ onPlayAll, onShuffleAll }: LibraryHeaderProps) {
                 width: "36px",
                 height: "36px",
                 borderRadius: "10px",
-                background: "linear-gradient(135deg, rgba(240, 169, 130, 0.22), rgba(240, 169, 130, 0.05))",
+                background:
+                  "linear-gradient(135deg, rgba(240, 169, 130, 0.22), rgba(240, 169, 130, 0.05))",
                 border: "1px solid rgba(240, 169, 130, 0.3)",
                 display: "grid",
                 placeItems: "center",
@@ -155,9 +156,7 @@ export function LibraryHeader({ onPlayAll, onShuffleAll }: LibraryHeaderProps) {
               gap: "8px",
               padding: "10px 18px",
               borderRadius: "22px",
-              background: isExpanded
-                ? "rgba(240, 169, 130, 0.15)"
-                : "rgba(255, 255, 255, 0.05)",
+              background: isExpanded ? "rgba(240, 169, 130, 0.15)" : "rgba(255, 255, 255, 0.05)",
               color: isExpanded ? "var(--accent)" : "var(--t)",
               border: isExpanded
                 ? "1px solid rgba(240, 169, 130, 0.4)"

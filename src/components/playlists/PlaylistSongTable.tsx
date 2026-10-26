@@ -211,6 +211,7 @@ export function PlaylistSongTable({ playlist }: PlaylistSongTableProps) {
 
             <th
               onClick={() => handleHeaderClick("album")}
+              className="max-[950px]:hidden"
               style={{
                 padding: "10px 12px",
                 cursor: "pointer",
@@ -222,6 +223,7 @@ export function PlaylistSongTable({ playlist }: PlaylistSongTableProps) {
 
             <th
               onClick={() => handleHeaderClick("dateAdded")}
+              className="max-[1150px]:hidden"
               style={{
                 width: "120px",
                 padding: "10px 12px",
@@ -439,6 +441,7 @@ export function PlaylistSongTable({ playlist }: PlaylistSongTableProps) {
 
                 {/* Album */}
                 <td
+                  className="max-[950px]:hidden"
                   style={{
                     padding: "10px 12px",
                     color: "var(--m)",
@@ -452,6 +455,7 @@ export function PlaylistSongTable({ playlist }: PlaylistSongTableProps) {
 
                 {/* Date Added */}
                 <td
+                  className="max-[1150px]:hidden"
                   style={{
                     padding: "10px 12px",
                     color: "var(--m)",

@@ -6,6 +6,7 @@ import { LikedSongs } from "./pages/LikedSongs";
 import { Playlists } from "./pages/Playlists";
 import { Albums } from "./pages/Albums";
 import { Artists } from "./pages/Artists";
+import { NavigationSidebar } from "./components/layout/NavigationSidebar";
 import { PlayerFooter } from "./components/player/PlayerFooter";
 import { QueueDrawer } from "./components/queue/QueueDrawer";
 import { LyricsModal } from "./components/lyrics/LyricsModal";
@@ -50,24 +51,9 @@ export function App() {
   }, []);
 
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "100vw",
-        height: "100vh",
-        boxSizing: "border-box",
-        display: "grid",
-        gridTemplateColumns: "232px 1fr",
-        gridTemplateRows: "1fr 96px",
-        background: "#0b0706",
-        color: "var(--t)",
-        fontFamily: "'Outfit', system-ui, sans-serif",
-        fontSize: "14px",
-        overflow: "hidden",
-      }}
-    >
+    <div className="relative w-screen h-screen overflow-hidden grid grid-rows-[1fr_96px] max-md:grid-rows-[1fr_84px] grid-cols-[232px_1fr] max-lg:grid-cols-[68px_1fr] bg-[#0b0706] text-[#f4ebe4] font-sans text-sm">
       {/* SVG Icon Symbols definition */}
-      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
+      <svg width="0" height="0" className="absolute" aria-hidden="true">
         <defs>
           <symbol id="home" viewBox="0 0 24 24">
             <path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" />
@@ -148,347 +134,77 @@ export function App() {
         </defs>
       </svg>
 
-      {/* Sidebar Navigation */}
-      <aside
-        role="navigation"
-        aria-label="Main sidebar"
-        style={{
-          gridColumn: 1,
-          gridRow: "1 / span 2",
-          background: "#0b0706",
-          borderRight: "1px solid rgba(255,255,255,.05)",
-          padding: "28px 16px 20px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "4px",
+      {/* Adaptive Navigation Sidebar with automatic 68px icon rail */}
+      <NavigationSidebar
+        activeNav={activeNav}
+        onNavigate={(navId) => {
+          if (navId === "Playlists") setActivePlaylistId(null);
+          if (navId === "Albums") setActiveAlbumId(null);
+          if (navId === "Artists") useArtistStore.getState().setActiveArtistId(null);
+          setActiveNav(navId);
         }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "6px",
-            marginBottom: "28px",
-            color: "var(--t)",
-          }}
-        >
-          <svg className="i" width="22" height="22" aria-hidden="true">
-            <use href="#star" />
-          </svg>
-          <span
-            style={{
-              fontWeight: 300,
-              fontSize: "16px",
-              letterSpacing: ".34em",
-              paddingLeft: ".34em",
+        playlists={playlists}
+        activePlaylistId={activePlaylistId}
+        onSelectPlaylist={(id) => {
+          setActivePlaylistId(id);
+          setActiveNav("Playlists");
+        }}
+        onNewPlaylist={() => {
+          setActiveNav("Playlists");
+          setActivePlaylistId(null);
+          setCreateModalOpen(true);
+        }}
+        activeOverlay={activeOverlay}
+        onToggleSettings={() => toggleOverlay("settings")}
+      />
+
+      {/* Main Content Area */}
+      <div className="col-start-2 row-start-1 overflow-y-auto overflow-x-hidden min-w-0">
+        {activeNav === "Home" ? (
+          <Home onNavigate={setActiveNav} />
+        ) : activeNav === "Search" ? (
+          <Search onNavigate={setActiveNav} />
+        ) : activeNav === "Your Library" ? (
+          <Library />
+        ) : activeNav === "Liked Songs" ? (
+          <LikedSongs onNavigate={setActiveNav} />
+        ) : activeNav === "Playlists" ? (
+          <Playlists />
+        ) : activeNav === "Albums" ? (
+          <Albums
+            onNavigate={setActiveNav}
+            onNavigateArtist={(artistId) => {
+              useArtistStore.getState().setActiveArtistId(artistId);
+              setActiveNav("Artists");
             }}
+          />
+        ) : activeNav === "Artists" ? (
+          <Artists onNavigate={setActiveNav} />
+        ) : (
+          <main
+            role="main"
+            className="flex flex-col items-center justify-center h-full bg-[#110c0a] text-[#a89b91] gap-4 p-8"
           >
-            MIDNIGHT
-          </span>
-        </div>
-
-        <nav style={{ display: "flex", flexDirection: "column", gap: "4px", color: "var(--m)" }}>
-          {[
-            { id: "Home", icon: "#home" },
-            { id: "Search", icon: "#search" },
-            { id: "Your Library", icon: "#lib" },
-            { id: "Liked Songs", icon: "#heart" },
-            { id: "Playlists", icon: "#list" },
-            { id: "Albums", icon: "#disc" },
-            { id: "Artists", icon: "#user" },
-          ].map((item) => {
-            const isActive = activeNav === item.id;
-            return (
-              <a
-                key={item.id}
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (item.id === "Playlists") {
-                    setActivePlaylistId(null);
-                  }
-                  if (item.id === "Albums") {
-                    setActiveAlbumId(null);
-                  }
-                  if (item.id === "Artists") {
-                    useArtistStore.getState().setActiveArtistId(null);
-                  }
-                  setActiveNav(item.id);
-                }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "14px",
-                  padding: "11px 14px",
-                  borderRadius: "10px",
-                  background: isActive
-                    ? "linear-gradient(90deg,rgba(240,169,130,.22),rgba(240,169,130,.06))"
-                    : "none",
-                  color: isActive ? "var(--t)" : "var(--m)",
-                  cursor: "pointer",
-                  transition: "background 0.15s ease, color 0.15s ease",
-                }}
-              >
-                <svg className="i" width="18" height="18" aria-hidden="true">
-                  <use href={item.icon} />
-                </svg>
-                {item.id}
-              </a>
-            );
-          })}
-        </nav>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            margin: "34px 14px 10px",
-            color: "var(--m)",
-            fontSize: "11px",
-            letterSpacing: ".14em",
-          }}
-        >
-          <span>YOUR PLAYLISTS</span>
-          <button
-            aria-label="New playlist"
-            onClick={() => {
-              setActiveNav("Playlists");
-              setActivePlaylistId(null);
-              setCreateModalOpen(true);
-            }}
-            style={{
-              background: "none",
-              border: 0,
-              padding: 0,
-              color: "var(--m)",
-              display: "grid",
-              cursor: "pointer",
-            }}
-          >
-            <svg className="i" width="16" height="16" aria-hidden="true">
-              <use href="#plus" />
-            </svg>
-          </button>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "4px",
-            color: "var(--t)",
-            overflowY: "auto",
-            maxHeight: "260px",
-          }}
-        >
-          {playlists.map((playlist) => {
-            const isSelected = activeNav === "Playlists" && activePlaylistId === playlist.id;
-            return (
-              <a
-                key={playlist.id}
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActivePlaylistId(playlist.id);
-                  setActiveNav("Playlists");
-                }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                  padding: "6px 14px",
-                  borderRadius: "8px",
-                  background: isSelected ? "rgba(240, 169, 130, 0.12)" : "transparent",
-                  color: isSelected ? "var(--accent)" : "var(--t)",
-                  cursor: "pointer",
-                  transition: "background 0.15s ease, color 0.15s ease",
-                }}
-              >
-                <span
-                  style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "6px",
-                    background: playlist.coverGradient,
-                    flexShrink: 0,
-                    position: "relative",
-                    overflow: "hidden",
-                  }}
-                >
-                  {playlist.coverUrl && (
-                    <img
-                      src={playlist.coverUrl}
-                      alt=""
-                      aria-hidden="true"
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  )}
-                </span>
-                <span
-                  style={{
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    fontSize: "13px",
-                  }}
-                >
-                  {playlist.title}
-                </span>
-              </a>
-            );
-          })}
-        </div>
-
-        <div
-          style={{
-            marginTop: "auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "10px 14px",
-            borderTop: "1px solid var(--l)",
-          }}
-        >
-          <a
-            href="#"
-            onClick={(e) => e.preventDefault()}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              minWidth: 0,
-            }}
-          >
-            <span
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "50%",
-                background: "linear-gradient(160deg,#6b5548,#241a16)",
-                flexShrink: 0,
-              }}
-            />
-            <span
-              style={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                fontSize: "13px",
-              }}
+            <div className="w-14 h-14 rounded-full bg-[#f0a982]/10 text-[#f0a982] grid place-items-center">
+              <svg className="i w-7 h-7" aria-hidden="true">
+                <use href="#disc" />
+              </svg>
+            </div>
+            <h2 className="text-xl text-[#f4ebe4] m-0 font-medium">{activeNav}</h2>
+            <p className="m-0 text-sm max-w-[340px] text-center">
+              This view is queued in the upcoming scope slice.
+            </p>
+            <button
+              onClick={() => setActiveNav("Home")}
+              className="px-5 py-2.5 rounded-full bg-[#f0a982] hover:bg-[#f5dec0] text-[#1c0f09] border-0 font-semibold cursor-pointer transition-all active:scale-95 shadow-md"
             >
-              madebyadah
-            </span>
-          </a>
+              Return to Home
+            </button>
+          </main>
+        )}
+      </div>
 
-          <button
-            aria-label="Open audio preferences settings"
-            onClick={() => toggleOverlay("settings")}
-            style={{
-              background: "none",
-              border: 0,
-              padding: "6px",
-              color: activeOverlay === "settings" ? "var(--accent)" : "var(--m)",
-              cursor: "pointer",
-              borderRadius: "6px",
-              display: "grid",
-              transition: "color 0.15s ease",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t)")}
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color =
-                activeOverlay === "settings" ? "var(--accent)" : "var(--m)")
-            }
-          >
-            <svg className="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Container */}
-      {activeNav === "Home" ? (
-        <Home onNavigate={setActiveNav} />
-      ) : activeNav === "Search" ? (
-        <Search onNavigate={setActiveNav} />
-      ) : activeNav === "Your Library" ? (
-        <Library />
-      ) : activeNav === "Liked Songs" ? (
-        <LikedSongs onNavigate={setActiveNav} />
-      ) : activeNav === "Playlists" ? (
-        <Playlists />
-      ) : activeNav === "Albums" ? (
-        <Albums
-          onNavigate={setActiveNav}
-          onNavigateArtist={(artistId) => {
-            useArtistStore.getState().setActiveArtistId(artistId);
-            setActiveNav("Artists");
-          }}
-        />
-      ) : activeNav === "Artists" ? (
-        <Artists onNavigate={setActiveNav} />
-      ) : (
-        <main
-          role="main"
-          style={{
-            gridColumn: 2,
-            gridRow: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "#110c0a",
-            color: "var(--m)",
-            gap: "16px",
-          }}
-        >
-          <div
-            style={{
-              width: "56px",
-              height: "56px",
-              borderRadius: "50%",
-              background: "rgba(240,169,130,0.1)",
-              color: "var(--accent)",
-              display: "grid",
-              placeItems: "center",
-            }}
-          >
-            <svg className="i" width="28" height="28" aria-hidden="true">
-              <use href="#disc" />
-            </svg>
-          </div>
-          <h2 style={{ fontSize: "20px", color: "var(--t)", margin: 0 }}>{activeNav}</h2>
-          <p style={{ margin: 0, fontSize: "14px", maxWidth: "340px", textAlign: "center" }}>
-            This view is queued in the upcoming scope slice.
-          </p>
-          <button
-            onClick={() => setActiveNav("Home")}
-            style={{
-              padding: "10px 20px",
-              borderRadius: "20px",
-              background: "var(--accent)",
-              color: "#1c0f09",
-              border: 0,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            Return to Home
-          </button>
-        </main>
-      )}
-
-      {/* Persistent Player Footer */}
+      {/* Persistent Responsive Player Footer */}
       <PlayerFooter />
 
       {/* Overlays portal and backdrop */}
@@ -497,12 +213,7 @@ export function App() {
           <div
             role="presentation"
             onClick={() => useOverlayStore.getState().closeOverlay()}
-            style={{
-              position: "fixed",
-              inset: 0,
-              zIndex: 35,
-              background: "rgba(0, 0, 0, 0.45)",
-            }}
+            className="fixed inset-0 z-35 bg-black/45"
           />
           <QueueDrawer />
         </>

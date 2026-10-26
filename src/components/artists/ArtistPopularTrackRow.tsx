@@ -96,7 +96,13 @@ export function ArtistPopularTrackRow({ track, rank, onPlay }: ArtistPopularTrac
             </svg>
           </button>
         ) : isPlaying ? (
-          <svg className="i" width="14" height="14" aria-hidden="true" style={{ color: "var(--accent)" }}>
+          <svg
+            className="i"
+            width="14"
+            height="14"
+            aria-hidden="true"
+            style={{ color: "var(--accent)" }}
+          >
             <use href="#vol" />
           </svg>
         ) : (
@@ -130,7 +136,13 @@ export function ArtistPopularTrackRow({ track, rank, onPlay }: ArtistPopularTrac
             }}
           />
         ) : (
-          <svg className="i" width="16" height="16" aria-hidden="true" style={{ color: "var(--m)" }}>
+          <svg
+            className="i"
+            width="16"
+            height="16"
+            aria-hidden="true"
+            style={{ color: "var(--m)" }}
+          >
             <use href="#disc" />
           </svg>
         )}

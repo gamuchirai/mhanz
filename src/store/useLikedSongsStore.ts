@@ -1,10 +1,5 @@
 import { create } from "zustand";
-import type {
-  LikedSortColumn,
-  LikedSortState,
-  LikedTrack,
-  LikedSongsState,
-} from "../types/liked";
+import type { LikedSortColumn, LikedSortState, LikedTrack, LikedSongsState } from "../types/liked";
 import type { Track } from "../types/discovery";
 import { initialLikedTracks } from "../data/likedFixtures";
 import { usePlayerStore } from "./usePlayerStore";
@@ -93,9 +88,7 @@ export const useLikedSongsStore = create<LikedSongsState>()((set, get) => ({
     if (isPendingUnliked) {
       // Re-like track (remove from pending unliked list)
       const updatedPending = unlikedPendingIds.filter((id) => id !== trackId);
-      const updatedTracks = tracks.map((t) =>
-        t.id === trackId ? { ...t, isLiked: true } : t
-      );
+      const updatedTracks = tracks.map((t) => (t.id === trackId ? { ...t, isLiked: true } : t));
       set({
         unlikedPendingIds: updatedPending,
         tracks: updatedTracks,
@@ -109,9 +102,7 @@ export const useLikedSongsStore = create<LikedSongsState>()((set, get) => ({
     } else {
       // Mark track as pending unliked (keeps row in list during current session)
       const updatedPending = [...unlikedPendingIds, trackId];
-      const updatedTracks = tracks.map((t) =>
-        t.id === trackId ? { ...t, isLiked: false } : t
-      );
+      const updatedTracks = tracks.map((t) => (t.id === trackId ? { ...t, isLiked: false } : t));
       set({
         unlikedPendingIds: updatedPending,
         tracks: updatedTracks,
@@ -159,9 +150,7 @@ export const useLikedSongsStore = create<LikedSongsState>()((set, get) => ({
     const { tracks, unlikedPendingIds } = get();
     if (unlikedPendingIds.length === 0) return;
 
-    const remainingTracks = tracks.filter(
-      (t) => !unlikedPendingIds.includes(t.id)
-    );
+    const remainingTracks = tracks.filter((t) => !unlikedPendingIds.includes(t.id));
     set({
       tracks: remainingTracks,
       unlikedPendingIds: [],
@@ -170,11 +159,7 @@ export const useLikedSongsStore = create<LikedSongsState>()((set, get) => ({
 
   playAll: () => {
     const { tracks, filterQuery, sortState, unlikedPendingIds } = get();
-    const visibleTracks = getFilteredAndSortedLikedTracks(
-      tracks,
-      filterQuery,
-      sortState
-    );
+    const visibleTracks = getFilteredAndSortedLikedTracks(tracks, filterQuery, sortState);
     // Queue only currently liked tracks
     const activeLikedTracks = visibleTracks.filter(
       (t) => !unlikedPendingIds.includes(t.id) && t.isLiked
@@ -187,11 +172,7 @@ export const useLikedSongsStore = create<LikedSongsState>()((set, get) => ({
 
   shuffleAll: () => {
     const { tracks, filterQuery, sortState, unlikedPendingIds } = get();
-    const visibleTracks = getFilteredAndSortedLikedTracks(
-      tracks,
-      filterQuery,
-      sortState
-    );
+    const visibleTracks = getFilteredAndSortedLikedTracks(tracks, filterQuery, sortState);
     const activeLikedTracks = visibleTracks.filter(
       (t) => !unlikedPendingIds.includes(t.id) && t.isLiked
     );
@@ -209,11 +190,7 @@ export const useLikedSongsStore = create<LikedSongsState>()((set, get) => ({
 
   playTrackAtIndex: (index: number) => {
     const { tracks, filterQuery, sortState } = get();
-    const visibleTracks = getFilteredAndSortedLikedTracks(
-      tracks,
-      filterQuery,
-      sortState
-    );
+    const visibleTracks = getFilteredAndSortedLikedTracks(tracks, filterQuery, sortState);
     if (index < 0 || index >= visibleTracks.length) return;
 
     const playerQueue = visibleTracks.map(mapLikedTrackToPlayerTrack);
@@ -223,9 +200,6 @@ export const useLikedSongsStore = create<LikedSongsState>()((set, get) => ({
 
 // Performance-optimized selector hooks
 export const useLikedTracks = () => useLikedSongsStore((state) => state.tracks);
-export const useUnlikedPendingIds = () =>
-  useLikedSongsStore((state) => state.unlikedPendingIds);
-export const useLikedFilterQuery = () =>
-  useLikedSongsStore((state) => state.filterQuery);
-export const useLikedSortState = () =>
-  useLikedSongsStore((state) => state.sortState);
+export const useUnlikedPendingIds = () => useLikedSongsStore((state) => state.unlikedPendingIds);
+export const useLikedFilterQuery = () => useLikedSongsStore((state) => state.filterQuery);
+export const useLikedSortState = () => useLikedSongsStore((state) => state.sortState);

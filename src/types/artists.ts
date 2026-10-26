@@ -39,13 +39,13 @@ export interface ArtistRelease {
   title: string;
   coverUrl: string;
   releaseYear: number;
-  type: 'album' | 'single' | 'ep';
+  type: "album" | "single" | "ep";
   trackCount: number;
 }
 
-export type ArtistSortOption = 'popularity' | 'name' | 'albumCount';
-export type SortDirection = 'asc' | 'desc';
-export type DiscographyFilter = 'all' | 'album' | 'single';
+export type ArtistSortOption = "popularity" | "name" | "albumCount";
+export type SortDirection = "asc" | "desc";
+export type DiscographyFilter = "all" | "album" | "single";
 
 export interface ArtistState {
   artists: Artist[];

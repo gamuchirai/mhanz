@@ -12,13 +12,7 @@ export function AlbumGrid() {
   return (
     <section
       aria-label="Albums overview grid"
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-        gap: "20px",
-        width: "100%",
-        paddingBottom: "32px",
-      }}
+      className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] min-[1440px]:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4 max-sm:gap-3 w-full pb-8"
     >
       {albums.map((album) => (
         <AlbumCard key={album.id} album={album} />

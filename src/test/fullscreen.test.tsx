@@ -89,10 +89,14 @@ describe("Now Playing Fullscreen View", () => {
   it("renders interactive entry targets on artwork thumbnail, title, and expand button in PlayerFooter (AC-1)", () => {
     render(<App />);
 
-    const thumbnailBtn = screen.getByLabelText(/Open fullscreen view from album cover for Perfect/i);
+    const thumbnailBtn = screen.getByLabelText(
+      /Open fullscreen view from album cover for Perfect/i
+    );
     expect(thumbnailBtn).toBeInTheDocument();
 
-    const titleBtn = screen.getByRole("button", { name: /Open fullscreen view from song title for Perfect/i });
+    const titleBtn = screen.getByRole("button", {
+      name: /Open fullscreen view from song title for Perfect/i,
+    });
     expect(titleBtn).toBeInTheDocument();
 
     const expandBtn = screen.getByRole("button", { name: "Open fullscreen view" });
@@ -125,7 +129,9 @@ describe("Now Playing Fullscreen View", () => {
     });
 
     expect(useOverlayStore.getState().activeOverlay).toBe("none");
-    expect(screen.queryByRole("dialog", { name: "Now playing fullscreen view" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("dialog", { name: "Now playing fullscreen view" })
+    ).not.toBeInTheDocument();
   });
 
   it("renders header with return button, breadcrumb, and three-segment view switch (AC-4)", () => {

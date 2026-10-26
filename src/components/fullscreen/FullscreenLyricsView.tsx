@@ -8,11 +8,7 @@ interface FullscreenLyricsViewProps {
   onSeek: (seconds: number) => void;
 }
 
-export function FullscreenLyricsView({
-  track,
-  currentTime,
-  onSeek,
-}: FullscreenLyricsViewProps) {
+export function FullscreenLyricsView({ track, currentTime, onSeek }: FullscreenLyricsViewProps) {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const isUserScrollingRef = useRef<boolean>(false);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

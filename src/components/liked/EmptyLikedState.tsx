@@ -72,8 +72,8 @@ export function EmptyLikedState({ onExploreMusic }: EmptyLikedStateProps) {
           lineHeight: 1.5,
         }}
       >
-        Save your favorite tracks by clicking the heart icon on any song across
-        Home, Search, or Your Library.
+        Save your favorite tracks by clicking the heart icon on any song across Home, Search, or
+        Your Library.
       </p>
 
       {onExploreMusic && (

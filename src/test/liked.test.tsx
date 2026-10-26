@@ -186,7 +186,9 @@ describe("Liked Songs Screen", () => {
     const onExploreMock = vi.fn();
     render(<LikedSongs onNavigate={onExploreMock} />);
 
-    expect(screen.getByRole("heading", { name: /songs you like will appear here/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /songs you like will appear here/i })
+    ).toBeInTheDocument();
     const exploreButton = screen.getByRole("button", { name: /explore music/i });
     expect(exploreButton).toBeInTheDocument();
 

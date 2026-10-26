@@ -63,4 +63,3 @@ export function formatRelativeDate(isoDateString: string): string {
     year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
   });
 }
-

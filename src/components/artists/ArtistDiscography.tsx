@@ -200,7 +200,13 @@ function DiscographyCard({ release, onClick }: DiscographyCardProps) {
             }}
           />
         ) : (
-          <svg className="i" width="32" height="32" aria-hidden="true" style={{ color: "var(--m)" }}>
+          <svg
+            className="i"
+            width="32"
+            height="32"
+            aria-hidden="true"
+            style={{ color: "var(--m)" }}
+          >
             <use href="#disc" />
           </svg>
         )}
@@ -221,7 +227,15 @@ function DiscographyCard({ release, onClick }: DiscographyCardProps) {
         >
           {release.title}
         </span>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: "var(--m)" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            fontSize: "11px",
+            color: "var(--m)",
+          }}
+        >
           <span>{release.releaseYear}</span>
           <span>•</span>
           <span style={{ textTransform: "capitalize" }}>{release.type}</span>

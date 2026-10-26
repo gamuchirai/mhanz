@@ -46,13 +46,7 @@ export function FullscreenHeader({
           transition: "background 0.2s, color 0.2s, transform 0.15s",
         }}
       >
-        <svg
-          className="i"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
+        <svg className="i" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
         <span>Back</span>
@@ -105,8 +99,7 @@ export function FullscreenHeader({
             padding: "6px 16px",
             borderRadius: "20px",
             border: 0,
-            background:
-              viewMode === "artwork" ? "var(--accent)" : "transparent",
+            background: viewMode === "artwork" ? "var(--accent)" : "transparent",
             color: viewMode === "artwork" ? "#160d0a" : "var(--m)",
             fontWeight: viewMode === "artwork" ? 600 : 500,
             fontSize: "12px",
@@ -124,8 +117,7 @@ export function FullscreenHeader({
             padding: "6px 16px",
             borderRadius: "20px",
             border: 0,
-            background:
-              viewMode === "lyrics" ? "var(--accent)" : "transparent",
+            background: viewMode === "lyrics" ? "var(--accent)" : "transparent",
             color: viewMode === "lyrics" ? "#160d0a" : "var(--m)",
             fontWeight: viewMode === "lyrics" ? 600 : 500,
             fontSize: "12px",
@@ -143,8 +135,7 @@ export function FullscreenHeader({
             padding: "6px 16px",
             borderRadius: "20px",
             border: 0,
-            background:
-              viewMode === "visualizer" ? "var(--accent)" : "transparent",
+            background: viewMode === "visualizer" ? "var(--accent)" : "transparent",
             color: viewMode === "visualizer" ? "#160d0a" : "var(--m)",
             fontWeight: viewMode === "visualizer" ? 600 : 500,
             fontSize: "12px",

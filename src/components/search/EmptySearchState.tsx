@@ -62,11 +62,20 @@ export function EmptySearchState() {
           lineHeight: "1.5",
         }}
       >
-        Check for typos, try broader keywords, or search for artist names and albums. You can also explore popular genres below.
+        Check for typos, try broader keywords, or search for artist names and albums. You can also
+        explore popular genres below.
       </p>
 
       {/* Quick Jump Buttons to Top Genres */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center", marginBottom: "24px" }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "10px",
+          justifyContent: "center",
+          marginBottom: "24px",
+        }}
+      >
         {topGenres.map((genre) => (
           <button
             key={genre.id}

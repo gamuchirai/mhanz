@@ -18,87 +18,32 @@ export function Home({ onNavigate }: HomeProps = {}) {
     <main
       role="main"
       aria-label="Home and discovery screen"
-      style={{
-        gridColumn: 2,
-        gridRow: 1,
-        minWidth: 0,
-        overflowY: "auto",
-        overflowX: "hidden",
-        padding: "24px 32px 8px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "30px",
-        background:
-          "radial-gradient(900px 420px at 72% 0,rgba(214,122,84,.14),transparent 70%),#110c0a",
-      }}
+      className="min-w-0 h-full overflow-y-auto overflow-x-hidden p-6 max-lg:p-4 max-sm:p-3 flex flex-col gap-7 max-sm:gap-5 bg-[radial-gradient(900px_420px_at_72%_0,rgba(214,122,84,0.14),transparent_70%)] bg-[#110c0a]"
     >
       {/* Top Header */}
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "16px",
-        }}
-      >
-        <div style={{ display: "flex", gap: "10px" }}>
+      <header className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex gap-2.5">
           <button
             aria-label="Back"
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              border: "1px solid var(--l)",
-              background: "var(--p)",
-              color: "var(--t)",
-              display: "grid",
-              placeItems: "center",
-              padding: 0,
-              cursor: "pointer",
-            }}
+            className="w-10 h-10 rounded-full border border-white/10 bg-[#18110f] text-[#f4ebe4] grid place-items-center p-0 cursor-pointer hover:bg-white/5 transition-colors"
           >
-            <svg className="i" width="18" height="18" aria-hidden="true">
+            <svg className="i w-[18px] h-[18px]" aria-hidden="true">
               <use href="#cl" />
             </svg>
           </button>
           <button
             aria-label="Forward"
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              border: "1px solid var(--l)",
-              background: "var(--p)",
-              color: "var(--t)",
-              display: "grid",
-              placeItems: "center",
-              padding: 0,
-              cursor: "pointer",
-            }}
+            className="w-10 h-10 rounded-full border border-white/10 bg-[#18110f] text-[#f4ebe4] grid place-items-center p-0 cursor-pointer hover:bg-white/5 transition-colors"
           >
-            <svg className="i" width="18" height="18" aria-hidden="true">
+            <svg className="i w-[18px] h-[18px]" aria-hidden="true">
               <use href="#cr" />
             </svg>
           </button>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              width: "340px",
-              height: "42px",
-              boxSizing: "border-box",
-              padding: "0 16px",
-              borderRadius: "21px",
-              border: "1px solid var(--l)",
-              background: "var(--p)",
-              color: "var(--m)",
-            }}
-          >
-            <svg className="i" width="17" height="17" aria-hidden="true">
+        <div className="flex items-center gap-4 flex-1 max-w-[500px] justify-end">
+          <label className="flex items-center gap-2.5 w-full max-w-[340px] h-[42px] px-4 rounded-full border border-white/10 bg-[#18110f] text-[#a89b91] focus-within:border-[#f0a982]/50 transition-colors">
+            <svg className="i w-[17px] h-[17px] shrink-0" aria-hidden="true">
               <use href="#search" />
             </svg>
             <input
@@ -106,49 +51,22 @@ export function Home({ onNavigate }: HomeProps = {}) {
               aria-label="Search songs, artists, playlists"
               onClick={() => onNavigate?.("Search")}
               onFocus={() => onNavigate?.("Search")}
-              style={{
-                flex: 1,
-                minWidth: 0,
-                background: "none",
-                border: 0,
-                outline: 0,
-                color: "var(--t)",
-                font: "inherit",
-                fontSize: "13px",
-              }}
+              className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[#f4ebe4] text-[13px] placeholder-[#a89b91]"
             />
           </label>
           <button
             aria-label="Notifications"
-            style={{
-              background: "none",
-              border: 0,
-              padding: "8px",
-              color: "var(--t)",
-              display: "grid",
-              cursor: "pointer",
-            }}
+            className="bg-transparent border-0 p-2 text-[#f4ebe4] hover:text-[#f0a982] grid place-items-center cursor-pointer transition-colors"
           >
-            <svg className="i" width="20" height="20" aria-hidden="true">
+            <svg className="i w-5 h-5" aria-hidden="true">
               <use href="#bell" />
             </svg>
           </button>
           <button
             aria-label="Ask for a recommendation"
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              border: "1px solid var(--accent)",
-              background: "rgba(240,169,130,.1)",
-              color: "var(--accent)",
-              display: "grid",
-              placeItems: "center",
-              padding: 0,
-              cursor: "pointer",
-            }}
+            className="w-10 h-10 rounded-full border border-[#f0a982] bg-[#f0a982]/10 text-[#f0a982] hover:bg-[#f0a982]/20 grid place-items-center p-0 cursor-pointer transition-colors"
           >
-            <svg className="i" width="18" height="18" aria-hidden="true">
+            <svg className="i w-[18px] h-[18px]" aria-hidden="true">
               <use href="#spark" />
             </svg>
           </button>
@@ -162,13 +80,7 @@ export function Home({ onNavigate }: HomeProps = {}) {
       <CuratedGrid cards={curatedCollections} onNavigate={onNavigate} />
 
       {/* Recently Played and Popular Tracks Section */}
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 360px",
-          gap: "48px",
-        }}
-      >
+      <section className="grid grid-cols-[1fr_360px] max-xl:grid-cols-1 gap-12 max-lg:gap-8">
         <RecentCarousel items={recentPlays} />
         <TrackTable tracks={popularTracks} />
       </section>

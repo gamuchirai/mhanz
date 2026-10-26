@@ -180,7 +180,5 @@ export const useIsFolderPanelExpanded = () =>
 export const useSelectedFolderId = () => useLibraryStore((state) => state.selectedFolderId);
 export const useLibraryFilterQuery = () => useLibraryStore((state) => state.filterQuery);
 export const useLibrarySortState = () => useLibraryStore((state) => state.sortState);
-export const useIsAddFolderModalOpen = () =>
-  useLibraryStore((state) => state.isAddFolderModalOpen);
-export const useFolderPendingRemoval = () =>
-  useLibraryStore((state) => state.folderPendingRemoval);
+export const useIsAddFolderModalOpen = () => useLibraryStore((state) => state.isAddFolderModalOpen);
+export const useFolderPendingRemoval = () => useLibraryStore((state) => state.folderPendingRemoval);

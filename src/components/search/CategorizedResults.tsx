@@ -64,7 +64,9 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
     const match = storeArtists.find(
       (a) => a.id === artist.id || a.name.toLowerCase() === artist.name.toLowerCase()
     );
-    useArtistStore.getState().setActiveArtistId(match ? match.id : (storeArtists[0]?.id ?? artist.id));
+    useArtistStore
+      .getState()
+      .setActiveArtistId(match ? match.id : (storeArtists[0]?.id ?? artist.id));
     onNavigate?.("Artists");
   };
 
@@ -83,7 +85,10 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
         <>
           {/* Top Results Section */}
           {(topTrack || previewTracks.length > 0) && (
-            <section aria-label="Top results" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <section
+              aria-label="Top results"
+              style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+            >
               <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600, color: "var(--t)" }}>
                 Top Results
               </h3>
@@ -160,7 +165,13 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                       </p>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
                       <span style={{ fontSize: "12px", color: "var(--m)" }}>
                         {formatDuration(topTrack.durationSeconds)}
                       </span>
@@ -185,7 +196,11 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                         onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
                       >
                         <svg className="i" width="18" height="18" aria-hidden="true">
-                          <use href={currentTrack?.id === topTrack.id && isPlaying ? "#pause" : "#play"} />
+                          <use
+                            href={
+                              currentTrack?.id === topTrack.id && isPlaying ? "#pause" : "#play"
+                            }
+                          />
                         </svg>
                       </button>
                     </div>
@@ -214,13 +229,20 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                           background: isCurrent
                             ? "rgba(240, 169, 130, 0.1)"
                             : hoveredTrackId === track.id
-                            ? "rgba(255, 255, 255, 0.04)"
-                            : "transparent",
+                              ? "rgba(255, 255, 255, 0.04)"
+                              : "transparent",
                           cursor: "pointer",
                           transition: "background 0.15s ease",
                         }}
                       >
-                        <span style={{ width: "20px", textAlign: "center", fontSize: "13px", color: "var(--m)" }}>
+                        <span
+                          style={{
+                            width: "20px",
+                            textAlign: "center",
+                            fontSize: "13px",
+                            color: "var(--m)",
+                          }}
+                        >
                           {hoveredTrackId === track.id ? (
                             <button
                               type="button"
@@ -252,7 +274,12 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                           src={track.artworkUrl}
                           alt=""
                           aria-hidden="true"
-                          style={{ width: "40px", height: "40px", borderRadius: "6px", objectFit: "cover" }}
+                          style={{
+                            width: "40px",
+                            height: "40px",
+                            borderRadius: "6px",
+                            objectFit: "cover",
+                          }}
                         />
 
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -302,7 +329,14 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                           </svg>
                         </button>
 
-                        <span style={{ fontSize: "12px", color: "var(--m)", width: "36px", textAlign: "right" }}>
+                        <span
+                          style={{
+                            fontSize: "12px",
+                            color: "var(--m)",
+                            width: "36px",
+                            textAlign: "right",
+                          }}
+                        >
                           {formatDuration(track.durationSeconds)}
                         </span>
                       </div>
@@ -315,8 +349,13 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
 
           {/* Albums Section */}
           {results.albums.length > 0 && (
-            <section aria-label="Albums" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <section
+              aria-label="Albums"
+              style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+            >
+              <div
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+              >
                 <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600, color: "var(--t)" }}>
                   Albums
                 </h3>
@@ -342,7 +381,10 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
 
           {/* Artists Section */}
           {results.artists.length > 0 && (
-            <section aria-label="Artists" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <section
+              aria-label="Artists"
+              style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+            >
               <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600, color: "var(--t)" }}>
                 Artists
               </h3>
@@ -362,7 +404,10 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
 
           {/* Genres Section */}
           {results.genres.length > 0 && (
-            <section aria-label="Matching genres" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <section
+              aria-label="Matching genres"
+              style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+            >
               <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600, color: "var(--t)" }}>
                 Genres
               </h3>
@@ -389,7 +434,13 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                     onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.04)")}
                     onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
                   >
-                    <svg className="i" width="14" height="14" style={{ color: genre.accentColor }} aria-hidden="true">
+                    <svg
+                      className="i"
+                      width="14"
+                      height="14"
+                      style={{ color: genre.accentColor }}
+                      aria-hidden="true"
+                    >
                       <use href={`#${genre.icon}`} />
                     </svg>
                     <span>{genre.name}</span>
@@ -403,7 +454,10 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
 
       {/* ISOLATED SONGS VIEW */}
       {activeCategory === "songs" && (
-        <section aria-label="Song results" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <section
+          aria-label="Song results"
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
           <div
             style={{
               display: "grid",
@@ -444,8 +498,8 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                     background: isCurrent
                       ? "rgba(240, 169, 130, 0.12)"
                       : hoveredTrackId === track.id
-                      ? "rgba(255, 255, 255, 0.04)"
-                      : "transparent",
+                        ? "rgba(255, 255, 255, 0.04)"
+                        : "transparent",
                     cursor: "pointer",
                     transition: "background 0.15s ease",
                   }}
@@ -481,7 +535,12 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                       src={track.artworkUrl}
                       alt=""
                       aria-hidden="true"
-                      style={{ width: "38px", height: "38px", borderRadius: "6px", objectFit: "cover" }}
+                      style={{
+                        width: "38px",
+                        height: "38px",
+                        borderRadius: "6px",
+                        objectFit: "cover",
+                      }}
                     />
                     <div style={{ minWidth: 0 }}>
                       <div
@@ -557,7 +616,10 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
 
       {/* ISOLATED ALBUMS VIEW */}
       {activeCategory === "albums" && (
-        <section aria-label="Album results" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <section
+          aria-label="Album results"
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
           <div
             style={{
               display: "grid",
@@ -579,7 +641,10 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
 
       {/* ISOLATED ARTISTS VIEW */}
       {activeCategory === "artists" && (
-        <section aria-label="Artist results" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <section
+          aria-label="Artist results"
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
           <div
             style={{
               display: "grid",
@@ -588,11 +653,7 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
             }}
           >
             {results.artists.map((artist) => (
-              <ArtistCardItem
-                key={artist.id}
-                artist={artist}
-                onArtistClick={handleOpenArtist}
-              />
+              <ArtistCardItem key={artist.id} artist={artist} onArtistClick={handleOpenArtist} />
             ))}
           </div>
         </section>
@@ -600,7 +661,10 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
 
       {/* ISOLATED GENRES VIEW */}
       {activeCategory === "genres" && (
-        <section aria-label="Genre results" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <section
+          aria-label="Genre results"
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
           <div
             style={{
               display: "grid",
@@ -632,7 +696,9 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                 onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-3px)")}
                 onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                >
                   <span
                     style={{
                       width: "30px",
@@ -648,9 +714,13 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                       <use href={`#${genre.icon}`} />
                     </svg>
                   </span>
-                  <span style={{ fontSize: "11px", color: "var(--m)" }}>{genre.trackCount} tracks</span>
+                  <span style={{ fontSize: "11px", color: "var(--m)" }}>
+                    {genre.trackCount} tracks
+                  </span>
                 </div>
-                <span style={{ fontSize: "18px", fontWeight: 600, color: "var(--t)" }}>{genre.name}</span>
+                <span style={{ fontSize: "18px", fontWeight: 600, color: "var(--t)" }}>
+                  {genre.name}
+                </span>
               </button>
             ))}
           </div>
@@ -697,7 +767,15 @@ function AlbumCardItem({
         transition: "all 0.2s ease",
       }}
     >
-      <div style={{ position: "relative", width: "100%", aspectRatio: "1 / 1", borderRadius: "8px", overflow: "hidden" }}>
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          aspectRatio: "1 / 1",
+          borderRadius: "8px",
+          overflow: "hidden",
+        }}
+      >
         <img
           src={album.coverUrl}
           alt={album.title}

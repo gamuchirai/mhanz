@@ -14,14 +14,9 @@ export function LikedBanner() {
 
   // Calculate dynamic stats for currently favorited tracks
   const { likedCount, totalDurationFormatted } = useMemo(() => {
-    const activeLikedTracks = tracks.filter(
-      (t) => !unlikedPendingIds.includes(t.id) && t.isLiked
-    );
+    const activeLikedTracks = tracks.filter((t) => !unlikedPendingIds.includes(t.id) && t.isLiked);
     const count = activeLikedTracks.length;
-    const totalSeconds = activeLikedTracks.reduce(
-      (sum, t) => sum + t.durationSeconds,
-      0
-    );
+    const totalSeconds = activeLikedTracks.reduce((sum, t) => sum + t.durationSeconds, 0);
 
     return {
       likedCount: count,
@@ -55,8 +50,7 @@ export function LikedBanner() {
           width: "140px",
           height: "140px",
           borderRadius: "14px",
-          background:
-            "linear-gradient(135deg, #43170e 0%, #873620 48%, #f0a982 100%)",
+          background: "linear-gradient(135deg, #43170e 0%, #873620 48%, #f0a982 100%)",
           display: "grid",
           placeItems: "center",
           boxShadow: "0 12px 32px rgba(240, 169, 130, 0.28)",
@@ -166,17 +160,13 @@ export function LikedBanner() {
               gap: "8px",
               padding: "10px 24px",
               borderRadius: "24px",
-              background: hasSongs
-                ? "var(--accent)"
-                : "rgba(255, 255, 255, 0.1)",
+              background: hasSongs ? "var(--accent)" : "rgba(255, 255, 255, 0.1)",
               color: hasSongs ? "#1a0e08" : "var(--m)",
               border: 0,
               fontSize: "14px",
               fontWeight: 700,
               cursor: hasSongs ? "pointer" : "not-allowed",
-              boxShadow: hasSongs
-                ? "0 4px 16px rgba(240, 169, 130, 0.35)"
-                : "none",
+              boxShadow: hasSongs ? "0 4px 16px rgba(240, 169, 130, 0.35)" : "none",
               transition: "transform 0.15s ease, opacity 0.15s ease",
             }}
           >

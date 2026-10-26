@@ -72,7 +72,9 @@ describe("Your Library and Folder Browser Screen", () => {
     render(<Library />);
 
     // Initially collapsed
-    expect(screen.queryByRole("region", { name: /monitored music folders/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: /monitored music folders/i })
+    ).not.toBeInTheDocument();
 
     const toggleButton = screen.getByRole("button", { name: /expand folders panel/i });
     fireEvent.click(toggleButton);
@@ -85,7 +87,9 @@ describe("Your Library and Folder Browser Screen", () => {
 
     // Toggle to collapse
     fireEvent.click(screen.getByRole("button", { name: /collapse folders panel/i }));
-    expect(screen.queryByRole("region", { name: /monitored music folders/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: /monitored music folders/i })
+    ).not.toBeInTheDocument();
   });
 
   it("opens add folder modal and imports preset demo collection into library (AC-3)", () => {
@@ -102,7 +106,9 @@ describe("Your Library and Folder Browser Screen", () => {
     expect(screen.getByText("Rock Classics")).toBeInTheDocument();
 
     // Click Add on Rock Classics preset
-    const addPresetButton = screen.getByRole("button", { name: /add preset folder rock classics/i });
+    const addPresetButton = screen.getByRole("button", {
+      name: /add preset folder rock classics/i,
+    });
     fireEvent.click(addPresetButton);
 
     // Modal closes and folder is added
@@ -170,7 +176,9 @@ describe("Your Library and Folder Browser Screen", () => {
     expect(screen.queryByText("Midnight City")).not.toBeInTheDocument(); // Midnight Chill track hidden
 
     // Clear filter
-    const clearButton = screen.getByRole("button", { name: /clear filter for folder afrobeats grooves/i });
+    const clearButton = screen.getByRole("button", {
+      name: /clear filter for folder afrobeats grooves/i,
+    });
     fireEvent.click(clearButton);
 
     expect(screen.getByText("Last Last")).toBeInTheDocument();
@@ -239,7 +247,11 @@ describe("Your Library and Folder Browser Screen", () => {
     render(<Library />);
 
     expect(screen.getByRole("region", { name: /empty library state/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /build your local music collection/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /add your first music folder/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /build your local music collection/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /add your first music folder/i })
+    ).toBeInTheDocument();
   });
 });

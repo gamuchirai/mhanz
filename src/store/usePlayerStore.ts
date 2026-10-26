@@ -175,7 +175,12 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       if (currentTrack) {
         audioResume().catch(() => {
           const filePath = currentTrack.filePath || `mock://${currentTrack.id}.mp3`;
-          audioPlayTrack(currentTrack.id, filePath, currentTime, currentTrack.durationSeconds).catch(() => {});
+          audioPlayTrack(
+            currentTrack.id,
+            filePath,
+            currentTime,
+            currentTrack.durationSeconds
+          ).catch(() => {});
         });
       }
     } else {
@@ -490,7 +495,9 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     startPlaybackTimer(get);
 
     const filePath = targetItem.track.filePath || `mock://${targetItem.track.id}.mp3`;
-    audioPlayTrack(targetItem.track.id, filePath, 0, targetItem.track.durationSeconds).catch(() => {});
+    audioPlayTrack(targetItem.track.id, filePath, 0, targetItem.track.durationSeconds).catch(
+      () => {}
+    );
   },
 
   seekToLyricLine: (timeSeconds: number) => {

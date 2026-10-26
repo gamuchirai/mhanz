@@ -44,9 +44,7 @@ export interface ArtistStoreState {
   getArtistById: (id: string) => Artist | undefined;
 }
 
-const initialFollowedIds = initialArtists
-  .filter((a) => a.isFollowed)
-  .map((a) => a.id);
+const initialFollowedIds = initialArtists.filter((a) => a.isFollowed).map((a) => a.id);
 
 export const useArtistStore = create<ArtistStoreState>()((set, get) => ({
   artists: initialArtists,

@@ -29,12 +29,7 @@ export interface LibraryTrack {
   fileSizeBytes?: number;
 }
 
-export type LibrarySortColumn =
-  | "title"
-  | "artist"
-  | "album"
-  | "durationSeconds"
-  | "dateAdded";
+export type LibrarySortColumn = "title" | "artist" | "album" | "durationSeconds" | "dateAdded";
 
 export type SortDirection = "asc" | "desc";
 

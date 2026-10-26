@@ -65,11 +65,12 @@ Standardize desktop window responsiveness and interaction performance across all
 spec [0017](../specs/0017-desktop-ui-responsiveness/index.md)
 
 - [x] Design it (spec): `/architect desktop UI responsiveness`
-- [ ] Build it: `/develop desktop UI responsiveness`
-  - [ ] Tauri window boundaries and responsive App shell with 68px icon rail navigation (AC-1, AC-2, AC-8, AC-9)
-  - [ ] Compact PlayerFooter deck with volume popover and isolated scrubber timer selectors (AC-3, AC-7, AC-8, AC-9)
-  - [ ] Progressive column hiding and virtualized song tables using @tanstack/react-virtual (AC-4, AC-6, AC-9)
-  - [ ] Fluid auto fill card grids and page container Tailwind v4 responsive styling (AC-5, AC-8, AC-9)
+- [x] Build it: `/develop desktop UI responsiveness`
+  - [x] Tauri window boundaries and responsive App shell with 68px icon rail navigation (AC-1, AC-2, AC-8, AC-9)
+  - [x] Compact PlayerFooter deck with volume popover and isolated scrubber timer selectors (AC-3, AC-7, AC-8, AC-9)
+  - [x] Progressive column hiding and virtualized song tables using @tanstack/react-virtual (AC-4, AC-6, AC-9)
+  - [x] Fluid auto fill card grids and page container Tailwind v4 responsive styling (AC-5, AC-8, AC-9)
+        code in `src/components/layout/`, `src/components/player/`, `src/components/library/`, `src/components/liked/`, `src/components/playlists/`, `src/test/responsive.test.tsx`, `src-tauri/tauri.conf.json`
 - [ ] Verify it: `/check verify desktop UI responsiveness`
 
 ## Phase 1: Clickable UI prototype

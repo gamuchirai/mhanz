@@ -56,11 +56,17 @@ export function FullscreenVisualizer({
         for (let i = 0; i < barCount; i++) {
           const x = startX + i * (barWidth * 1.5);
           // Generate organic reactive waveform based on harmonic frequencies
-          const harmonic = Math.sin(phase + i * 0.25) * 0.5 + Math.cos(phase * 0.7 + i * 0.15) * 0.5;
+          const harmonic =
+            Math.sin(phase + i * 0.25) * 0.5 + Math.cos(phase * 0.7 + i * 0.15) * 0.5;
           const energy = isPlaying ? 0.35 + 0.65 * Math.abs(harmonic) : 0.1;
           const barHeight = energy * 260;
 
-          const gradient = ctx.createLinearGradient(0, centerY - barHeight / 2, 0, centerY + barHeight / 2);
+          const gradient = ctx.createLinearGradient(
+            0,
+            centerY - barHeight / 2,
+            0,
+            centerY + barHeight / 2
+          );
           gradient.addColorStop(0, accentColor);
           gradient.addColorStop(0.5, primaryColor);
           gradient.addColorStop(1, secondaryColor);

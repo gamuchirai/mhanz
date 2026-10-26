@@ -33,7 +33,7 @@ export function CuratedGrid({ cards, title = "Made for you", onNavigate }: Curat
           See all
         </a>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "16px" }}>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] min-[1440px]:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4 max-sm:gap-3">
         {cards.map((card) => (
           <CuratedCardItem
             key={card.id}

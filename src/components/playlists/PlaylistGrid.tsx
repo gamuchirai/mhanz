@@ -126,12 +126,7 @@ export function PlaylistGrid() {
     <div
       role="region"
       aria-label="Playlist collection grid"
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-        gap: "20px",
-        width: "100%",
-      }}
+      className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] min-[1440px]:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4 max-sm:gap-3 w-full"
     >
       {filteredPlaylists.map((playlist) => (
         <PlaylistCard key={playlist.id} playlist={playlist} />

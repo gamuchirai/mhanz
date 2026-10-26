@@ -101,19 +101,7 @@ export function Library() {
     <main
       role="main"
       aria-label="Your library and folder browser"
-      style={{
-        gridColumn: 2,
-        gridRow: 1,
-        minWidth: 0,
-        overflowY: "auto",
-        overflowX: "hidden",
-        padding: "24px 32px 32px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "24px",
-        background:
-          "radial-gradient(900px 420px at 70% 0, rgba(214, 122, 84, 0.12), transparent 70%), #110c0a",
-      }}
+      className="min-w-0 h-full overflow-y-auto overflow-x-hidden p-6 max-lg:p-4 max-sm:p-3 flex flex-col gap-6 bg-[radial-gradient(900px_420px_at_70%_0,rgba(214,122,84,0.12),transparent_70%)] bg-[#110c0a]"
     >
       {/* Summary Header */}
       <LibraryHeader onPlayAll={handlePlayAll} onShuffleAll={handleShuffleAll} />

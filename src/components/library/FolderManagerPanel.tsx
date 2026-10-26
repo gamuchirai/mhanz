@@ -164,9 +164,7 @@ export function FolderManagerPanel() {
                   border: isSelected
                     ? "1px solid rgba(240, 169, 130, 0.5)"
                     : "1px solid rgba(255, 255, 255, 0.06)",
-                  boxShadow: isSelected
-                    ? "0 4px 20px rgba(240, 169, 130, 0.08)"
-                    : "none",
+                  boxShadow: isSelected ? "0 4px 20px rgba(240, 169, 130, 0.08)" : "none",
                   cursor: "pointer",
                   transition: "all 0.15s ease",
                 }}
@@ -272,11 +270,10 @@ export function FolderManagerPanel() {
                   }}
                 >
                   <span>
-                    {folder.trackCount} {folder.trackCount === 1 ? "song" : "songs"} ({formatBytes(folder.totalSizeBytes)})
+                    {folder.trackCount} {folder.trackCount === 1 ? "song" : "songs"} (
+                    {formatBytes(folder.totalSizeBytes)})
                   </span>
-                  <span style={{ fontSize: "11px", opacity: 0.8 }}>
-                    {folder.lastScanned}
-                  </span>
+                  <span style={{ fontSize: "11px", opacity: 0.8 }}>{folder.lastScanned}</span>
                 </div>
 
                 {/* Folder Actions Row */}

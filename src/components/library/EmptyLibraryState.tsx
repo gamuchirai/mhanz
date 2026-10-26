@@ -30,7 +30,8 @@ export function EmptyLibraryState() {
           width: "68px",
           height: "68px",
           borderRadius: "50%",
-          background: "linear-gradient(135deg, rgba(240, 169, 130, 0.2), rgba(240, 169, 130, 0.04))",
+          background:
+            "linear-gradient(135deg, rgba(240, 169, 130, 0.2), rgba(240, 169, 130, 0.04))",
           border: "1px solid rgba(240, 169, 130, 0.3)",
           color: "var(--accent)",
           display: "grid",

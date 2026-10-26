@@ -1,10 +1,7 @@
 import { useState } from "react";
 import type { Artist } from "../../types/artists";
 import { useArtistStore } from "../../store/useArtistStore";
-import {
-  getArtistGradient,
-  getArtistInitials,
-} from "../../utils/avatarUtils";
+import { getArtistGradient, getArtistInitials } from "../../utils/avatarUtils";
 
 interface ArtistCardProps {
   artist: Artist;
@@ -49,9 +46,7 @@ export function ArtistCard({ artist }: ArtistCardProps) {
         gap: "14px",
         padding: "16px 14px",
         borderRadius: "16px",
-        background: isHovered
-          ? "rgba(255, 255, 255, 0.05)"
-          : "rgba(255, 255, 255, 0.02)",
+        background: isHovered ? "rgba(255, 255, 255, 0.05)" : "rgba(255, 255, 255, 0.02)",
         border: isHovered
           ? "1px solid rgba(240, 169, 130, 0.25)"
           : "1px solid rgba(255, 255, 255, 0.04)",
@@ -252,9 +247,7 @@ export function ArtistCard({ artist }: ArtistCardProps) {
           border: artist.isFollowed
             ? "1px solid rgba(240, 169, 130, 0.35)"
             : "1px solid rgba(255, 255, 255, 0.12)",
-          background: artist.isFollowed
-            ? "rgba(240, 169, 130, 0.12)"
-            : "rgba(255, 255, 255, 0.04)",
+          background: artist.isFollowed ? "rgba(240, 169, 130, 0.12)" : "rgba(255, 255, 255, 0.04)",
           color: artist.isFollowed ? "var(--accent)" : "var(--t)",
           fontSize: "12px",
           fontWeight: 600,

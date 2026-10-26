@@ -6,7 +6,10 @@ export function ExploreGenresGrid() {
   const selectGenre = useSearchStore((state) => state.selectGenre);
 
   return (
-    <section aria-label="Explore genres and moods" style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+    <section
+      aria-label="Explore genres and moods"
+      style={{ display: "flex", flexDirection: "column", gap: "18px" }}
+    >
       <div>
         <h2
           style={{
@@ -24,13 +27,7 @@ export function ExploreGenresGrid() {
         </p>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))",
-          gap: "18px",
-        }}
-      >
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] min-[1440px]:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4 max-sm:gap-3">
         {exploreGenres.map((genre: GenreCard) => (
           <button
             key={genre.id}
@@ -51,7 +48,8 @@ export function ExploreGenresGrid() {
               textAlign: "left",
               cursor: "pointer",
               boxShadow: "0 4px 16px rgba(0, 0, 0, 0.35)",
-              transition: "transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease",
+              transition:
+                "transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-3px)";
@@ -96,7 +94,9 @@ export function ExploreGenresGrid() {
             </div>
 
             {/* Title & Decorative Corner Preview */}
-            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+            <div
+              style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}
+            >
               <span
                 style={{
                   fontSize: "19px",

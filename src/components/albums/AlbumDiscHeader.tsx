@@ -26,7 +26,13 @@ export function AlbumDiscHeader({ discNumber }: AlbumDiscHeaderProps) {
           textTransform: "uppercase",
         }}
       >
-        <svg className="i" width="16" height="16" aria-hidden="true" style={{ color: "var(--accent)" }}>
+        <svg
+          className="i"
+          width="16"
+          height="16"
+          aria-hidden="true"
+          style={{ color: "var(--accent)" }}
+        >
           <use href="#disc" />
         </svg>
         <span>Disc {discNumber}</span>

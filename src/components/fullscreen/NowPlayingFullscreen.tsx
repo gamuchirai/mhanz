@@ -323,11 +323,7 @@ export function NowPlayingFullscreen() {
         )}
 
         {viewMode === "lyrics" && (
-          <FullscreenLyricsView
-            track={currentTrack}
-            currentTime={currentTime}
-            onSeek={seekTo}
-          />
+          <FullscreenLyricsView track={currentTrack} currentTime={currentTime} onSeek={seekTo} />
         )}
 
         {viewMode === "visualizer" && (

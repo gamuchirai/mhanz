@@ -1,5 +1,10 @@
 import { create } from "zustand";
-import type { AudioDevice, FullscreenViewMode, UserSettings, VisualizerStyle } from "../types/overlays";
+import type {
+  AudioDevice,
+  FullscreenViewMode,
+  UserSettings,
+  VisualizerStyle,
+} from "../types/overlays";
 import { defaultUserSettings, mockAudioDevices } from "../data/mockAudioDevices";
 
 const SETTINGS_STORAGE_KEY = "mumhanzi:settings:v1";
