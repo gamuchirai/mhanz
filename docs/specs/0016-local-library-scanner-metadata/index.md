@@ -1,7 +1,7 @@
 # 0016. Local library scanner and metadata
 
 **Date**: 2026-10-24
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 
@@ -176,15 +176,15 @@ No external environment variables or API keys required. The application utilizes
 
 ## Build plan
 
-1. Add `lofty`, `walkdir`, and `rayon` dependencies to `src-tauri/Cargo.toml`, satisfies **AC-1**, **AC-3**.
-2. Implement audio file discovery and path filtering service in `src-tauri/src/scanner/discovery.rs` supporting recursion, symlink avoidance, and in memory differential timestamp checks, satisfies **AC-1**, **AC-2**, **AC-9**.
-3. Implement tag reader and artwork extractor in `src-tauri/src/scanner/metadata.rs` using lofty, SHA256 cover art caching, MIME extension mapping, picture size clamping, and title, artist, and album fallback rules, satisfies **AC-3**, **AC-4**, **AC-5**, **AC-10**.
-4. Implement catalog reconciliation and chunked SQLite writer in `src-tauri/src/scanner/batch_writer.rs` persisting tracks, albums, and artists in batches of 250 using atomic upsert statements while preserving favorites and play counts, satisfies **AC-6**, **AC-7**, **AC-8**.
-5. Implement scanner coordinator and worker thread manager in `src-tauri/src/scanner/service.rs` with cancellation tokens, busy guards, and throttled Tauri event progress emission, satisfies **AC-10**, **AC-11**.
-6. Expose Tauri IPC commands `scanner_scan_folder`, `scanner_cancel_scan`, and `scanner_get_scan_status` in `src-tauri/src/commands/scanner.rs`, register them in `src-tauri/src/lib.rs`, and update permissions in `capabilities/default.json`, satisfies **AC-11**.
-7. Create frontend TypeScript scanner client in `src/services/scanner.ts` with typed IPC wrappers, DTO adapters, and event listener subscriptions, satisfies **AC-11**, **AC-12**.
-8. Wire `useLibraryStore` and folder components in `src/store/useLibraryStore.ts` and `src/components/library/` to trigger native folder scans, display live progress indicators, convert image URLs with `convertFileSrc`, and refresh local music tracks upon completion, satisfies **AC-12**.
-9. Write unit and integration tests covering path discovery, metadata extraction, artwork hashing, batch commits, and frontend store event synchronization, satisfies **AC-1**, **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-6**, **AC-7**, **AC-8**, **AC-9**, **AC-10**, **AC-11**, **AC-12**.
+1. [x] Add `lofty`, `walkdir`, and `rayon` dependencies to `src-tauri/Cargo.toml`, satisfies **AC-1**, **AC-3**.
+2. [x] Implement audio file discovery and path filtering service in `src-tauri/src/scanner/discovery.rs` supporting recursion, symlink avoidance, and in memory differential timestamp checks, satisfies **AC-1**, **AC-2**, **AC-9**.
+3. [x] Implement tag reader and artwork extractor in `src-tauri/src/scanner/metadata.rs` using lofty, SHA256 cover art caching, MIME extension mapping, picture size clamping, and title, artist, and album fallback rules, satisfies **AC-3**, **AC-4**, **AC-5**, **AC-10**.
+4. [x] Implement catalog reconciliation and chunked SQLite writer in `src-tauri/src/scanner/batch_writer.rs` persisting tracks, albums, and artists in batches of 250 using atomic upsert statements while preserving favorites and play counts, satisfies **AC-6**, **AC-7**, **AC-8**.
+5. [x] Implement scanner coordinator and worker thread manager in `src-tauri/src/scanner/service.rs` with cancellation tokens, busy guards, and throttled Tauri event progress emission, satisfies **AC-10**, **AC-11**.
+6. [x] Expose Tauri IPC commands `scanner_scan_folder`, `scanner_cancel_scan`, and `scanner_get_scan_status` in `src-tauri/src/commands/scanner.rs`, register them in `src-tauri/src/lib.rs`, and update permissions in `capabilities/default.json`, satisfies **AC-11**.
+7. [x] Create frontend TypeScript scanner client in `src/services/scanner.ts` with typed IPC wrappers, DTO adapters, and event listener subscriptions, satisfies **AC-11**, **AC-12**.
+8. [x] Wire `useLibraryStore` and folder components in `src/store/useLibraryStore.ts` and `src/components/library/` to trigger native folder scans, display live progress indicators, convert image URLs with `convertFileSrc`, and refresh local music tracks upon completion, satisfies **AC-12**.
+9. [x] Write unit and integration tests covering path discovery, metadata extraction, artwork hashing, batch commits, and frontend store event synchronization, satisfies **AC-1**, **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-6**, **AC-7**, **AC-8**, **AC-9**, **AC-10**, **AC-11**, **AC-12**.
 
 ## Consequences
 

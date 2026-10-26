@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   useLibraryFolders,
   useLibraryStore,
@@ -21,6 +22,19 @@ export function Library() {
 
   const playCollection = usePlayerStore((state) => state.playCollection);
   const likedTrackIds = usePlayerStore((state) => state.likedTrackIds);
+
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    useLibraryStore
+      .getState()
+      .initScanner()
+      .then((unsub) => {
+        cleanup = unsub;
+      });
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, []);
 
   // Get currently active tracks according to active folder and search query
   const getActiveTracks = (): Track[] => {

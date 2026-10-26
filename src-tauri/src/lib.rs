@@ -7,6 +7,7 @@ use std::sync::Arc;
 pub mod audio;
 pub mod commands;
 pub mod db;
+pub mod scanner;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -32,8 +33,11 @@ pub fn run() {
             audio_engine.set_app_handle(app.handle().clone());
             audio_engine.set_db_manager(db_mgr_arc.clone());
 
+            let scanner_manager = Arc::new(scanner::ScannerManager::new());
+
             app.manage(db::DbState(db_mgr_arc));
             app.manage(audio::AudioState::new(audio_engine));
+            app.manage(scanner::ScannerState::new(scanner_manager));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -67,6 +71,9 @@ pub fn run() {
             commands::audio::audio_set_volume,
             commands::audio::audio_set_muted,
             commands::audio::audio_get_state,
+            commands::scanner::scanner_scan_folder,
+            commands::scanner::scanner_cancel_scan,
+            commands::scanner::scanner_get_scan_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

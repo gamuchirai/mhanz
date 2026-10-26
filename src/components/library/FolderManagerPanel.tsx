@@ -2,6 +2,7 @@ import {
   useIsFolderPanelExpanded,
   useLibraryFolders,
   useLibraryStore,
+  useScanProgress,
   useSelectedFolderId,
 } from "../../store/useLibraryStore";
 import type { MusicFolder } from "../../types/library";
@@ -11,11 +12,13 @@ export function FolderManagerPanel() {
   const isExpanded = useIsFolderPanelExpanded();
   const folders = useLibraryFolders();
   const selectedFolderId = useSelectedFolderId();
+  const scanProgress = useScanProgress();
 
   const setSelectedFolder = useLibraryStore((state) => state.setSelectedFolder);
   const openAddFolderModal = useLibraryStore((state) => state.openAddFolderModal);
   const openRemoveFolderDialog = useLibraryStore((state) => state.openRemoveFolderDialog);
   const rescanFolder = useLibraryStore((state) => state.rescanFolder);
+  const cancelScan = useLibraryStore((state) => state.cancelScan);
 
   if (!isExpanded) return null;
 
@@ -276,6 +279,49 @@ export function FolderManagerPanel() {
                   <span style={{ fontSize: "11px", opacity: 0.8 }}>{folder.lastScanned}</span>
                 </div>
 
+                {/* Live Scanning Progress Row */}
+                {folder.isScanning && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      fontSize: "11px",
+                      color: "var(--accent)",
+                      background: "rgba(240, 169, 130, 0.08)",
+                      padding: "6px 10px",
+                      borderRadius: "6px",
+                      border: "1px solid rgba(240, 169, 130, 0.2)",
+                    }}
+                  >
+                    <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <svg
+                        className="i"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ animation: "spin 1s linear infinite" }}
+                        aria-hidden="true"
+                      >
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                      </svg>
+                      <span>
+                        {scanProgress && scanProgress.folderId === folder.id
+                          ? `${scanProgress.phase.toUpperCase()}: ${scanProgress.scannedFiles}/${scanProgress.totalFiles || "?"} tracks`
+                          : "Scanning audio files..."}
+                      </span>
+                    </span>
+                    {scanProgress && scanProgress.newTracks > 0 && (
+                      <span style={{ opacity: 0.85 }}>+{scanProgress.newTracks} new</span>
+                    )}
+                  </div>
+                )}
+
                 {/* Folder Actions Row */}
                 <div
                   style={{
@@ -327,6 +373,32 @@ export function FolderManagerPanel() {
                     </svg>
                     <span>{folder.isScanning ? "Scanning..." : "Rescan"}</span>
                   </button>
+
+                  {folder.isScanning && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        cancelScan(folder.id);
+                      }}
+                      aria-label={`Cancel scanning folder ${folder.displayName}`}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        padding: "5px 10px",
+                        borderRadius: "8px",
+                        background: "rgba(240, 80, 80, 0.12)",
+                        color: "#f67e7e",
+                        border: "1px solid rgba(240, 80, 80, 0.25)",
+                        fontSize: "11px",
+                        fontWeight: 500,
+                        cursor: "pointer",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      <span>Cancel</span>
+                    </button>
+                  )}
 
                   <button
                     onClick={(e) => {

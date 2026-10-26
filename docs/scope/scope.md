@@ -263,12 +263,13 @@ Scan music folders in a background worker thread, extract audio tags and embedde
 spec [0016](../specs/0016-local-library-scanner-metadata/index.md)
 
 - [x] Design it (spec): `/architect local library scanner & metadata`
-- [ ] Build it: `/develop local library scanner & metadata`
-  - [ ] Cargo dependencies lofty, walkdir, and rayon with recursive discovery and in memory differential check (AC-1, AC-2, AC-3, AC-9)
-  - [ ] Lofty metadata parsing, tag fallbacks, and SHA256 deduplicated cover art disk caching (AC-3, AC-4, AC-5, AC-10)
-  - [ ] Catalog reconciliation, atomic upsert persistence, chunked transactions, and cancellation safe pruning (AC-6, AC-7, AC-8)
-  - [ ] Scanner service coordinator with worker threads, busy rejection, and throttled Tauri progress events (AC-10, AC-11)
-  - [ ] Frontend scanner client service and useLibraryStore integration with live scanning feedback and track table refresh (AC-11, AC-12)
+- [x] Build it: `/develop local library scanner & metadata`
+  - [x] Cargo dependencies lofty, walkdir, and rayon with recursive discovery and in memory differential check (AC-1, AC-2, AC-3, AC-9)
+  - [x] Lofty metadata parsing, tag fallbacks, and SHA256 deduplicated cover art disk caching (AC-3, AC-4, AC-5, AC-10)
+  - [x] Catalog reconciliation, atomic upsert persistence, chunked transactions, and cancellation safe pruning (AC-6, AC-7, AC-8)
+  - [x] Scanner service coordinator with worker threads, busy rejection, and throttled Tauri progress events (AC-10, AC-11)
+  - [x] Frontend scanner client service and useLibraryStore integration with live scanning feedback and track table refresh (AC-11, AC-12)
+        code in `src-tauri/src/scanner/`, `src-tauri/src/commands/scanner.rs`, `src/services/scanner.ts`, `src/types/scanner.ts`, `src/store/useLibraryStore.ts`
 - [ ] Verify it: `/check verify local library scanner & metadata`
 
 ### 16. Playlists & favorites persistence · in-progress
