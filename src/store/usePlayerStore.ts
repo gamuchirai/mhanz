@@ -572,6 +572,8 @@ if (typeof window !== "undefined") {
 export const useCurrentTrack = () => usePlayerStore((state) => state.currentTrack);
 export const useIsPlaying = () => usePlayerStore((state) => state.isPlaying);
 export const useCurrentTime = () => usePlayerStore((state) => state.currentTime);
+export const useDuration = () =>
+  usePlayerStore((state) => state.currentTrack?.durationSeconds ?? 0);
 export const usePlaybackQueue = () => usePlayerStore((state) => state.queue);
 export const useQueueItems = () => usePlayerStore((state) => state.queueItems);
 export const useUpcomingQueue = () =>

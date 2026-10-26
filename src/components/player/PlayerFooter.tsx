@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePlayerStore } from "../../store/usePlayerStore";
 import { useOverlayStore } from "../../store/useOverlayStore";
 import { MarqueeText } from "../home/MarqueeText";
@@ -31,6 +31,25 @@ export function PlayerFooter({ className = "" }: PlayerFooterProps) {
 
   const [imageError, setImageError] = useState(false);
   const [volumePopoverOpen, setVolumePopoverOpen] = useState(false);
+  const volumePopoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!volumePopoverOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (volumePopoverRef.current && !volumePopoverRef.current.contains(e.target as Node)) {
+        setVolumePopoverOpen(false);
+      }
+    };
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setVolumePopoverOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    document.addEventListener("keydown", keyHandler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("keydown", keyHandler);
+    };
+  }, [volumePopoverOpen]);
 
   const isLiked = currentTrack ? Boolean(likedTrackIds[currentTrack.id]) : false;
   const defaultBg = "linear-gradient(180deg,#2f2742,#a24f5a 50%,#e8955f 68%,#160d0a 69%)";
@@ -219,6 +238,7 @@ export function PlayerFooter({ className = "" }: PlayerFooterProps) {
           {volumePopoverOpen && (
             <div
               role="dialog"
+              ref={volumePopoverRef}
               aria-label="Volume adjustment"
               className="absolute bottom-12 right-0 bg-[#1f1513] border border-white/10 p-3 rounded-xl shadow-2xl flex items-center gap-2 z-50 animate-in fade-in zoom-in-95 duration-150"
             >

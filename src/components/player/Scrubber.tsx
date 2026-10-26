@@ -1,5 +1,5 @@
 import { type MouseEvent } from "react";
-import { useCurrentTime, usePlayerStore } from "../../store/usePlayerStore";
+import { useCurrentTime, useDuration, usePlayerStore } from "../../store/usePlayerStore";
 import { formatDuration } from "../../utils/format";
 
 interface ScrubberProps {
@@ -13,7 +13,7 @@ interface ScrubberProps {
  */
 export function Scrubber({ className = "" }: ScrubberProps) {
   const currentTime = useCurrentTime();
-  const duration = usePlayerStore((state) => state.currentTrack?.durationSeconds ?? 0);
+  const duration = useDuration();
   const seekTo = usePlayerStore((state) => state.seekTo);
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;

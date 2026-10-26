@@ -71,7 +71,8 @@ spec [0017](../specs/0017-desktop-ui-responsiveness/index.md)
   - [x] Progressive column hiding and virtualized song tables using @tanstack/react-virtual (AC-4, AC-6, AC-9)
   - [x] Fluid auto fill card grids and page container Tailwind v4 responsive styling (AC-5, AC-8, AC-9)
         code in `src/components/layout/`, `src/components/player/`, `src/components/library/`, `src/components/liked/`, `src/components/playlists/`, `src/test/responsive.test.tsx`, `src-tauri/tauri.conf.json`
-- [ ] Verify it: `/check verify desktop UI responsiveness`
+- [x] Verify it: `/check verify desktop UI responsiveness`
+- [x] Review it: `/check review desktop UI responsiveness` · findings in `docs/reviews/2026-10-26-feat-desktop-ui-responsiveness.md` · verdict: Approve with nits
 
 ## Phase 1: Clickable UI prototype
 
