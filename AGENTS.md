@@ -14,8 +14,11 @@ Facade (UI first clickable shell on placeholder data, then wire the backend).
 ## Git
 
 - integration: on
+- base-branch: main
 - branch prefix: feat/
 - commit: per-milestone
+- merge-strategy: pull-request (never merge directly to main)
+- pr-review: required (/check review before merge)
 
 ## Commands
 
@@ -54,6 +57,9 @@ Stored in `docs/specs/`. Format: `docs/specs/NNNN-title.md`.
 - Validate configuration and environment settings on application startup.
 - Document public APIs with concise docstrings on shared functions.
 - Conventional commit messages using standard prefixes like feat and fix.
+- Always branch from latest main for any new feature; never commit directly to main.
+- Deliver completed features via pull requests opened against main.
+- An independent agent code review via /check review is required before merging any pull request.
 
 ## Tooling
 

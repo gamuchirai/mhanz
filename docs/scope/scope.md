@@ -3,7 +3,7 @@
 A lightweight modern desktop music player inspired by Windows Groove Music and the Midnight visual layout, built with Tauri, Rust, Vite, and TypeScript.
 
 **Build approach:** Facade (UI first clickable shell on placeholder data, then wire the backend).
-**Workflow:** Alpha (after /develop, /check verify on the running app). The project default level of rigor. `/architect` is the recommended first stop for a feature with a real decision, but skippable when you already know the build. Any feature can carry its own tag (e.g. `· GA`) to do more or less.
+**Workflow:** Beta (after /develop, /check verify on the running app, then /check review before merge). The project default level of rigor. `/architect` is the recommended first stop for a feature with a real decision, but skippable when you already know the build. Any feature can carry its own tag (e.g. `· GA`) to do more or less.
 
 _These are recommendations to keep your build orderly, not requirements. Skip anything that does not fit: if you already know how to build a feature, use `/develop` and skip `/architect`. You decide when a feature is `done`._
 
