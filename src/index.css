@@ -7,9 +7,9 @@
   --color-midnight-muted: #a89b91;
   --color-midnight-border: rgba(255, 255, 255, 0.09);
   --color-midnight-accent: #f0a982;
-  --font-sans: 'Outfit', system-ui, sans-serif;
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
-  --font-script: 'Pinyon Script', cursive;
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-script: "Pinyon Script", cursive;
 }
 
 :root {
@@ -20,7 +20,9 @@
   --accent: #f0a982;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
   margin: 0;
@@ -31,7 +33,7 @@ body {
   margin: 0;
   background-color: #0b0706;
   color: var(--t);
-  font-family: 'Outfit', system-ui, sans-serif;
+  font-family: "Outfit", system-ui, sans-serif;
   font-size: 14px;
   overflow: hidden;
   user-select: none;
@@ -69,4 +71,17 @@ input::placeholder {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.16);
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-hover:hover .marquee-inner {
+  animation: marquee 8s linear infinite;
 }

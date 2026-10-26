@@ -1,82 +1,310 @@
 # Scope: Mumhanzi
 
-A lightweight, modern desktop music player inspired by Windows Groove Music and the Midnight UI design, built with Tauri, Rust, Vite, and TypeScript.
+A lightweight modern desktop music player inspired by Windows Groove Music and the Midnight visual layout, built with Tauri, Rust, Vite, and TypeScript.
 
-**Build approach:** Tracer Bullet (vertical slices; each feature built end to end through every layer, working).
-**Workflow:** Beta (after /develop, /check verify then /test). The project default level of rigor. `/architect` is the recommended first stop for a feature with a real decision, but skippable when you already know the build. Any feature can carry its own tag (e.g. `· GA`) to do more or less.
+**Build approach:** Facade (UI first clickable shell on placeholder data, then wire the backend).
+**Workflow:** Beta (after /develop, /check verify on the running app, then /check review before merge). The project default level of rigor. `/architect` is the recommended first stop for a feature with a real decision, but skippable when you already know the build. Any feature can carry its own tag (e.g. `· GA`) to do more or less.
 
 _These are recommendations to keep your build orderly, not requirements. Skip anything that does not fit: if you already know how to build a feature, use `/develop` and skip `/architect`. You decide when a feature is `done`._
 
 ## At a glance
 
-| # | Feature | Phase | Status |
-|---|---------|-------|--------|
-| 1 | Stack & architecture | Foundation | in-progress |
-| 2 | Coding standards & tooling | Foundation | planned |
-| 3 | Data model | Foundation | planned |
-| 4 | Design system & UI foundation | Foundation | planned |
-| 5 | Core playback loop | Slice 1 | planned |
-| 6 | Local library scanner | Slice 2 | planned |
-| 7 | Playlists & favorites | Slice 3 | planned |
-| 8 | Library search & filtering | Slice 4 | planned |
+| #   | Feature                            | Phase      | Status      |
+| --- | ---------------------------------- | ---------- | ----------- |
+| 1   | Stack & architecture               | Foundation | done        |
+| 2   | Coding standards & tooling         | Foundation | in-progress |
+| 3   | Design system & navigation shell   | Foundation | planned     |
+| 4   | Home & discovery screen            | Phase 1    | in-progress |
+| 5   | Search & explore screen            | Phase 1    | in-progress |
+| 6   | Your library & folder browser      | Phase 1    | in-progress |
+| 7   | Liked songs screen                 | Phase 1    | in-progress |
+| 8   | Playlists & playlist detail        | Phase 1    | in-progress |
+| 9   | Albums & album detail              | Phase 1    | in-progress |
+| 10  | Artists & artist profile           | Phase 1    | in-progress |
+| 11  | Queue, lyrics & settings overlays  | Phase 1    | in-progress |
+| 12  | Now playing fullscreen view        | Phase 1    | in-progress |
+| 13  | Data model & SQLite storage        | Phase 2    | in-progress |
+| 14  | Core audio playback engine         | Phase 2    | in-progress |
+| 15  | Local library scanner & metadata   | Phase 2    | in-progress |
+| 16  | Playlists & favorites persistence  | Phase 2    | in-progress |
+| 17  | Fast local library search indexing | Phase 2    | in-progress |
+| 18  | Desktop UI responsiveness          | Foundation | in-progress |
 
 ## Foundations
 
-### 1. Stack & architecture · in-progress
-Decide the Tauri, Rust, Vite, and TypeScript project structure, scaffold a runnable desktop application shell.
+### 1. Stack & architecture · done
+
+Decide the Tauri, Rust, Vite, and TypeScript project structure, and scaffold a runnable desktop application shell.
 **Done when:** the stack is recorded in a spec, Tauri boots a desktop window running the Vite dev server, and cargo build succeeds.
 spec [0001](../specs/0001-stack-architecture/index.md) · code in src/ and src-tauri/
+
 - [x] Decide the stack (spec): `/architect stack & architecture`
 - [x] Scaffold from the decision: `/develop stack & architecture`
-- [ ] Verify it: `/check verify stack & architecture`
-- [ ] Test it: `/test stack & architecture`
+- [x] Verify it: `/check verify stack & architecture`
 
-### 2. Coding standards & tooling
+### 2. Coding standards & tooling · in-progress
+
 Capture conventions, then configure TypeScript checks, Rust clippy, formatting, and test commands from the scaffold.
 **Done when:** root `AGENTS.md` reflects the project stack, and typecheck, lint, and formatting run clean.
-- [ ] Capture conventions and tooling choices: `/audit`
+spec [0003](../specs/0003-coding-standards-tooling/verify.md)
 
-### 3. Data model · needs a decision
-Define core Rust and TypeScript entities for Track, Album, Artist, Playlist, and PlaybackState, plus SQLite schema and migrations.
+- [x] Capture conventions and tooling choices: `/audit`
+- [x] Verify it: `/check verify coding standards & tooling`
+
+### 3. Design system & navigation shell · needs a decision
+
+Extract the Midnight styling tokens and build the application shell with sidebar navigation, view switching state, and player footer container.
+**Done when:** the sidebar items switch the active view container, navigation buttons update, and the dark Midnight theme variables render consistently across all views.
+
+- [ ] Design it (spec): `/architect design system & navigation shell`
+
+### 18. Desktop UI responsiveness · in-progress
+
+Standardize desktop window responsiveness and interaction performance across all pages and components with Tailwind CSS v4, collapsible navigation, virtualized tables, and isolated playback timer state.
+**Done when:** the desktop window resizes fluidly down to 640px by 480px without layout breakage, sidebar collapses to a 68px icon rail under 1024px, player footer adapts below 900px, track tables virtualize smoothly at 60 FPS via @tanstack/react-virtual, and audio timer ticks do not trigger whole page re renders.
+spec [0017](../specs/0017-desktop-ui-responsiveness/index.md)
+
+- [x] Design it (spec): `/architect desktop UI responsiveness`
+- [x] Build it: `/develop desktop UI responsiveness`
+  - [x] Tauri window boundaries and responsive App shell with 68px icon rail navigation (AC-1, AC-2, AC-8, AC-9)
+  - [x] Compact PlayerFooter deck with volume popover and isolated scrubber timer selectors (AC-3, AC-7, AC-8, AC-9)
+  - [x] Progressive column hiding and virtualized song tables using @tanstack/react-virtual (AC-4, AC-6, AC-9)
+  - [x] Fluid auto fill card grids and page container Tailwind v4 responsive styling (AC-5, AC-8, AC-9)
+        code in `src/components/layout/`, `src/components/player/`, `src/components/library/`, `src/components/liked/`, `src/components/playlists/`, `src/test/responsive.test.tsx`, `src-tauri/tauri.conf.json`
+- [x] Verify it: `/check verify desktop UI responsiveness`
+- [x] Review it: `/check review desktop UI responsiveness` · findings in `docs/reviews/2026-10-26-feat-desktop-ui-responsiveness.md` · verdict: Approve with nits
+
+## Phase 1: Clickable UI prototype
+
+### 4. Home & discovery screen · in-progress
+
+Build the home discovery view with hero showcase banner, playlist recommendation cards, recently played carousel, and popular tracks table.
+**Done when:** clicking Home displays the hero card, curated playlist cards, recently played items, and popular track list with mock data and play button triggers.
+spec [0002](../specs/0002-home-discovery-screen/index.md)
+
+- [x] Design it (spec): `/architect home & discovery screen`
+- [x] Build it: `/develop home & discovery screen`
+  - [x] Discovery types and mock fixtures (AC-1, AC-6)
+  - [x] Zustand discovery and playback store with simulated timer (AC-2, AC-3, AC-4, AC-8)
+  - [x] Modular Home components HeroBanner, CuratedGrid, RecentCarousel, TrackTable with marquee and fallbacks (AC-1, AC-3, AC-5, AC-7)
+  - [x] Page assembly in Home.tsx and App.tsx shell navigation integration (AC-1, AC-2, AC-8)
+  - [x] Interactive unit and component tests (AC-2, AC-3, AC-4)
+        code in `src/pages/Home.tsx`, `src/components/home/`, `src/store/usePlayerStore.ts`
+- [x] Verify it: `/check verify home & discovery screen`
+
+### 5. Search & explore screen · in-progress
+
+Create the search interface with instant query input, filter category pills, and categorized result cards for tracks, albums, and artists.
+**Done when:** selecting Search opens the search screen, typing filters mock music items by title, artist, or genre, and category chips update visible cards.
+spec [0004](../specs/0004-search-explore-screen/index.md)
+
+- [x] Design it (spec): `/architect search & explore screen`
+- [x] Build it: `/develop search & explore screen`
+  - [x] Search types and mock data fixtures for genres, albums, and artists (AC-1, AC-2, AC-5)
+  - [x] Zustand search store with debounced filtering, category switching, and recent queries (AC-3, AC-4, AC-6, AC-8, AC-10)
+  - [x] Modular components SearchBar, FilterPills, ExploreGenresGrid, CategorizedResults, EmptySearchState (AC-1, AC-2, AC-5, AC-7, AC-8, AC-9)
+  - [x] Search page assembly and App shell navigation wiring (AC-1, AC-3, AC-7)
+  - [x] Unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-7, AC-8, AC-9)
+        code in `src/pages/Search.tsx`, `src/components/search/`, `src/store/useSearchStore.ts`
+- [ ] Verify it: `/check verify search & explore screen`
+
+### 6. Your library & folder browser · in-progress
+
+Construct the local library overview screen displaying indexed songs table, folder paths list, and folder picker action button.
+**Done when:** selecting Your Library presents the song table with sortable columns, total track count, and a clickable add music folder action card.
+spec [0005](../specs/0005-your-library-folder-browser/index.md)
+
+- [x] Design it (spec): `/architect your library & folder browser`
+- [x] Build it: `/develop your library & folder browser`
+  - [x] Library types, sort contracts, and mock fixtures (AC-1, AC-2, AC-3)
+  - [x] Zustand library store with folder management, rescan simulation, and sorting (AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8)
+  - [x] Modular components LibraryHeader, FolderManagerPanel, FolderSelectionModal, FolderRemovalDialog, SongTable, and EmptyLibraryState (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-10, AC-11)
+  - [x] Library page assembly and App navigation shell wiring (AC-1, AC-9)
+  - [x] Unit and component test suite (AC-1, AC-2, AC-4, AC-5, AC-7, AC-8, AC-10)
+        code in `src/pages/Library.tsx`, `src/components/library/`, `src/store/useLibraryStore.ts`
+- [ ] Verify it: `/check verify your library & folder browser`
+
+### 7. Liked songs screen · in-progress
+
+Assemble the liked tracks collection view with decorative header banner, track statistics, play all action, and favorited songs list.
+**Done when:** navigating to Liked Songs shows the heart hero banner, total count and duration, with interactive heart buttons that toggle track like states.
+spec [0006](../specs/0006-liked-songs-screen/index.md)
+
+- [x] Design it (spec): `/architect liked songs screen`
+- [x] Build it: `/develop liked songs screen`
+  - [x] Liked songs types, sort contracts, and mock fixtures (AC-1, AC-7)
+  - [x] Zustand liked songs store with unlike retention, filtering, and sorting (AC-2, AC-3, AC-4, AC-5, AC-7, AC-8, AC-9, AC-12)
+  - [x] Modular components LikedBanner, LikedFilterBar, LikedSongTable, and EmptyLikedState (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11)
+  - [x] Page assembly in LikedSongs.tsx and App navigation shell wiring (AC-1, AC-11, AC-12)
+  - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+        code in `src/pages/LikedSongs.tsx`, `src/components/liked/`, `src/store/useLikedSongsStore.ts`
+- [ ] Verify it: `/check verify liked songs screen`
+
+### 8. Playlists & playlist detail · in-progress
+
+Display user playlist cards grid, new playlist creation trigger, and dedicated playlist detail view with custom cover, tracklist, and action buttons.
+**Done when:** clicking Playlists renders the playlist collection, clicking a playlist opens its detail view with track list, and new playlist opens a creation prompt.
+spec [0007](../specs/0007-playlists-playlist-detail/index.md)
+
+- [x] Design it (spec): `/architect playlists & playlist detail`
+- [x] Build it: `/develop playlists & playlist detail`
+  - [x] Playlist types, gradient presets, and mock playlist fixtures (AC-1, AC-2, AC-4)
+  - [x] Zustand playlist store with CRUD, track curation, reordering, and playback queue coordination (AC-2, AC-3, AC-6, AC-7, AC-9, AC-10, AC-11, AC-12)
+  - [x] Modular components PlaylistHeader, PlaylistGrid, PlaylistCard, PlaylistModal, PlaylistDetailBanner, PlaylistSongTable, PlaylistEmptyState, DeletePlaylistDialog, and AddSongsDrawer (AC-1, AC-2, AC-4, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+  - [x] Page assembly in Playlists.tsx, App navigation shell wiring, and sidebar reactive playlists synchronization (AC-1, AC-3, AC-4, AC-5, AC-11, AC-12)
+  - [x] Unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+        code in `src/pages/Playlists.tsx`, `src/components/playlists/`, `src/store/usePlaylistStore.ts`
+- [ ] Verify it: `/check verify playlists & playlist detail`
+
+### 9. Albums & album detail · in-progress
+
+Build the album collection grid with cover art, release year, and detailed album view featuring header metadata, artist link, and numbered tracklist.
+**Done when:** selecting Albums displays the album grid, clicking an album navigates to the album detail layout showing all tracks, durations, and release year.
+spec [0008](../specs/0008-albums-album-detail/index.md)
+
+- [x] Design it (spec): `/architect albums & album detail`
+- [x] Build it: `/develop albums & album detail`
+  - [x] Album types and mock album fixtures with multi disc entries and fallback artwork (AC-1, AC-8, AC-11)
+  - [x] Zustand album store with search, sort, active selection, favorite toggling, and playback queueing (AC-2, AC-3, AC-4, AC-5, AC-7, AC-10, AC-12)
+  - [x] Modular components AlbumHeader, AlbumGrid, AlbumCard, AlbumDetailBanner, AlbumTrackList, AlbumDiscHeader, AlbumTrackRow, AlbumVinylPlaceholder, and AlbumEmptyState (AC-1, AC-2, AC-4, AC-8, AC-9, AC-10, AC-11)
+  - [x] Page container Albums.tsx, App navigation shell wiring, and cross screen deep linking (AC-1, AC-4, AC-5, AC-6, AC-12)
+  - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+        code in `src/pages/Albums.tsx`, `src/components/albums/`, `src/store/useAlbumStore.ts`
+- [ ] Verify it: `/check verify albums & album detail`
+
+### 10. Artists & artist profile · in-progress
+
+Present artists in a circular portrait grid with follower counts, along with an artist profile page showing hero banner, top tracks table, and album discography.
+**Done when:** selecting Artists shows artist cards, clicking an artist opens their profile with popular tracks, discography releases, and about blurb.
+spec [0009](../specs/0009-artists-artist-profile/index.md)
+
+- [x] Design it (spec): `/architect artists & artist profile`
+- [x] Build it: `/develop artists & artist profile`
+  - [x] Artist domain types, procedural avatar helpers, and rich artist fixtures (AC-1, AC-8, AC-11)
+  - [x] Zustand artist store with catalog search, sort, active selection, follow toggle, and discography filtering (AC-2, AC-3, AC-4, AC-7, AC-10, AC-12)
+  - [x] Modular components ArtistHeader, ArtistGrid, ArtistCard, ArtistProfileBanner, ArtistPopularTracks, ArtistPopularTrackRow, ArtistDiscography, ArtistBioCard, and ArtistEmptyState (AC-1, AC-2, AC-4, AC-5, AC-7, AC-8, AC-9, AC-10, AC-11)
+  - [x] Page container Artists.tsx, App navigation shell wiring, and cross screen deep linking (AC-1, AC-4, AC-5, AC-6, AC-12)
+  - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+        code in `src/pages/Artists.tsx`, `src/components/artists/`, `src/store/useArtistStore.ts`
+- [x] Verify it: `/check verify artists & artist profile`
+
+### 11. Queue, lyrics & settings overlays · in-progress
+
+Build the slide out now playing queue drawer, timed lyrics overlay modal, and audio preferences settings panel.
+**Done when:** clicking queue or lyrics in the player bar toggles their respective drawers or modals, and settings allows selecting mock audio devices and visualizer styles.
+spec [0010](../specs/0010-queue-lyrics-settings-overlays/index.md)
+
+- [x] Design it (spec): `/architect queue, lyrics & settings overlays`
+- [x] Build it: `/develop queue, lyrics & settings overlays`
+  - [x] Domain types and mock fixtures for queue, lyrics, and audio devices (AC-3, AC-8, AC-11, AC-12)
+  - [x] Reactive Zustand overlay visibility and settings stores with local storage persistence (AC-1, AC-2, AC-12, AC-13)
+  - [x] Player store queue extensions for reordering, adding, removing, and clearing upcoming tracks (AC-4, AC-5, AC-6, AC-7)
+  - [x] Modular components for QueueDrawer, LyricsModal, and SettingsModal with smooth auto scroll and drag reordering (AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+  - [x] PlayerFooter triggers, App sidebar gear trigger, escape key listener, and backdrop dismissal (AC-1, AC-2, AC-8, AC-12, AC-13)
+  - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-4, AC-5, AC-6, AC-7, AC-9, AC-10, AC-12, AC-13)
+        code in `src/components/queue/`, `src/components/lyrics/`, `src/components/settings/`, `src/store/useOverlayStore.ts`, `src/store/useSettingsStore.ts`
+- [ ] Verify it: `/check verify queue, lyrics & settings overlays`
+
+### 12. Now playing fullscreen view · in-progress
+
+Fullscreen immersion view for the active track with enlarged album artwork, full width timeline scrub bar, dedicated playback transport controls, and return navigation to the prior screen.
+**Done when:** clicking the track thumbnail or song title in PlayerFooter opens the fullscreen now playing view without sidebar or bottom player bar, and clicking the return button restores the previous screen.
+spec [0011](../specs/0011-now-playing-fullscreen-view/index.md)
+
+- [x] Design it (spec): `/architect now playing fullscreen view`
+- [x] Build it: `/develop now playing fullscreen view`
+  - [x] Extended domain models, ambient color types, and persistent user settings (AC-5, AC-14)
+  - [x] Reactive Zustand overlay store extensions and view mode selectors (AC-2, AC-14)
+  - [x] Modular fullscreen subcomponents for header, artwork hero, synchronized lyrics, 720p visualizer, and bottom deck (AC-4, AC-6, AC-7, AC-8, AC-9, AC-10)
+  - [x] NowPlayingFullscreen overlay container with auto hide timers, scoped keyboard listeners, and accessibility dialog trap (AC-2, AC-3, AC-5, AC-8, AC-11, AC-12, AC-13, AC-15)
+  - [x] PlayerFooter entry triggers and root App integration (AC-1, AC-2, AC-13)
+  - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-4, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12, AC-13, AC-14, AC-15)
+        code in `src/components/fullscreen/`, `src/store/useOverlayStore.ts`, `src/types/discovery.ts`, `src/types/overlays.ts`
+- [ ] Verify it: `/check verify now playing fullscreen view`
+
+## Phase 2: Backend wiring & persistence
+
+### 13. Data model & SQLite storage · in-progress
+
+Define core Rust and TypeScript entities for Track, Album, Artist, Playlist, and PlaybackState, with SQLite schema migrations and connection pool.
 **Done when:** database migrations create tables with indices for fast search, and Rust models serialize to TypeScript types cleanly.
-- [ ] Design it (spec): `/architect data model`
+spec [0012](../specs/0012-data-model-sqlite-storage/index.md)
 
-### 4. Design system & UI foundation · needs a decision
-Port the Midnight HTML layout and CSS styling from demo-ui into structured, reusable web components with theme tokens.
-**Done when:** the desktop window renders the Midnight layout (collapsible sidebar, hero showcase, album grid, bottom player bar) with responsive scaling.
-- [ ] Design it (spec): `/architect design system & UI foundation`
+- [x] Design it (spec): `/architect data model & SQLite storage`
+- [x] Build it: `/develop data model & SQLite storage`
+  - [x] Cargo dependencies, initial SQL migrations, and connection manager with WAL mode (AC-1, AC-2, AC-3, AC-4, AC-5, AC-11)
+  - [x] Rust domain models, DTOs, and error serialization contracts (AC-2, AC-6)
+  - [x] Folder, track, catalog, playlist, and settings repositories (AC-7, AC-8, AC-9, AC-10, AC-12)
+  - [x] Tauri IPC command handlers, capabilities permissions, and app setup lifecycle (AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+  - [x] Frontend TypeScript database service and integration test suite (AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+        code in `src-tauri/src/db/`, `src-tauri/src/commands/db.rs`, `src/services/db.ts`, `src/types/database.ts`
+- [ ] Verify it: `/check verify data model & SQLite storage`
 
-## Slice 1: Core playback loop
+### 14. Core audio playback engine · in-progress
 
-### 5. Core playback loop · needs a decision
-Build the thin end to end playback thread from the player bar through Tauri IPC to the Rodio audio engine.
-**Done when:** clicking play loads a local audio file, sound plays through the output device, playback progress updates the UI bar in real time, and pause, resume, seek, and volume controls work.
-- [ ] Design it (spec): `/architect core playback loop`
+Connect the player bar through Tauri IPC to the Rodio audio engine on a dedicated audio thread.
+**Done when:** clicking play loads local audio, sound plays through the output device, playback progress updates the UI bar in real time, and pause, resume, seek, and volume controls work.
+spec [0013](../specs/0013-core-audio-playback-engine/index.md)
 
-## Slice 2: Local library scanner
+- [x] Design it (spec): `/architect core audio playback engine`
+- [x] Build it: `/develop core audio playback engine`
+  - [x] Cargo Rodio dependency, audio domain models, and thread safe AudioEngine container (AC-1, AC-2, AC-8)
+  - [x] Format validation, audio playback, seeking, and transport control command handlers (AC-3, AC-4, AC-5, AC-6, AC-10)
+  - [x] Background progress timer thread, track completion monitor, and SQLite play count milestone updates (AC-7, AC-9, AC-11)
+  - [x] Frontend AudioService with browser mock fallback and usePlayerStore real time IPC integration (AC-12)
+  - [x] Rust unit test suite and Vitest frontend integration tests (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+        code in `src-tauri/src/audio/`, `src-tauri/src/commands/audio.rs`, `src/services/audio.ts`, `src/types/audio.ts`, `src/store/usePlayerStore.ts`
+- [x] Verify it: `/check verify core audio playback engine`
 
-### 6. Local library scanner · needs a decision
-Scan music folders in a background thread, extract metadata and embedded cover art using lofty, and persist records to SQLite.
-**Done when:** selecting a music folder recursively finds supported audio files, saves track tags and album art into SQLite, and populates the library view.
-- [ ] Design it (spec): `/architect local library scanner`
+### 15. Local library scanner & metadata · in-progress
 
-## Slice 3: Playlists & favorites
+Scan music folders in a background worker thread, extract audio tags and embedded artwork with lofty, and persist records into SQLite.
+**Done when:** selecting a music folder recursively finds audio files, saves track tags and album art into SQLite, and populates the library view with real local music.
+spec [0016](../specs/0016-local-library-scanner-metadata/index.md)
 
-### 7. Playlists & favorites · needs a decision
-Create and manage user playlists, add or remove tracks, and toggle favorite songs with immediate SQLite persistence.
-**Done when:** a user can create a playlist, add songs to it, reorder tracks, and see liked songs marked in the UI.
-- [ ] Design it (spec): `/architect playlists & favorites`
+- [x] Design it (spec): `/architect local library scanner & metadata`
+- [ ] Build it: `/develop local library scanner & metadata`
+  - [ ] Cargo dependencies lofty, walkdir, and rayon with recursive discovery and in memory differential check (AC-1, AC-2, AC-3, AC-9)
+  - [ ] Lofty metadata parsing, tag fallbacks, and SHA256 deduplicated cover art disk caching (AC-3, AC-4, AC-5, AC-10)
+  - [ ] Catalog reconciliation, atomic upsert persistence, chunked transactions, and cancellation safe pruning (AC-6, AC-7, AC-8)
+  - [ ] Scanner service coordinator with worker threads, busy rejection, and throttled Tauri progress events (AC-10, AC-11)
+  - [ ] Frontend scanner client service and useLibraryStore integration with live scanning feedback and track table refresh (AC-11, AC-12)
+- [ ] Verify it: `/check verify local library scanner & metadata`
 
-## Slice 4: Library search & filtering
+### 16. Playlists & favorites persistence · in-progress
 
-### 8. Library search & filtering · needs a decision
-Filter the music collection instantly by title, artist, or album using indexed SQLite queries with debounced UI input.
-**Done when:** typing in the search box updates the visible track and album list with matching results under fifty milliseconds.
-- [ ] Design it (spec): `/architect library search & filtering`
+Wire playlist creation, editing, track reordering, and liking songs to immediate SQLite database persistence.
+**Done when:** creating or editing playlists and clicking hearts updates SQLite records, and changes persist across application restarts.
+spec [0015](../specs/0015-playlists-favorites-persistence/index.md)
+
+- [x] Design it (spec): `/architect playlists & favorites persistence`
+- [ ] Build it: `/develop playlists & favorites persistence`
+  - [ ] Schema migration and Rust backend persistence: Migration V002 schema additions, updated repository methods, transactional container seeding, and Tauri IPC command contracts (AC-1, AC-2, AC-3, AC-4, AC-8)
+  - [ ] Centralized favorite synchronization: Shared coordinator service with in flight request serialization, instant SQLite persistence, and cross store heart state sync (AC-1, AC-9, AC-10, AC-11)
+  - [ ] Frontend playlist and liked songs stores: SQLite hydration on boot, lazy detail fetching, optimistic CRUD, and atomic drag reordering (AC-5, AC-6, AC-7, AC-8)
+  - [ ] Playback context coordination and test suite: Player store context cleanup on playlist deletion, optimistic rollback handling, and comprehensive unit and integration tests (AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+- [ ] Verify it: `/check verify playlists & favorites persistence`
+
+### 17. Fast local library search indexing · in-progress
+
+Filter the music collection by title, artist, or album using indexed SQLite queries with debounced UI input.
+**Done when:** typing in the search box queries SQLite and updates visible tracks and albums with matching results in under fifty milliseconds.
+spec [0014](../specs/0014-fast-local-library-search-indexing/index.md)
+
+- [x] Design it (spec): `/architect fast local library search indexing`
+- [ ] Build it: `/develop fast local library search indexing`
+  - [ ] rusqlite full extension dependency and V002 search index migration with B Tree locator table and targeted triggers (AC-1, AC-2, AC-3, AC-4, AC-5)
+  - [ ] Rust search repository with query sanitization, tokenization, BM25 scoring, exact match boosting, and dynamic genre aggregation (AC-6, AC-7, AC-8, AC-9, AC-10)
+  - [ ] Tauri IPC command db_search_library, client service helper, and frontend model adapters (AC-7, AC-11, AC-17)
+  - [ ] Zustand search store wiring with debounced IPC queries, monotonic request tokens, and badge count preservation (AC-12, AC-13, AC-14, AC-16)
+  - [ ] Search UI playlist filter pill and playlist card grid integration with queue playback (AC-14, AC-15)
+- [ ] Verify it: `/check verify fast local library search indexing`
 
 ## Deferred
+
 Out of scope for the current build pass, kept so the plan stays honest.
-- **Synchronized lyrics**: fetch and display timed lyrics beside the now playing hero · needs a decision
+
+- **Synchronized lyrics online fetch**: fetch and display timed lyrics from online lyrics providers · needs a decision
 - **Audio equalizer**: multi band graphic equalizer and audio DSP filters in the Rodio pipeline · needs a decision
 - **Operating system media keys**: integrate Windows system media transport controls and global shortcut keys · needs a decision
 - **Mini player overlay**: compact picture in picture floating widget for background desktop listening · needs a decision
@@ -87,13 +315,13 @@ Out of scope for the current build pass, kept so the plan stays honest.
 
 **Feature lifecycle**: the scope updates as a feature moves; each row is what it shows and who sets it:
 
-| State | Set by | The feature shows |
-|---|---|---|
-| `planned` · needs a decision | `/scope` | one box: `Design it (spec): /architect <feature>` |
-| `in-progress` (designed) | `/architect` at spec capture | `Design it` ticked; spec linked; `Build it: /develop <feature>` + 2 to 5 milestones; the tier closing boxes (`Verify it` Alpha+, `Test it` Beta+, `Review it` + `Document it` GA); any surfaced follow up enrolled |
-| `in-progress` (building) | `/develop` | milestone sub boxes tick one by one; code pointer filled |
-| `in-progress` (verified) | `/check verify` | `Build it` + milestones ticked; `Verify it` ticked |
-| `done` | you, when you decide it is (any skill sets it when you say so); `/sync` reconciles | boxes you ran ticked, skipped ones marked skipped; the tier last stage (`Prototype` -> after `/develop`; `Alpha` -> after `/check verify`; `Beta`/`GA` -> after `/test`) is the suggested point to call it done; `/sync` captures conventions |
+| State                        | Set by                                                                             | The feature shows                                                                                                                                                                                                                             |
+| ---------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `planned` · needs a decision | `/scope`                                                                           | one box: `Design it (spec): /architect <feature>`                                                                                                                                                                                             |
+| `in-progress` (designed)     | `/architect` at spec capture                                                       | `Design it` ticked; spec linked; `Build it: /develop <feature>` + 2 to 5 milestones; the tier closing boxes (`Verify it` Alpha+, `Test it` Beta+, `Review it` + `Document it` GA); any surfaced follow up enrolled                            |
+| `in-progress` (building)     | `/develop`                                                                         | milestone sub boxes tick one by one; code pointer filled                                                                                                                                                                                      |
+| `in-progress` (verified)     | `/check verify`                                                                    | `Build it` + milestones ticked; `Verify it` ticked                                                                                                                                                                                            |
+| `done`                       | you, when you decide it is (any skill sets it when you say so); `/sync` reconciles | boxes you ran ticked, skipped ones marked skipped; the tier last stage (`Prototype` -> after `/develop`; `Alpha` -> after `/check verify`; `Beta`/`GA` -> after `/test`) is the suggested point to call it done; `/sync` captures conventions |
 
 - **Next step** = the first unticked box (always a command or a tracked milestone).
 - **needs a decision** = run `/architect` first; otherwise straight to `/develop` (or `/audit` for standards & tooling). The tag drops once the spec is captured.

@@ -1,0 +1,126 @@
+import type { LikedTrack } from "../types/liked";
+
+/**
+ * Initial mock data fixtures for the Liked Songs screen.
+ * Tracks feature realistic dates and metadata adhering to the Midnight theme.
+ */
+export const initialLikedTracks: LikedTrack[] = [
+  {
+    id: "liked-1",
+    title: "Perfect",
+    artist: "Aiden Vale",
+    album: "Midnight Sessions",
+    durationSeconds: 252,
+    artworkUrl:
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80",
+    playsCount: 4820000,
+    isLiked: true,
+    filePath: "C:/Users/Music/Midnight Chill/Aiden Vale - Perfect.mp3",
+    folderId: "folder-2",
+    dateAdded: "2026-10-15",
+    dateLiked: "2026-10-23T09:15:00Z",
+  },
+  {
+    id: "liked-2",
+    title: "Calm Down",
+    artist: "Rema",
+    album: "Rave & Roses",
+    durationSeconds: 219,
+    artworkUrl:
+      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop&q=80",
+    playsCount: 6510000,
+    isLiked: true,
+    filePath: "C:/Users/Music/Afrobeats Grooves/Rema - Calm Down.mp3",
+    folderId: "folder-1",
+    dateAdded: "2026-10-19",
+    dateLiked: "2026-10-22T14:30:00Z",
+  },
+  {
+    id: "liked-3",
+    title: "Last Last",
+    artist: "Burna Boy",
+    album: "Love, Damini",
+    durationSeconds: 172,
+    artworkUrl:
+      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=80",
+    playsCount: 3820000,
+    isLiked: true,
+    filePath: "C:/Users/Music/Afrobeats Grooves/Burna Boy - Last Last.mp3",
+    folderId: "folder-1",
+    dateAdded: "2026-10-18",
+    dateLiked: "2026-10-21T18:45:00Z",
+  },
+  {
+    id: "liked-4",
+    title: "Golden Hour",
+    artist: "Hollow Coves",
+    album: "Wanderlust",
+    durationSeconds: 216,
+    artworkUrl:
+      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=500&auto=format&fit=crop&q=80",
+    playsCount: 5120000,
+    isLiked: true,
+    filePath: "C:/Users/Music/Acoustic Mornings/Hollow Coves - Golden Hour.mp3",
+    dateAdded: "2026-10-10",
+    dateLiked: "2026-10-20T11:20:00Z",
+  },
+  {
+    id: "liked-5",
+    title: "Essence",
+    artist: "Wizkid ft. Tems",
+    album: "Made in Lagos",
+    durationSeconds: 248,
+    artworkUrl:
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80",
+    playsCount: 7890000,
+    isLiked: true,
+    filePath: "C:/Users/Music/Afrobeats Grooves/Wizkid - Essence.mp3",
+    folderId: "folder-1",
+    dateAdded: "2026-10-19",
+    dateLiked: "2026-10-18T16:00:00Z",
+  },
+  {
+    id: "liked-6",
+    title: "Midnight Echoes",
+    artist: "Aiden Vale",
+    album: "Neon Echoes",
+    durationSeconds: 242,
+    artworkUrl:
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80",
+    playsCount: 2940000,
+    isLiked: true,
+    filePath: "C:/Users/Music/Midnight Chill/Aiden Vale - Midnight Echoes.mp3",
+    folderId: "folder-2",
+    dateAdded: "2026-10-12",
+    dateLiked: "2026-10-15T20:10:00Z",
+  },
+  {
+    id: "liked-7",
+    title: "Water",
+    artist: "Tyla",
+    album: "TYLA",
+    durationSeconds: 200,
+    artworkUrl:
+      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&auto=format&fit=crop&q=80",
+    playsCount: 8430000,
+    isLiked: true,
+    filePath: "C:/Users/Music/Afrobeats Grooves/Tyla - Water.mp3",
+    folderId: "folder-1",
+    dateAdded: "2026-10-18",
+    dateLiked: "2026-10-12T08:05:00Z",
+  },
+  {
+    id: "liked-8",
+    title: "As It Was",
+    artist: "Harry Styles",
+    album: "Harry's House",
+    durationSeconds: 167,
+    artworkUrl:
+      "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=500&auto=format&fit=crop&q=80",
+    playsCount: 9240000,
+    isLiked: true,
+    filePath: "C:/Users/Music/Pop Classics/Harry Styles - As It Was.mp3",
+    dateAdded: "2026-10-01",
+    dateLiked: "2026-10-05T12:30:00Z",
+  },
+];
