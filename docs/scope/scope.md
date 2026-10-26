@@ -270,7 +270,8 @@ spec [0016](../specs/0016-local-library-scanner-metadata/index.md)
   - [x] Scanner service coordinator with worker threads, busy rejection, and throttled Tauri progress events (AC-10, AC-11)
   - [x] Frontend scanner client service and useLibraryStore integration with live scanning feedback and track table refresh (AC-11, AC-12)
         code in `src-tauri/src/scanner/`, `src-tauri/src/commands/scanner.rs`, `src/services/scanner.ts`, `src/types/scanner.ts`, `src/store/useLibraryStore.ts`
-- [ ] Verify it: `/check verify local library scanner & metadata`
+- [x] Verify it: `/check verify local library scanner & metadata`
+- [x] Review it: `/check review local library scanner & metadata` · findings in `docs/reviews/2026-10-26-feat-local-library-scanner-metadata.md` · verdict: Approve with nits
 
 ### 16. Playlists & favorites persistence · in-progress
 

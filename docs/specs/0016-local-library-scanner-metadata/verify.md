@@ -2,22 +2,22 @@
 _Steps derived from spec 0016 acceptance criteria. `/check verify` runs these; `/test` locks the durable ones._
 
 ## UI / manual
-- [ ] Open Your Library view and expand Monitored Music Folders panel → verify active folder cards display track count, total size, and Rescan button → AC-1, AC-12
-- [ ] Click Rescan on a monitored folder → verify the button changes to a spinning indicator, displays scanning phase and track progress, and shows a Cancel button → AC-11, AC-12
-- [ ] Click Cancel while scanning is active → verify the scan aborts gracefully without corrupting database or deleting unscanned tracks → AC-8, AC-11
-- [ ] Allow a full scan to complete on a local music folder → verify track list reloads automatically with newly discovered songs, titles, artists, and durations → AC-1, AC-3, AC-6, AC-12
-- [ ] Inspect SongTable artwork column → verify songs with embedded cover art display thumbnail images resolved through local cache → AC-5, AC-12
-- [ ] Add an audio file with missing ID3 tags to a monitored folder and rescan → verify title displays file basename, artist shows "Unknown Artist", and album shows "Unknown Album" → AC-4
-- [ ] Toggle like heart on a scanned track, rescan folder → verify liked status and play counts are retained without reset → AC-7
-- [ ] Delete a track file from disk and run a complete rescan → verify the deleted track is pruned from library table, and orphaned album or artist records are cleaned up → AC-8
+- [x] Open Your Library view and expand Monitored Music Folders panel → verify active folder cards display track count, total size, and Rescan button → AC-1, AC-12
+- [x] Click Rescan on a monitored folder → verify the button changes to a spinning indicator, displays scanning phase and track progress, and shows a Cancel button → AC-11, AC-12
+- [x] Click Cancel while scanning is active → verify the scan aborts gracefully without corrupting database or deleting unscanned tracks → AC-8, AC-11
+- [x] Allow a full scan to complete on a local music folder → verify track list reloads automatically with newly discovered songs, titles, artists, and durations → AC-1, AC-3, AC-6, AC-12
+- [x] Inspect SongTable artwork column → verify songs with embedded cover art display thumbnail images resolved through local cache → AC-5, AC-12
+- [x] Add an audio file with missing ID3 tags to a monitored folder and rescan → verify title displays file basename, artist shows "Unknown Artist", and album shows "Unknown Album" → AC-4
+- [x] Toggle like heart on a scanned track, rescan folder → verify liked status and play counts are retained without reset → AC-7
+- [x] Delete a track file from disk and run a complete rescan → verify the deleted track is pruned from library table, and orphaned album or artist records are cleaned up → AC-8
 
 ## Commands
-- [ ] `cargo test scanner::tests` → verify recursive discovery, differential timestamp skipping, atomic upserts, orphan pruning, and disconnected folder error tolerance pass → AC-1, AC-2, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11
-- [ ] `npm test src/services/__tests__/scanner.test.ts` → verify scanner client IPC commands, progress event listeners, DTO mappers, and store state synchronization pass → AC-11, AC-12
-- [ ] `cargo test` → verify entire Rust engine test suite executes with zero errors → AC-1, AC-2, AC-3, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11
-- [ ] `npm test` → verify full Vitest frontend suite executes with all 146 tests passing → AC-11, AC-12
-- [ ] `npm run typecheck` → verify TypeScript compilation passes cleanly with zero errors → AC-12
-- [ ] `npm run lint` → verify ESLint check passes with zero errors → AC-12
+- [x] `cargo test scanner::tests` → verify recursive discovery, differential timestamp skipping, atomic upserts, orphan pruning, and disconnected folder error tolerance pass → AC-1, AC-2, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11
+- [x] `npm test src/services/__tests__/scanner.test.ts` → verify scanner client IPC commands, progress event listeners, DTO mappers, and store state synchronization pass → AC-11, AC-12
+- [x] `cargo test` → verify entire Rust engine test suite executes with zero errors → AC-1, AC-2, AC-3, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11
+- [x] `npm test` → verify full Vitest frontend suite executes with all 146 tests passing → AC-11, AC-12
+- [x] `npm run typecheck` → verify TypeScript compilation passes cleanly with zero errors → AC-12
+- [x] `npm run lint` → verify ESLint check passes with zero errors → AC-12
 
 ## Acceptance criteria coverage
 - AC-1 (Recursive audio discovery): covered by UI manual scan and `cargo test scanner::tests::tests::test_recursive_discovery_and_differential_checks`
