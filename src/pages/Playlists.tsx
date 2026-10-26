@@ -1,4 +1,9 @@
-import { useActivePlaylist, usePlaylistTracksByPlaylistId } from "../store/usePlaylistStore";
+import { useEffect } from "react";
+import {
+  useActivePlaylist,
+  usePlaylistStore,
+  usePlaylistTracksByPlaylistId,
+} from "../store/usePlaylistStore";
 import { PlaylistHeader } from "../components/playlists/PlaylistHeader";
 import { PlaylistGrid } from "../components/playlists/PlaylistGrid";
 import { PlaylistDetailBanner } from "../components/playlists/PlaylistDetailBanner";
@@ -11,6 +16,15 @@ import { DeletePlaylistDialog } from "../components/playlists/DeletePlaylistDial
 export function Playlists() {
   const activePlaylist = useActivePlaylist();
   const entries = usePlaylistTracksByPlaylistId(activePlaylist ? activePlaylist.id : null);
+
+  useEffect(() => {
+    if (activePlaylist?.id) {
+      usePlaylistStore
+        .getState()
+        .loadPlaylistDetails(activePlaylist.id)
+        .catch(() => {});
+    }
+  }, [activePlaylist?.id]);
 
   return (
     <main

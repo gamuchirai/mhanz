@@ -6,13 +6,9 @@ import type {
   LibraryTrack,
   MusicFolder,
 } from "../types/library";
-import type {
-  ScanCompletedPayload,
-  ScanProgressPayload,
-} from "../types/scanner";
+import type { ScanCompletedPayload, ScanProgressPayload } from "../types/scanner";
 import type { FolderDto, TrackDto } from "../types/database";
 import { initialMusicFolders, initialLibraryTracks } from "../data/libraryFixtures";
-import { usePlayerStore } from "./usePlayerStore";
 import {
   formatCoverArtUrl,
   onScanCompleted,
@@ -21,6 +17,7 @@ import {
   scannerScanFolder,
 } from "../services/scanner";
 import { dbAddFolder, dbGetFolders, dbGetTracks, dbRemoveFolder } from "../services/db";
+import { favoritesSync } from "../services/favoritesSync";
 
 /**
  * Maps SQLite TrackDto to frontend LibraryTrack presentation model.
@@ -280,7 +277,11 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
       set((state) => ({
         scanProgress: null,
         folders: state.folders.map((f) =>
-          folderId ? (f.id === folderId ? { ...f, isScanning: false } : f) : { ...f, isScanning: false }
+          folderId
+            ? f.id === folderId
+              ? { ...f, isScanning: false }
+              : f
+            : { ...f, isScanning: false }
         ),
       }));
     } catch (err) {
@@ -289,25 +290,25 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
   },
 
   toggleLikeTrack: (trackId: string) => {
-    set((state) => ({
-      tracks: state.tracks.map((t) => (t.id === trackId ? { ...t, isLiked: !t.isLiked } : t)),
-    }));
-
-    usePlayerStore.getState().toggleLike(trackId);
+    const track = get().tracks.find((t) => t.id === trackId);
+    if (!track) return;
+    favoritesSync.toggleFavorite(trackId, track.isLiked).catch((err) => {
+      console.error("Failed to toggle favorite:", err);
+    });
   },
 
   refreshFromDatabase: async () => {
     try {
-      const [foldersDto, tracksRes] = await Promise.all([
-        dbGetFolders(),
-        dbGetTracks(0, 500),
-      ]);
+      const [foldersDto, tracksRes] = await Promise.all([dbGetFolders(), dbGetTracks(0, 500)]);
 
       if (foldersDto && foldersDto.length > 0) {
         const convertedTracks: LibraryTrack[] = tracksRes.items.map(mapTrackDtoToLibraryTrack);
         const convertedFolders: MusicFolder[] = foldersDto.map((f: FolderDto) => {
           const folderTracks = convertedTracks.filter((t: LibraryTrack) => t.folderId === f.id);
-          const totalSize = folderTracks.reduce((acc: number, t: LibraryTrack) => acc + (t.fileSizeBytes ?? 0), 0);
+          const totalSize = folderTracks.reduce(
+            (acc: number, t: LibraryTrack) => acc + (t.fileSizeBytes ?? 0),
+            0
+          );
           return mapFolderDtoToMusicFolder(f, folderTracks.length, totalSize);
         });
 
@@ -356,6 +357,13 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
     };
   },
 }));
+
+// Synchronize favorite status across library tracks
+favoritesSync.subscribe((trackId: string, isLiked: boolean) => {
+  useLibraryStore.setState((state) => ({
+    tracks: state.tracks.map((t) => (t.id === trackId ? { ...t, isLiked } : t)),
+  }));
+});
 
 // Performance-optimized selector hooks
 export const useLibraryFolders = () => useLibraryStore((state) => state.folders);

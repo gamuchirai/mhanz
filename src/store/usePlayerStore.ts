@@ -21,6 +21,7 @@ import {
   listenAudioStateChanged,
   listenAudioTrackEnded,
 } from "../services/audio";
+import { favoritesSync } from "../services/favoritesSync";
 
 let queueIdCounter = 0;
 function createUniqueQueueId(prefix = "queue"): string {
@@ -78,6 +79,21 @@ interface PlayerState {
   clearUpcomingQueue: () => void;
   playQueueItem: (queueId: string) => void;
   seekToLyricLine: (timeSeconds: number) => void;
+
+  // Playback context
+  playbackContext: {
+    type: "playlist" | "album" | "artist" | "liked" | "library" | "unknown";
+    id?: string;
+    title?: string;
+  } | null;
+  setPlaybackContext: (
+    context: {
+      type: "playlist" | "album" | "artist" | "liked" | "library" | "unknown";
+      id?: string;
+      title?: string;
+    } | null
+  ) => void;
+  clearContextIfMatches: (type: string, id: string) => void;
 }
 
 let timerHandle: ReturnType<typeof setInterval> | null = null;
@@ -124,6 +140,19 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
   recentPlays: initialRecentPlays,
   curatedCollections: curatedPlaylists,
   popularTracks: popularTracksList,
+  playbackContext: null,
+
+  setPlaybackContext: (context) => {
+    set({ playbackContext: context });
+  },
+
+  clearContextIfMatches: (type: string, id: string) => {
+    const current = get().playbackContext;
+    if (current && current.type === type && current.id === id) {
+      set({ playbackContext: null });
+      get().clearUpcomingQueue();
+    }
+  },
 
   playTrack: (track: Track, customQueue?: Track[]) => {
     const queue = customQueue && customQueue.length > 0 ? customQueue : get().queue;
@@ -290,26 +319,8 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
   },
 
   toggleLike: (trackId: string) => {
-    set((state) => {
-      const isLiked = !state.likedTrackIds[trackId];
-      const updatedLikes = { ...state.likedTrackIds, [trackId]: isLiked };
-
-      const updateTrack = (t: Track): Track => (t.id === trackId ? { ...t, isLiked } : t);
-
-      return {
-        likedTrackIds: updatedLikes,
-        currentTrack:
-          state.currentTrack?.id === trackId
-            ? { ...state.currentTrack, isLiked }
-            : state.currentTrack,
-        queue: state.queue.map(updateTrack),
-        queueItems: state.queueItems.map((qi) => ({
-          ...qi,
-          track: updateTrack(qi.track),
-        })),
-        popularTracks: state.popularTracks.map(updateTrack),
-      };
-    });
+    const isCurrentlyLiked = Boolean(get().likedTrackIds[trackId]);
+    favoritesSync.toggleFavorite(trackId, isCurrentlyLiked).catch(() => {});
   },
 
   playCollection: (tracks: Track[], startIndex = 0) => {
@@ -567,6 +578,28 @@ export function cleanupPlayerAudioSync(): void {
 if (typeof window !== "undefined") {
   initPlayerAudioSync();
 }
+
+// Synchronize state whenever a favorite event occurs across any screen or store
+favoritesSync.subscribe((trackId, isLiked) => {
+  usePlayerStore.setState((state) => {
+    const updatedLikes = { ...state.likedTrackIds, [trackId]: isLiked };
+    const updateTrack = (t: Track): Track => (t.id === trackId ? { ...t, isLiked } : t);
+
+    return {
+      likedTrackIds: updatedLikes,
+      currentTrack:
+        state.currentTrack?.id === trackId
+          ? { ...state.currentTrack, isLiked }
+          : state.currentTrack,
+      queue: state.queue.map(updateTrack),
+      queueItems: state.queueItems.map((qi) => ({
+        ...qi,
+        track: updateTrack(qi.track),
+      })),
+      popularTracks: state.popularTracks.map(updateTrack),
+    };
+  });
+});
 
 // Typed selector hooks for performance optimization
 export const useCurrentTrack = () => usePlayerStore((state) => state.currentTrack);

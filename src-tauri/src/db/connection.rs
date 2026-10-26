@@ -13,9 +13,12 @@ use super::error::DatabaseError;
 /// Embedded initial V001 migration script.
 pub const MIGRATION_V001: &str = include_str!("../../migrations/V001__initial_schema.sql");
 
+/// Embedded V002 playlists and favorites enhancement migration script.
+pub const MIGRATION_V002: &str = include_str!("../../migrations/V002__playlists_and_favorites.sql");
+
 /// Construct the compiled migrations suite for Mumhanzi.
 pub fn create_migrations() -> Migrations<'static> {
-    Migrations::new(vec![M::up(MIGRATION_V001)])
+    Migrations::new(vec![M::up(MIGRATION_V001), M::up(MIGRATION_V002)])
 }
 
 /// Applies required SQLite pragmas for thread safety, WAL concurrency, and foreign keys.
@@ -58,6 +61,8 @@ impl DatabaseManager {
         migrations
             .to_latest(&mut conn)
             .map_err(|err| DatabaseError::migration_failed(err.to_string()))?;
+
+        super::seeding::seed_default_playlists_if_empty(&mut conn)?;
 
         Ok(Self {
             conn: Mutex::new(conn),
@@ -137,6 +142,8 @@ impl DatabaseManager {
         migrations
             .to_latest(&mut conn)
             .map_err(|err| DatabaseError::migration_failed(err.to_string()))?;
+
+        super::seeding::seed_default_playlists_if_empty(&mut conn)?;
 
         Ok(conn)
     }

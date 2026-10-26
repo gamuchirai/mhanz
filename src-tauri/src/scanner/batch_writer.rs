@@ -48,10 +48,7 @@ pub fn commit_track_batch(
         let artist_id = resolve_or_create_artist(&tx, &track.artist_name, now)?;
 
         // 2. Resolve or create Album record (case-insensitive by title and artist)
-        let album_artist_for_album = track
-            .album_artist
-            .as_deref()
-            .unwrap_or(&track.artist_name);
+        let album_artist_for_album = track.album_artist.as_deref().unwrap_or(&track.artist_name);
 
         let album_id = resolve_or_create_album(
             &tx,
@@ -161,6 +158,7 @@ fn resolve_or_create_artist(
 }
 
 /// Resolves an existing album by case-insensitive title and artist, or inserts a new album record.
+#[allow(clippy::too_many_arguments)]
 fn resolve_or_create_album(
     tx: &Transaction<'_>,
     album_title: &str,

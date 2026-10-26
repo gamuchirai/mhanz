@@ -73,6 +73,8 @@ pub struct TrackDto {
     pub cover_art_path: Option<String>,
     /// User favorite status.
     pub is_favorite: bool,
+    /// Epoch timestamp in seconds when the track was favorited.
+    pub liked_at: Option<i64>,
     /// Historical playback counter.
     pub play_count: u32,
     /// Epoch timestamp in seconds of most recent playback.
@@ -104,6 +106,10 @@ pub struct TrackFilterDto {
     pub album_id: Option<String>,
     /// Filter by specific musical genre.
     pub genre: Option<String>,
+    /// Optional field to sort by (e.g. "liked_at", "title", "created_at").
+    pub sort_by: Option<String>,
+    /// Optional sort direction ("asc" or "desc").
+    pub sort_direction: Option<String>,
 }
 
 /// Paginated collection of tracks.
@@ -202,12 +208,29 @@ pub struct PlaylistDto {
     pub gradient_preset: Option<String>,
     /// User favorite playlist flag.
     pub is_favorite: bool,
+    /// Whether this is an editorial or system curated playlist.
+    pub is_curated: bool,
     /// Total count of tracks currently in this playlist.
     pub track_count: u32,
     /// Creation timestamp in epoch seconds.
     pub created_at: i64,
     /// Last modification timestamp in epoch seconds.
     pub updated_at: i64,
+}
+
+/// Structured input payload for creating or updating a playlist.
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
+pub struct PlaylistInputDto {
+    /// Optional client generated or preserved playlist identifier.
+    pub id: Option<String>,
+    /// Playlist name.
+    pub name: String,
+    /// Optional descriptive text.
+    pub description: Option<String>,
+    /// Gradient preset identifier for procedural styling.
+    pub gradient_preset: Option<String>,
+    /// Optional custom cover artwork image path.
+    pub cover_art_path: Option<String>,
 }
 
 /// Individual track entry in a playlist with position sequence.

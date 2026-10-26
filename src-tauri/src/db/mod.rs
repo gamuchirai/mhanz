@@ -6,6 +6,7 @@ pub mod error;
 pub mod folder_repo;
 pub mod models;
 pub mod playlist_repo;
+pub mod seeding;
 pub mod settings_repo;
 pub mod track_repo;
 
@@ -127,25 +128,23 @@ impl DbState {
             .with_conn(|conn| playlist_repo::get_playlist_details(conn, id))
     }
 
-    /// Creates a new playlist.
+    /// Creates a new playlist with structured metadata.
     pub fn create_playlist(
         &self,
-        name: &str,
-        description: Option<String>,
+        payload: &PlaylistInputDto,
     ) -> Result<PlaylistDto, DatabaseError> {
         self.0
-            .with_conn(|conn| playlist_repo::create_playlist(conn, name, description))
+            .with_conn(|conn| playlist_repo::create_playlist(conn, payload))
     }
 
     /// Updates an existing playlist.
     pub fn update_playlist(
         &self,
         id: &str,
-        name: &str,
-        description: Option<String>,
+        payload: &PlaylistInputDto,
     ) -> Result<PlaylistDto, DatabaseError> {
         self.0
-            .with_conn(|conn| playlist_repo::update_playlist(conn, id, name, description))
+            .with_conn(|conn| playlist_repo::update_playlist(conn, id, payload))
     }
 
     /// Deletes a playlist.
@@ -164,26 +163,24 @@ impl DbState {
             .with_conn(|conn| playlist_repo::add_tracks_to_playlist(conn, playlist_id, track_ids))
     }
 
-    /// Removes a track from a playlist.
+    /// Removes a track entry from a playlist by entry identifier.
     pub fn remove_playlist_track(
         &self,
         playlist_id: &str,
-        track_id: &str,
-        position: u32,
+        entry_id: &str,
     ) -> Result<bool, DatabaseError> {
-        self.0.with_conn(|conn| {
-            playlist_repo::remove_playlist_track(conn, playlist_id, track_id, position)
-        })
+        self.0
+            .with_conn(|conn| playlist_repo::remove_playlist_track(conn, playlist_id, entry_id))
     }
 
-    /// Atomically reorders tracks in a playlist.
+    /// Atomically reorders tracks in a playlist using entry identifiers.
     pub fn reorder_playlist_tracks(
         &self,
         playlist_id: &str,
-        ordered_item_ids: &[String],
+        ordered_entry_ids: &[String],
     ) -> Result<bool, DatabaseError> {
         self.0.with_conn(|conn| {
-            playlist_repo::reorder_playlist_tracks(conn, playlist_id, ordered_item_ids)
+            playlist_repo::reorder_playlist_tracks(conn, playlist_id, ordered_entry_ids)
         })
     }
 
@@ -211,9 +208,10 @@ mod tests {
 
         let status = state.get_status().expect("Status should be readable");
         assert!(status.is_ready);
-        assert_eq!(status.schema_version, 1);
+        assert_eq!(status.schema_version, 2);
         assert_eq!(status.track_count, 0);
-        assert_eq!(status.playlist_count, 0);
+        // Default sample playlists are seeded automatically
+        assert_eq!(status.playlist_count, 5);
     }
 
     #[test]
@@ -244,11 +242,29 @@ mod tests {
         let mgr = DatabaseManager::new_in_memory().expect("In memory database should open");
         let state = DbState::new(mgr);
 
-        // Create playlist
-        let playlist = state
-            .create_playlist("Chill Vibes", Some("Evening relaxation".to_string()))
-            .expect("Playlist created");
+        // Verify seeded playlists
+        let initial_playlists = state.get_playlists().expect("Seeded playlists should list");
+        assert_eq!(initial_playlists.len(), 5);
+
+        // Attempting to delete a curated playlist must fail
+        let curated_p = initial_playlists
+            .iter()
+            .find(|p| p.is_curated)
+            .expect("Curated playlist exists");
+        assert!(state.delete_playlist(&curated_p.id).is_err());
+
+        // Create new user playlist
+        let input = PlaylistInputDto {
+            id: None,
+            name: "Chill Vibes".to_string(),
+            description: Some("Evening relaxation".to_string()),
+            gradient_preset: Some("late-night".to_string()),
+            cover_art_path: None,
+        };
+        let playlist = state.create_playlist(&input).expect("Playlist created");
         assert_eq!(playlist.name, "Chill Vibes");
+        assert_eq!(playlist.gradient_preset.as_deref(), Some("late-night"));
+        assert!(!playlist.is_curated);
 
         // Insert mock tracks
         let track1 = TrackDto {
@@ -269,6 +285,7 @@ mod tests {
             format: "mp3".to_string(),
             cover_art_path: None,
             is_favorite: false,
+            liked_at: None,
             play_count: 0,
             last_played_at: None,
             file_modified_at: 1700000000,
@@ -306,9 +323,11 @@ mod tests {
         assert_eq!(details.tracks[0].track.title, "Song One");
         assert_eq!(details.tracks[1].track.title, "Song Two");
 
-        // Reorder tracks
+        // Reorder tracks by entry ID (AC-8)
+        let entry1_id = details.tracks[0].id.clone();
+        let entry2_id = details.tracks[1].id.clone();
         let reordered = state
-            .reorder_playlist_tracks(&playlist.id, &[track2.id.clone(), track1.id.clone()])
+            .reorder_playlist_tracks(&playlist.id, &[entry2_id.clone(), entry1_id.clone()])
             .expect("Reordered successfully");
         assert!(reordered);
 
@@ -319,11 +338,32 @@ mod tests {
         assert_eq!(details_reordered.tracks[0].track.title, "Song Two");
         assert_eq!(details_reordered.tracks[1].track.title, "Song One");
 
-        // Toggle favorite
+        // Remove track by entry ID (AC-8)
+        let removed = state
+            .remove_playlist_track(&playlist.id, &entry2_id)
+            .expect("Track removed");
+        assert!(removed);
+
+        let details_after_remove = state
+            .get_playlist_details(&playlist.id)
+            .expect("Details queried")
+            .expect("Playlist found");
+        assert_eq!(details_after_remove.tracks.len(), 1);
+        assert_eq!(details_after_remove.tracks[0].track.title, "Song One");
+        assert_eq!(details_after_remove.tracks[0].position, 0);
+
+        // Toggle favorite (AC-9)
         let is_fav = state
             .toggle_track_favorite(&track1.id)
             .expect("Favorite toggled");
         assert!(is_fav);
+
+        let fetched_t1 = state
+            .get_track_by_id(&track1.id)
+            .expect("Fetched track")
+            .expect("Track exists");
+        assert!(fetched_t1.is_favorite);
+        assert!(fetched_t1.liked_at.is_some());
 
         // Increment play count
         let plays = state

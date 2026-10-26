@@ -245,8 +245,10 @@ describe("Database Service (src/services/db.ts)", () => {
     vi.mocked(invoke).mockResolvedValueOnce(mockPlaylist);
     const created = await dbCreatePlaylist("Night Drive", "Cruising neon highways");
     expect(invoke).toHaveBeenCalledWith("db_create_playlist", {
-      name: "Night Drive",
-      description: "Cruising neon highways",
+      payload: {
+        name: "Night Drive",
+        description: "Cruising neon highways",
+      },
     });
     expect(created.id).toBe("pl-1");
 
@@ -257,8 +259,10 @@ describe("Database Service (src/services/db.ts)", () => {
     const updated = await dbUpdatePlaylist("pl-1", "Night Drive Redux");
     expect(invoke).toHaveBeenCalledWith("db_update_playlist", {
       id: "pl-1",
-      name: "Night Drive Redux",
-      description: undefined,
+      payload: {
+        name: "Night Drive Redux",
+        description: undefined,
+      },
     });
     expect(updated.name).toBe("Night Drive Redux");
 
@@ -271,19 +275,18 @@ describe("Database Service (src/services/db.ts)", () => {
     expect(addedCount).toBe(2);
 
     vi.mocked(invoke).mockResolvedValueOnce(true);
-    const reordered = await dbReorderPlaylistTracks("pl-1", ["trk-2", "trk-1"]);
+    const reordered = await dbReorderPlaylistTracks("pl-1", ["entry-2", "entry-1"]);
     expect(invoke).toHaveBeenCalledWith("db_reorder_playlist_tracks", {
       playlistId: "pl-1",
-      orderedItemIds: ["trk-2", "trk-1"],
+      orderedEntryIds: ["entry-2", "entry-1"],
     });
     expect(reordered).toBe(true);
 
     vi.mocked(invoke).mockResolvedValueOnce(true);
-    const removedTrack = await dbRemovePlaylistTrack("pl-1", "trk-1", 1);
+    const removedTrack = await dbRemovePlaylistTrack("pl-1", "entry-1");
     expect(invoke).toHaveBeenCalledWith("db_remove_playlist_track", {
       playlistId: "pl-1",
-      trackId: "trk-1",
-      position: 1,
+      entryId: "entry-1",
     });
     expect(removedTrack).toBe(true);
 

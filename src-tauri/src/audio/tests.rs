@@ -98,8 +98,7 @@ fn test_file_path_validation() {
         writeln!(f, "dummy text").expect("Failed to write");
     }
 
-    let unsupported_res =
-        AudioEngine::validate_file_path(&unsupported_path.to_string_lossy());
+    let unsupported_res = AudioEngine::validate_file_path(&unsupported_path.to_string_lossy());
     assert!(unsupported_res.is_err());
     match unsupported_res {
         Err(AudioError::UnsupportedFormat(_)) => (),

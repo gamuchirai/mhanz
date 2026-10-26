@@ -4,8 +4,8 @@ use tauri::State;
 
 use crate::db::{
     AlbumDetailDto, AlbumDto, ArtistDto, ArtistProfileDto, DatabaseError, DatabaseStatusDto,
-    DbState, FolderDto, PaginatedTracksDto, PlaylistDetailDto, PlaylistDto, TrackDto,
-    TrackFilterDto,
+    DbState, FolderDto, PaginatedTracksDto, PlaylistDetailDto, PlaylistDto, PlaylistInputDto,
+    TrackDto, TrackFilterDto,
 };
 
 /// Queries database health, migration schema version, and record statistics.
@@ -123,25 +123,23 @@ pub async fn db_get_playlist_details(
     state.get_playlist_details(&id)
 }
 
-/// Creates a new empty user playlist.
+/// Creates a new user playlist with structured metadata.
 #[tauri::command]
 pub async fn db_create_playlist(
-    name: String,
-    description: Option<String>,
+    payload: PlaylistInputDto,
     state: State<'_, DbState>,
 ) -> Result<PlaylistDto, DatabaseError> {
-    state.create_playlist(&name, description)
+    state.create_playlist(&payload)
 }
 
-/// Updates playlist title or description.
+/// Updates playlist title, description, cover art, or gradient preset.
 #[tauri::command]
 pub async fn db_update_playlist(
     id: String,
-    name: String,
-    description: Option<String>,
+    payload: PlaylistInputDto,
     state: State<'_, DbState>,
 ) -> Result<PlaylistDto, DatabaseError> {
-    state.update_playlist(&id, &name, description)
+    state.update_playlist(&id, &payload)
 }
 
 /// Deletes a playlist by identifier.
@@ -163,25 +161,24 @@ pub async fn db_add_tracks_to_playlist(
     state.add_tracks_to_playlist(&playlist_id, &track_ids)
 }
 
-/// Removes a track entry at a specific position from a playlist.
+/// Removes a track entry from a playlist by entry identifier.
 #[tauri::command]
 pub async fn db_remove_playlist_track(
     playlist_id: String,
-    track_id: String,
-    position: u32,
+    entry_id: String,
     state: State<'_, DbState>,
 ) -> Result<bool, DatabaseError> {
-    state.remove_playlist_track(&playlist_id, &track_id, position)
+    state.remove_playlist_track(&playlist_id, &entry_id)
 }
 
-/// Reorders tracks within a playlist atomically.
+/// Reorders tracks within a playlist atomically using ordered entry identifiers.
 #[tauri::command]
 pub async fn db_reorder_playlist_tracks(
     playlist_id: String,
-    ordered_item_ids: Vec<String>,
+    ordered_entry_ids: Vec<String>,
     state: State<'_, DbState>,
 ) -> Result<bool, DatabaseError> {
-    state.reorder_playlist_tracks(&playlist_id, &ordered_item_ids)
+    state.reorder_playlist_tracks(&playlist_id, &ordered_entry_ids)
 }
 
 /// Queries a stored player preference setting.

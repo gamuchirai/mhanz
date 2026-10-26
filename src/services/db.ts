@@ -14,6 +14,7 @@ import type {
   PaginatedTracksDto,
   PlaylistDetailDto,
   PlaylistDto,
+  PlaylistInputDto,
   TrackDto,
   TrackFilterDto,
 } from "../types/database";
@@ -121,21 +122,28 @@ export async function dbGetPlaylistDetails(id: string): Promise<PlaylistDetailDt
 }
 
 /**
- * Creates a new empty user playlist.
+ * Creates a new user playlist with structured metadata.
  */
-export async function dbCreatePlaylist(name: string, description?: string): Promise<PlaylistDto> {
-  return invoke<PlaylistDto>("db_create_playlist", { name, description });
+export async function dbCreatePlaylist(
+  input: PlaylistInputDto | string,
+  legacyDescription?: string
+): Promise<PlaylistDto> {
+  const payload: PlaylistInputDto =
+    typeof input === "string" ? { name: input, description: legacyDescription } : input;
+  return invoke<PlaylistDto>("db_create_playlist", { payload });
 }
 
 /**
- * Updates playlist title and description.
+ * Updates playlist title, description, cover art, or gradient preset.
  */
 export async function dbUpdatePlaylist(
   id: string,
-  name: string,
-  description?: string
+  input: PlaylistInputDto | string,
+  legacyDescription?: string
 ): Promise<PlaylistDto> {
-  return invoke<PlaylistDto>("db_update_playlist", { id, name, description });
+  const payload: PlaylistInputDto =
+    typeof input === "string" ? { name: input, description: legacyDescription } : input;
+  return invoke<PlaylistDto>("db_update_playlist", { id, payload });
 }
 
 /**
@@ -159,30 +167,25 @@ export async function dbAddTracksToPlaylist(
 }
 
 /**
- * Removes a track entry at a specific position from a playlist.
+ * Removes a track entry from a playlist by its unique entry identifier.
  */
-export async function dbRemovePlaylistTrack(
-  playlistId: string,
-  trackId: string,
-  position: number
-): Promise<boolean> {
+export async function dbRemovePlaylistTrack(playlistId: string, entryId: string): Promise<boolean> {
   return invoke<boolean>("db_remove_playlist_track", {
     playlistId,
-    trackId,
-    position,
+    entryId,
   });
 }
 
 /**
- * Reorders tracks within a playlist atomically.
+ * Reorders tracks within a playlist atomically using ordered entry identifiers.
  */
 export async function dbReorderPlaylistTracks(
   playlistId: string,
-  orderedItemIds: string[]
+  orderedEntryIds: string[]
 ): Promise<boolean> {
   return invoke<boolean>("db_reorder_playlist_tracks", {
     playlistId,
-    orderedItemIds,
+    orderedEntryIds,
   });
 }
 

@@ -14,7 +14,8 @@ mod tests {
     use crate::scanner::service::ScannerManager;
 
     fn create_test_temp_dir(suffix: &str) -> PathBuf {
-        let temp_dir = std::env::temp_dir().join(format!("mumhanzi_test_{}_{}", suffix, uuid::Uuid::new_v4()));
+        let temp_dir =
+            std::env::temp_dir().join(format!("mumhanzi_test_{}_{}", suffix, uuid::Uuid::new_v4()));
         fs::create_dir_all(&temp_dir).expect("Failed to create test temp dir");
         temp_dir
     }
@@ -48,8 +49,14 @@ mod tests {
         let f3 = temp_dir.join("readme.txt");
         let f4 = temp_dir.join(".hidden_track.mp3");
 
-        File::create(&f1).unwrap().write_all(b"fake mp3 audio").unwrap();
-        File::create(&f2).unwrap().write_all(b"fake flac audio").unwrap();
+        File::create(&f1)
+            .unwrap()
+            .write_all(b"fake mp3 audio")
+            .unwrap();
+        File::create(&f2)
+            .unwrap()
+            .write_all(b"fake flac audio")
+            .unwrap();
         File::create(&f3).unwrap().write_all(b"text info").unwrap();
         File::create(&f4).unwrap().write_all(b"hidden").unwrap();
 
@@ -84,12 +91,17 @@ mod tests {
         let mut existing_map = HashMap::new();
         existing_map.insert(f1.to_string_lossy().to_string(), f1_modified);
 
-        let diff_res = discover_audio_files(&temp_dir, &existing_map).expect("Diff discovery should succeed");
+        let diff_res =
+            discover_audio_files(&temp_dir, &existing_map).expect("Diff discovery should succeed");
         assert_eq!(diff_res.files_to_parse.len(), 1);
         assert_eq!(diff_res.unchanged_count, 1);
         assert_eq!(diff_res.all_disk_paths.len(), 2);
         assert_eq!(
-            diff_res.files_to_parse[0].path.file_name().unwrap().to_string_lossy(),
+            diff_res.files_to_parse[0]
+                .path
+                .file_name()
+                .unwrap()
+                .to_string_lossy(),
             "track2.flac"
         );
 
@@ -101,7 +113,10 @@ mod tests {
         let non_existent = PathBuf::from("Z:\\definitely_missing_drive_99999\\music");
         let empty_map = HashMap::new();
         let res = discover_audio_files(&non_existent, &empty_map);
-        assert!(res.is_err(), "Should return error when folder root does not exist (AC-9)");
+        assert!(
+            res.is_err(),
+            "Should return error when folder root does not exist (AC-9)"
+        );
     }
 
     #[test]
@@ -187,8 +202,15 @@ mod tests {
 
         assert_eq!(updated_title, "Updated Remastered Title");
         assert_eq!(fav_after, 1, "is_favorite must be preserved on rescan");
-        assert_eq!(play_count_after, 7, "play_count must be preserved on rescan");
-        assert_eq!(last_played_after, Some(2000), "last_played_at must be preserved");
+        assert_eq!(
+            play_count_after, 7,
+            "play_count must be preserved on rescan"
+        );
+        assert_eq!(
+            last_played_after,
+            Some(2000),
+            "last_played_at must be preserved"
+        );
     }
 
     #[test]
@@ -243,7 +265,9 @@ mod tests {
         let empty = HashMap::new();
         commit_track_batch(&mut conn, &[track_a, track_b], &empty).unwrap();
 
-        let track_count: i64 = conn.query_row("SELECT COUNT(*) FROM tracks", [], |r| r.get(0)).unwrap();
+        let track_count: i64 = conn
+            .query_row("SELECT COUNT(*) FROM tracks", [], |r| r.get(0))
+            .unwrap();
         assert_eq!(track_count, 2);
 
         // Pruning: disk scan only found track_a, track_b was deleted from disk (AC-8)
@@ -253,18 +277,28 @@ mod tests {
         let removed = prune_missing_folder_tracks(&mut conn, "f1", &active_disk).unwrap();
         assert_eq!(removed, 1);
 
-        let track_count_after: i64 = conn.query_row("SELECT COUNT(*) FROM tracks", [], |r| r.get(0)).unwrap();
+        let track_count_after: i64 = conn
+            .query_row("SELECT COUNT(*) FROM tracks", [], |r| r.get(0))
+            .unwrap();
         assert_eq!(track_count_after, 1);
 
         // Orphaned Artist B and Album B must be cleaned up
         let artist_b_count: i64 = conn
-            .query_row("SELECT COUNT(*) FROM artists WHERE name = 'Artist B'", [], |r| r.get(0))
+            .query_row(
+                "SELECT COUNT(*) FROM artists WHERE name = 'Artist B'",
+                [],
+                |r| r.get(0),
+            )
             .unwrap();
         assert_eq!(artist_b_count, 0, "Orphaned artist must be deleted");
 
         // Folder last_scanned_at must be populated
         let last_scanned: Option<i64> = conn
-            .query_row("SELECT last_scanned_at FROM folders WHERE id = 'f1'", [], |r| r.get(0))
+            .query_row(
+                "SELECT last_scanned_at FROM folders WHERE id = 'f1'",
+                [],
+                |r| r.get(0),
+            )
             .unwrap();
         assert!(last_scanned.is_some() && last_scanned.unwrap() > 0);
     }

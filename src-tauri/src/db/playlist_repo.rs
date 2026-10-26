@@ -2,11 +2,11 @@
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use rusqlite::{params, Connection};
+use rusqlite::{params, Connection, OptionalExtension};
 use uuid::Uuid;
 
 use super::error::DatabaseError;
-use super::models::{PlaylistDetailDto, PlaylistDto, PlaylistTrackDto, TrackDto};
+use super::models::{PlaylistDetailDto, PlaylistDto, PlaylistInputDto, PlaylistTrackDto, TrackDto};
 
 /// Returns total count of user playlists.
 pub fn count_playlists(conn: &Connection) -> Result<u64, DatabaseError> {
@@ -23,13 +23,13 @@ pub fn get_playlists(conn: &Connection) -> Result<Vec<PlaylistDto>, DatabaseErro
             r#"
             SELECT
                 p.id, p.name, p.description, p.cover_art_path, p.gradient_preset,
-                p.is_favorite,
+                p.is_favorite, p.is_curated,
                 COUNT(pt.id) as track_count,
                 p.created_at, p.updated_at
             FROM playlists p
             LEFT JOIN playlist_tracks pt ON pt.playlist_id = p.id
             GROUP BY p.id
-            ORDER BY p.created_at DESC
+            ORDER BY p.is_curated DESC, p.created_at DESC
             "#,
         )
         .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
@@ -37,7 +37,8 @@ pub fn get_playlists(conn: &Connection) -> Result<Vec<PlaylistDto>, DatabaseErro
     let iter = stmt
         .query_map([], |row| {
             let is_fav_int: i32 = row.get(5)?;
-            let trk_cnt: i64 = row.get(6)?;
+            let is_curated_int: i32 = row.get(6)?;
+            let trk_cnt: i64 = row.get(7)?;
             Ok(PlaylistDto {
                 id: row.get(0)?,
                 name: row.get(1)?,
@@ -45,9 +46,10 @@ pub fn get_playlists(conn: &Connection) -> Result<Vec<PlaylistDto>, DatabaseErro
                 cover_art_path: row.get(3)?,
                 gradient_preset: row.get(4)?,
                 is_favorite: is_fav_int == 1,
+                is_curated: is_curated_int == 1,
                 track_count: trk_cnt as u32,
-                created_at: row.get(7)?,
-                updated_at: row.get(8)?,
+                created_at: row.get(8)?,
+                updated_at: row.get(9)?,
             })
         })
         .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
@@ -59,18 +61,21 @@ pub fn get_playlists(conn: &Connection) -> Result<Vec<PlaylistDto>, DatabaseErro
     Ok(list)
 }
 
-/// Creates a new empty user playlist.
+/// Creates a new empty user playlist with structured metadata.
 pub fn create_playlist(
     conn: &mut Connection,
-    name: &str,
-    description: Option<String>,
+    payload: &PlaylistInputDto,
 ) -> Result<PlaylistDto, DatabaseError> {
-    let trimmed = name.trim();
+    let trimmed = payload.name.trim();
     if trimmed.is_empty() {
         return Err(DatabaseError::invalid_name("Playlist name cannot be empty"));
     }
 
-    let id = Uuid::new_v4().to_string();
+    let id = payload
+        .id
+        .clone()
+        .filter(|s| !s.trim().is_empty())
+        .unwrap_or_else(|| Uuid::new_v4().to_string());
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs() as i64)
@@ -78,36 +83,64 @@ pub fn create_playlist(
 
     conn.execute(
         r#"
-        INSERT INTO playlists (id, name, description, cover_art_path, gradient_preset, is_favorite, created_at, updated_at)
-        VALUES (?1, ?2, ?3, NULL, NULL, 0, ?4, ?4)
+        INSERT INTO playlists (
+            id, name, description, cover_art_path, gradient_preset,
+            is_favorite, is_curated, created_at, updated_at
+        ) VALUES (?1, ?2, ?3, ?4, ?5, 0, 0, ?6, ?6)
         "#,
-        params![id, trimmed, description, now],
+        params![
+            id,
+            trimmed,
+            payload.description,
+            payload.cover_art_path,
+            payload.gradient_preset,
+            now
+        ],
     )
     .map_err(|err| DatabaseError::write_failed(err.to_string()))?;
 
     Ok(PlaylistDto {
         id,
         name: trimmed.to_string(),
-        description,
-        cover_art_path: None,
-        gradient_preset: None,
+        description: payload.description.clone(),
+        cover_art_path: payload.cover_art_path.clone(),
+        gradient_preset: payload.gradient_preset.clone(),
         is_favorite: false,
+        is_curated: false,
         track_count: 0,
         created_at: now,
         updated_at: now,
     })
 }
 
-/// Updates playlist title and optional description.
+/// Updates playlist metadata ensuring curated playlists are immutable.
 pub fn update_playlist(
     conn: &mut Connection,
     id: &str,
-    name: &str,
-    description: Option<String>,
+    payload: &PlaylistInputDto,
 ) -> Result<PlaylistDto, DatabaseError> {
-    let trimmed = name.trim();
+    let trimmed = payload.name.trim();
     if trimmed.is_empty() {
         return Err(DatabaseError::invalid_name("Playlist name cannot be empty"));
+    }
+
+    let is_curated_int: i32 = conn
+        .query_row(
+            "SELECT is_curated FROM playlists WHERE id = ?1",
+            params![id],
+            |row| row.get(0),
+        )
+        .map_err(|err| match err {
+            rusqlite::Error::QueryReturnedNoRows => {
+                DatabaseError::playlist_not_found(format!("Playlist with id {} not found", id))
+            }
+            _ => DatabaseError::query_failed(err.to_string()),
+        })?;
+
+    if is_curated_int == 1 {
+        return Err(DatabaseError::write_failed(
+            "Curated playlists cannot be modified",
+        ));
     }
 
     let now = SystemTime::now()
@@ -121,10 +154,19 @@ pub fn update_playlist(
             UPDATE playlists
             SET name = ?1,
                 description = ?2,
-                updated_at = ?3
-            WHERE id = ?4
+                cover_art_path = ?3,
+                gradient_preset = ?4,
+                updated_at = ?5
+            WHERE id = ?6
             "#,
-            params![trimmed, description, now, id],
+            params![
+                trimmed,
+                payload.description,
+                payload.cover_art_path,
+                payload.gradient_preset,
+                now,
+                id
+            ],
         )
         .map_err(|err| DatabaseError::write_failed(err.to_string()))?;
 
@@ -143,30 +185,57 @@ pub fn update_playlist(
         )
         .unwrap_or(0);
 
-    let playlist_row = conn.query_row(
-        "SELECT id, name, description, cover_art_path, gradient_preset, is_favorite, created_at, updated_at FROM playlists WHERE id = ?1",
-        params![id],
-        |row| {
-            let is_fav_int: i32 = row.get(5)?;
-            Ok(PlaylistDto {
-                id: row.get(0)?,
-                name: row.get(1)?,
-                description: row.get(2)?,
-                cover_art_path: row.get(3)?,
-                gradient_preset: row.get(4)?,
-                is_favorite: is_fav_int == 1,
-                track_count: count as u32,
-                created_at: row.get(6)?,
-                updated_at: row.get(7)?,
-            })
-        },
-    ).map_err(|err| DatabaseError::query_failed(err.to_string()))?;
+    let playlist_row = conn
+        .query_row(
+            r#"
+            SELECT id, name, description, cover_art_path, gradient_preset,
+                   is_favorite, is_curated, created_at, updated_at
+            FROM playlists WHERE id = ?1
+            "#,
+            params![id],
+            |row| {
+                let is_fav_int: i32 = row.get(5)?;
+                let is_cur_int: i32 = row.get(6)?;
+                Ok(PlaylistDto {
+                    id: row.get(0)?,
+                    name: row.get(1)?,
+                    description: row.get(2)?,
+                    cover_art_path: row.get(3)?,
+                    gradient_preset: row.get(4)?,
+                    is_favorite: is_fav_int == 1,
+                    is_curated: is_cur_int == 1,
+                    track_count: count as u32,
+                    created_at: row.get(7)?,
+                    updated_at: row.get(8)?,
+                })
+            },
+        )
+        .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
 
     Ok(playlist_row)
 }
 
 /// Deletes a playlist and cascades deletion of its playlist_tracks entries.
 pub fn delete_playlist(conn: &mut Connection, id: &str) -> Result<bool, DatabaseError> {
+    let is_curated_int: i32 = conn
+        .query_row(
+            "SELECT is_curated FROM playlists WHERE id = ?1",
+            params![id],
+            |row| row.get(0),
+        )
+        .map_err(|err| match err {
+            rusqlite::Error::QueryReturnedNoRows => {
+                DatabaseError::playlist_not_found(format!("Playlist with id {} not found", id))
+            }
+            _ => DatabaseError::query_failed(err.to_string()),
+        })?;
+
+    if is_curated_int == 1 {
+        return Err(DatabaseError::write_failed(
+            "Curated playlists cannot be deleted",
+        ));
+    }
+
     let rows_deleted = conn
         .execute("DELETE FROM playlists WHERE id = ?1", params![id])
         .map_err(|err| DatabaseError::write_failed(err.to_string()))?;
@@ -247,30 +316,40 @@ pub fn add_tracks_to_playlist(
     Ok(inserted_count)
 }
 
-/// Removes a specific track item from a playlist and renumbers subsequent positions.
+/// Removes a specific playlist track entry by its entry identifier and renumbers subsequent positions.
 pub fn remove_playlist_track(
     conn: &mut Connection,
     playlist_id: &str,
-    track_id: &str,
-    position: u32,
+    entry_id: &str,
 ) -> Result<bool, DatabaseError> {
     let tx = conn
         .transaction()
         .map_err(|err| DatabaseError::write_failed(err.to_string()))?;
 
-    let rows_deleted = tx
-        .execute(
-            "DELETE FROM playlist_tracks WHERE playlist_id = ?1 AND track_id = ?2 AND position = ?3",
-            params![playlist_id, track_id, position],
+    let current_pos: Option<i32> = tx
+        .query_row(
+            "SELECT position FROM playlist_tracks WHERE playlist_id = ?1 AND id = ?2",
+            params![playlist_id, entry_id],
+            |row| row.get(0),
         )
-        .map_err(|err| DatabaseError::write_failed(err.to_string()))?;
+        .optional()
+        .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
 
-    if rows_deleted == 0 {
-        return Err(DatabaseError::item_not_found(format!(
-            "Item in playlist {} at position {} not found",
-            playlist_id, position
-        )));
-    }
+    let position = match current_pos {
+        Some(pos) => pos,
+        None => {
+            return Err(DatabaseError::item_not_found(format!(
+                "Entry {} in playlist {} not found",
+                entry_id, playlist_id
+            )))
+        }
+    };
+
+    tx.execute(
+        "DELETE FROM playlist_tracks WHERE playlist_id = ?1 AND id = ?2",
+        params![playlist_id, entry_id],
+    )
+    .map_err(|err| DatabaseError::write_failed(err.to_string()))?;
 
     // Renumber subsequent positions to eliminate gaps
     tx.execute(
@@ -293,7 +372,7 @@ pub fn remove_playlist_track(
 pub fn reorder_playlist_tracks(
     conn: &mut Connection,
     playlist_id: &str,
-    ordered_item_ids: &[String],
+    ordered_entry_ids: &[String],
 ) -> Result<bool, DatabaseError> {
     let tx = conn
         .transaction()
@@ -315,14 +394,14 @@ pub fn reorder_playlist_tracks(
         )));
     }
 
-    for (new_pos, item_id) in ordered_item_ids.iter().enumerate() {
+    for (new_pos, entry_id) in ordered_entry_ids.iter().enumerate() {
         tx.execute(
             r#"
             UPDATE playlist_tracks
             SET position = ?1
-            WHERE playlist_id = ?2 AND (id = ?3 OR track_id = ?3)
+            WHERE playlist_id = ?2 AND id = ?3
             "#,
-            params![new_pos as i32, playlist_id, item_id],
+            params![new_pos as i32, playlist_id, entry_id],
         )
         .map_err(|err| DatabaseError::write_failed(err.to_string()))?;
     }
@@ -343,7 +422,7 @@ pub fn get_playlist_details(
             r#"
             SELECT
                 p.id, p.name, p.description, p.cover_art_path, p.gradient_preset,
-                p.is_favorite,
+                p.is_favorite, p.is_curated,
                 COUNT(pt.id) as track_count,
                 p.created_at, p.updated_at
             FROM playlists p
@@ -357,7 +436,8 @@ pub fn get_playlist_details(
     let mut p_iter = p_stmt
         .query_map(params![id], |row| {
             let is_fav_int: i32 = row.get(5)?;
-            let trk_cnt: i64 = row.get(6)?;
+            let is_curated_int: i32 = row.get(6)?;
+            let trk_cnt: i64 = row.get(7)?;
             Ok(PlaylistDto {
                 id: row.get(0)?,
                 name: row.get(1)?,
@@ -365,9 +445,10 @@ pub fn get_playlist_details(
                 cover_art_path: row.get(3)?,
                 gradient_preset: row.get(4)?,
                 is_favorite: is_fav_int == 1,
+                is_curated: is_curated_int == 1,
                 track_count: trk_cnt as u32,
-                created_at: row.get(7)?,
-                updated_at: row.get(8)?,
+                created_at: row.get(8)?,
+                updated_at: row.get(9)?,
             })
         })
         .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
@@ -382,7 +463,7 @@ pub fn get_playlist_details(
             pt.id, pt.playlist_id, pt.position, pt.added_at,
             t.id, t.file_path, t.title, t.artist_id, t.artist_name, t.album_id, t.album_name, t.album_artist,
             t.duration, t.year, t.genre, t.disc_number, t.track_number, t.bitrate, t.format,
-            t.is_favorite, t.play_count, t.cover_art_path, t.last_played_at, t.file_modified_at,
+            t.is_favorite, t.liked_at, t.play_count, t.cover_art_path, t.last_played_at, t.file_modified_at,
             t.file_size_bytes, t.folder_id, t.created_at, t.updated_at
         FROM playlist_tracks pt
         JOIN tracks t ON t.id = pt.track_id
@@ -397,7 +478,7 @@ pub fn get_playlist_details(
     let pt_iter = pt_stmt
         .query_map(params![id], |row| {
             let is_fav_int: i32 = row.get(19)?;
-            let play_cnt_int: i64 = row.get(20)?;
+            let play_cnt_int: i64 = row.get(21)?;
             let track = TrackDto {
                 id: row.get(4)?,
                 file_path: row.get(5)?,
@@ -414,15 +495,16 @@ pub fn get_playlist_details(
                 track_number: row.get(16)?,
                 bitrate: row.get(17)?,
                 format: row.get(18)?,
-                cover_art_path: row.get(21)?,
                 is_favorite: is_fav_int == 1,
+                liked_at: row.get(20)?,
                 play_count: play_cnt_int as u32,
-                last_played_at: row.get(22)?,
-                file_modified_at: row.get(23)?,
-                file_size_bytes: row.get(24)?,
-                folder_id: row.get(25)?,
-                created_at: row.get(26)?,
-                updated_at: row.get(27)?,
+                cover_art_path: row.get(22)?,
+                last_played_at: row.get(23)?,
+                file_modified_at: row.get(24)?,
+                file_size_bytes: row.get(25)?,
+                folder_id: row.get(26)?,
+                created_at: row.get(27)?,
+                updated_at: row.get(28)?,
             };
 
             let pos_int: i32 = row.get(2)?;

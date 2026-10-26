@@ -10,7 +10,7 @@ use super::models::{PaginatedTracksDto, TrackDto, TrackFilterDto};
 /// Helper to map a rusqlite row into TrackDto.
 pub fn map_track_row(row: &Row<'_>) -> Result<TrackDto, rusqlite::Error> {
     let is_fav_int: i32 = row.get(15)?;
-    let play_cnt_int: i64 = row.get(16)?;
+    let play_cnt_int: i64 = row.get(17)?;
     Ok(TrackDto {
         id: row.get(0)?,
         file_path: row.get(1)?,
@@ -27,15 +27,16 @@ pub fn map_track_row(row: &Row<'_>) -> Result<TrackDto, rusqlite::Error> {
         track_number: row.get(12)?,
         bitrate: row.get(13)?,
         format: row.get(14)?,
-        cover_art_path: row.get(17)?,
         is_favorite: is_fav_int == 1,
+        liked_at: row.get(16)?,
         play_count: play_cnt_int as u32,
-        last_played_at: row.get(18)?,
-        file_modified_at: row.get(19)?,
-        file_size_bytes: row.get(20)?,
-        folder_id: row.get(21)?,
-        created_at: row.get(22)?,
-        updated_at: row.get(23)?,
+        cover_art_path: row.get(18)?,
+        last_played_at: row.get(19)?,
+        file_modified_at: row.get(20)?,
+        file_size_bytes: row.get(21)?,
+        folder_id: row.get(22)?,
+        created_at: row.get(23)?,
+        updated_at: row.get(24)?,
     })
 }
 
@@ -43,7 +44,7 @@ pub fn map_track_row(row: &Row<'_>) -> Result<TrackDto, rusqlite::Error> {
 pub const TRACK_SELECT_FIELDS: &str = r#"
     id, file_path, title, artist_id, artist_name, album_id, album_name, album_artist,
     duration, year, genre, disc_number, track_number, bitrate, format,
-    is_favorite, play_count, cover_art_path, last_played_at, file_modified_at,
+    is_favorite, liked_at, play_count, cover_art_path, last_played_at, file_modified_at,
     file_size_bytes, folder_id, created_at, updated_at
 "#;
 
@@ -68,28 +69,28 @@ pub fn get_tracks(
     let mut where_clauses: Vec<String> = Vec::new();
     let mut params_vec: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
 
-    if let Some(f) = filter {
-        if let Some(folder_id) = f.folder_id {
+    if let Some(f) = &filter {
+        if let Some(folder_id) = &f.folder_id {
             where_clauses.push(format!("folder_id = ?{}", params_vec.len() + 1));
-            params_vec.push(Box::new(folder_id));
+            params_vec.push(Box::new(folder_id.clone()));
         }
         if let Some(fav) = f.is_favorite {
             where_clauses.push(format!("is_favorite = ?{}", params_vec.len() + 1));
             params_vec.push(Box::new(if fav { 1 } else { 0 }));
         }
-        if let Some(artist_id) = f.artist_id {
+        if let Some(artist_id) = &f.artist_id {
             where_clauses.push(format!("artist_id = ?{}", params_vec.len() + 1));
-            params_vec.push(Box::new(artist_id));
+            params_vec.push(Box::new(artist_id.clone()));
         }
-        if let Some(album_id) = f.album_id {
+        if let Some(album_id) = &f.album_id {
             where_clauses.push(format!("album_id = ?{}", params_vec.len() + 1));
-            params_vec.push(Box::new(album_id));
+            params_vec.push(Box::new(album_id.clone()));
         }
-        if let Some(genre) = f.genre {
+        if let Some(genre) = &f.genre {
             where_clauses.push(format!("genre = ?{}", params_vec.len() + 1));
-            params_vec.push(Box::new(genre));
+            params_vec.push(Box::new(genre.clone()));
         }
-        if let Some(query) = f.search_query {
+        if let Some(query) = &f.search_query {
             let trimmed = query.trim();
             if !trimmed.is_empty() {
                 let pattern = format!("%{}%", trimmed);
@@ -125,11 +126,63 @@ pub fn get_tracks(
         .query_row(rusqlite_params.as_slice(), |row| row.get(0))
         .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
 
+    let (is_fav_filter, sort_by_opt, sort_dir_opt) = match &filter {
+        Some(f) => (
+            f.is_favorite == Some(true),
+            f.sort_by.clone(),
+            f.sort_direction.clone(),
+        ),
+        None => (false, None, None),
+    };
+
+    let order_by_clause = match (&sort_by_opt, &sort_dir_opt) {
+        (Some(sort_by), dir) => {
+            let direction = if dir.as_deref().unwrap_or("").eq_ignore_ascii_case("desc") {
+                "DESC"
+            } else {
+                "ASC"
+            };
+            match sort_by.to_lowercase().as_str() {
+                "liked_at" => {
+                    format!(
+                        "ORDER BY liked_at {} NULLS LAST, created_at DESC",
+                        direction
+                    )
+                }
+                "title" => {
+                    format!(
+                        "ORDER BY title {}, disc_number ASC, track_number ASC",
+                        direction
+                    )
+                }
+                "created_at" => format!("ORDER BY created_at {}", direction),
+                "play_count" => format!("ORDER BY play_count {}", direction),
+                "artist" | "artist_name" => {
+                    format!("ORDER BY artist_name {}, title ASC", direction)
+                }
+                "album" | "album_name" => format!(
+                    "ORDER BY album_name {}, disc_number ASC, track_number ASC",
+                    direction
+                ),
+                "duration" => format!("ORDER BY duration {}", direction),
+                _ => "ORDER BY title ASC, disc_number ASC, track_number ASC".to_string(),
+            }
+        }
+        (None, _) => {
+            if is_fav_filter {
+                "ORDER BY liked_at DESC NULLS LAST, created_at DESC".to_string()
+            } else {
+                "ORDER BY title ASC, disc_number ASC, track_number ASC".to_string()
+            }
+        }
+    };
+
     // Query paginated items
     let select_query = format!(
-        "SELECT {} FROM tracks {} ORDER BY title ASC, disc_number ASC, track_number ASC LIMIT ?{} OFFSET ?{}",
+        "SELECT {} FROM tracks {} {} LIMIT ?{} OFFSET ?{}",
         TRACK_SELECT_FIELDS,
         where_str,
+        order_by_clause,
         params_vec.len() + 1,
         params_vec.len() + 2
     );
@@ -197,14 +250,14 @@ pub fn toggle_track_favorite(conn: &mut Connection, id: &str) -> Result<bool, Da
             _ => DatabaseError::query_failed(err.to_string()),
         })?;
 
-    let new_fav = match current_fav {
-        Some(1) => 0,
-        _ => 1,
+    let (new_fav, liked_at) = match current_fav {
+        Some(1) => (0, None),
+        _ => (1, Some(now)),
     };
 
     conn.execute(
-        "UPDATE tracks SET is_favorite = ?1, updated_at = ?2 WHERE id = ?3",
-        params![new_fav, now, id],
+        "UPDATE tracks SET is_favorite = ?1, liked_at = ?2, updated_at = ?3 WHERE id = ?4",
+        params![new_fav, liked_at, now, id],
     )
     .map_err(|err| DatabaseError::write_failed(err.to_string()))?;
 
@@ -258,13 +311,13 @@ pub fn upsert_track(conn: &mut Connection, track: &TrackDto) -> Result<(), Datab
         INSERT INTO tracks (
             id, file_path, title, artist_id, artist_name, album_id, album_name, album_artist,
             duration, year, genre, disc_number, track_number, bitrate, format,
-            cover_art_path, is_favorite, play_count, last_played_at, file_modified_at,
+            cover_art_path, is_favorite, liked_at, play_count, last_played_at, file_modified_at,
             file_size_bytes, folder_id, created_at, updated_at
         ) VALUES (
             ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8,
             ?9, ?10, ?11, ?12, ?13, ?14, ?15,
-            ?16, ?17, ?18, ?19, ?20,
-            ?21, ?22, ?23, ?24
+            ?16, ?17, ?18, ?19, ?20, ?21,
+            ?22, ?23, ?24, ?25
         )
         ON CONFLICT(file_path) DO UPDATE SET
             title = excluded.title,
@@ -303,6 +356,7 @@ pub fn upsert_track(conn: &mut Connection, track: &TrackDto) -> Result<(), Datab
             track.format,
             track.cover_art_path,
             is_fav,
+            track.liked_at,
             track.play_count,
             track.last_played_at,
             track.file_modified_at,

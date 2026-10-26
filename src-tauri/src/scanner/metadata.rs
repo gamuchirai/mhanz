@@ -39,7 +39,10 @@ pub fn parse_audio_metadata(
         .or_else(|| tagged_file.first_tag());
 
     // Title with basename fallback (AC-4)
-    let raw_title = tag.as_ref().and_then(|t| t.title()).map(|s| s.trim().to_string());
+    let raw_title = tag
+        .as_ref()
+        .and_then(|t| t.title())
+        .map(|s| s.trim().to_string());
     let title = match raw_title {
         Some(t) if !t.is_empty() => t,
         _ => file
@@ -50,14 +53,20 @@ pub fn parse_audio_metadata(
     };
 
     // Artist with "Unknown Artist" fallback (AC-4)
-    let raw_artist = tag.as_ref().and_then(|t| t.artist()).map(|s| s.trim().to_string());
+    let raw_artist = tag
+        .as_ref()
+        .and_then(|t| t.artist())
+        .map(|s| s.trim().to_string());
     let artist_name = match raw_artist {
         Some(a) if !a.is_empty() => a,
         _ => UNKNOWN_ARTIST.to_string(),
     };
 
     // Album with "Unknown Album" fallback (AC-4)
-    let raw_album = tag.as_ref().and_then(|t| t.album()).map(|s| s.trim().to_string());
+    let raw_album = tag
+        .as_ref()
+        .and_then(|t| t.album())
+        .map(|s| s.trim().to_string());
     let album_title = match raw_album {
         Some(al) if !al.is_empty() => al,
         _ => UNKNOWN_ALBUM.to_string(),
@@ -70,10 +79,7 @@ pub fn parse_audio_metadata(
             .filter(|s| !s.is_empty())
     });
 
-    let year = tag
-        .as_ref()
-        .and_then(|t| t.year())
-        .map(|y| y as i32);
+    let year = tag.as_ref().and_then(|t| t.year()).map(|y| y as i32);
 
     let genre = tag.as_ref().and_then(|t| {
         t.genre()
@@ -82,7 +88,11 @@ pub fn parse_audio_metadata(
     });
 
     let track_number = tag.as_ref().and_then(|t| t.track()).map(|tr| tr as i32);
-    let disc_number = tag.as_ref().and_then(|t| t.disk()).map(|d| d as i32).unwrap_or(1);
+    let disc_number = tag
+        .as_ref()
+        .and_then(|t| t.disk())
+        .map(|d| d as i32)
+        .unwrap_or(1);
 
     // Extract embedded cover artwork if present (AC-5)
     let cover_art_path = extract_cover_art(&tagged_file, cache_covers_dir);
@@ -108,10 +118,7 @@ pub fn parse_audio_metadata(
 }
 
 /// Extracts front cover artwork, hashes with SHA256, and saves deduplicated into cache dir (AC-5).
-fn extract_cover_art<T: TaggedFileExt>(
-    tagged_file: &T,
-    cache_covers_dir: &Path,
-) -> Option<String> {
+fn extract_cover_art<T: TaggedFileExt>(tagged_file: &T, cache_covers_dir: &Path) -> Option<String> {
     let tag = tagged_file
         .primary_tag()
         .or_else(|| tagged_file.first_tag())?;

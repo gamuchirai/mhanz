@@ -155,6 +155,7 @@ describe("Scanner Service (src/services/scanner.ts)", () => {
         format: "mp3",
         cover_art_path: "C:/Cache/art.jpg",
         is_favorite: true,
+        liked_at: 1700000000,
         play_count: 12,
         last_played_at: 1700000000,
         file_modified_at: 1700000000,

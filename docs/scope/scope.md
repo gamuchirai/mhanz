@@ -280,11 +280,12 @@ Wire playlist creation, editing, track reordering, and liking songs to immediate
 spec [0015](../specs/0015-playlists-favorites-persistence/index.md)
 
 - [x] Design it (spec): `/architect playlists & favorites persistence`
-- [ ] Build it: `/develop playlists & favorites persistence`
-  - [ ] Schema migration and Rust backend persistence: Migration V002 schema additions, updated repository methods, transactional container seeding, and Tauri IPC command contracts (AC-1, AC-2, AC-3, AC-4, AC-8)
-  - [ ] Centralized favorite synchronization: Shared coordinator service with in flight request serialization, instant SQLite persistence, and cross store heart state sync (AC-1, AC-9, AC-10, AC-11)
-  - [ ] Frontend playlist and liked songs stores: SQLite hydration on boot, lazy detail fetching, optimistic CRUD, and atomic drag reordering (AC-5, AC-6, AC-7, AC-8)
-  - [ ] Playback context coordination and test suite: Player store context cleanup on playlist deletion, optimistic rollback handling, and comprehensive unit and integration tests (AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+- [x] Build it: `/develop playlists & favorites persistence`
+  - [x] Schema migration and Rust backend persistence: Migration V002 schema additions, updated repository methods, transactional container seeding, and Tauri IPC command contracts (AC-1, AC-2, AC-3, AC-4, AC-8)
+  - [x] Centralized favorite synchronization: Shared coordinator service with in flight request serialization, instant SQLite persistence, and cross store heart state sync (AC-1, AC-9, AC-10, AC-11)
+  - [x] Frontend playlist and liked songs stores: SQLite hydration on boot, lazy detail fetching, optimistic CRUD, and atomic drag reordering (AC-5, AC-6, AC-7, AC-8)
+  - [x] Playback context coordination and test suite: Player store context cleanup on playlist deletion, optimistic rollback handling, and comprehensive unit and integration tests (AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
+        code in `src-tauri/migrations/V002__playlists_and_favorites.sql`, `src-tauri/src/db/`, `src/services/favoritesSync.ts`, `src/store/usePlaylistStore.ts`, `src/store/useLikedSongsStore.ts`, `src/store/usePlayerStore.ts`, `src/test/playlistsPersistence.test.tsx`
 - [ ] Verify it: `/check verify playlists & favorites persistence`
 
 ### 17. Fast local library search indexing · in-progress

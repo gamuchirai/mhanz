@@ -14,6 +14,7 @@ import { SettingsModal } from "./components/settings/SettingsModal";
 import { NowPlayingFullscreen } from "./components/fullscreen/NowPlayingFullscreen";
 import { useActiveOverlay, useOverlayStore } from "./store/useOverlayStore";
 import { useActivePlaylistId, usePlaylistStore, usePlaylists } from "./store/usePlaylistStore";
+import { useLikedSongsStore } from "./store/useLikedSongsStore";
 import { useAlbumStore } from "./store/useAlbumStore";
 import { useArtistStore } from "./store/useArtistStore";
 
@@ -39,6 +40,16 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    // Hydrate persistent state from SQLite on initial boot
+    usePlaylistStore
+      .getState()
+      .initializePlaylists()
+      .catch(() => {});
+    useLikedSongsStore
+      .getState()
+      .initializeLikedSongs()
+      .catch(() => {});
+
     async function testBackend() {
       try {
         const { invoke } = await import("@tauri-apps/api/core");

@@ -104,14 +104,18 @@ impl AudioEngine {
         }
 
         let _ = db.with_conn(|conn| {
-            if let Ok(Some(vol_str)) = crate::db::settings_repo::get_setting(conn, "playback_volume") {
+            if let Ok(Some(vol_str)) =
+                crate::db::settings_repo::get_setting(conn, "playback_volume")
+            {
                 if let Ok(vol) = vol_str.parse::<f32>() {
                     if let Ok(mut inner) = self.inner.lock() {
                         inner.state.volume = vol.clamp(0.0, 1.0);
                     }
                 }
             }
-            if let Ok(Some(mute_str)) = crate::db::settings_repo::get_setting(conn, "playback_is_muted") {
+            if let Ok(Some(mute_str)) =
+                crate::db::settings_repo::get_setting(conn, "playback_is_muted")
+            {
                 if let Ok(muted) = mute_str.parse::<bool>() {
                     if let Ok(mut inner) = self.inner.lock() {
                         inner.state.is_muted = muted;
@@ -147,7 +151,9 @@ impl AudioEngine {
     }
 
     /// Ensures the Rodio output stream and sink are valid, attempting reinitialization if needed.
-    fn ensure_stream_handle(inner: &mut AudioEngineInner) -> Result<OutputStreamHandle, AudioError> {
+    fn ensure_stream_handle(
+        inner: &mut AudioEngineInner,
+    ) -> Result<OutputStreamHandle, AudioError> {
         if let Some(ref handle) = inner.stream_handle {
             return Ok(handle.clone());
         }
@@ -524,7 +530,8 @@ impl AudioEngine {
 
                     // Check play counter milestone (30s or half duration)
                     let should_record_play = !inner.state.play_count_recorded
-                        && (current_pos >= 30.0 || (duration > 0.0 && current_pos >= duration / 2.0));
+                        && (current_pos >= 30.0
+                            || (duration > 0.0 && current_pos >= duration / 2.0));
 
                     if should_record_play {
                         inner.state.play_count_recorded = true;

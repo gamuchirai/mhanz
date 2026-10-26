@@ -52,7 +52,15 @@ impl ScannerManager {
             progress_counters: Arc::new(Mutex::new(ProgressCounters::default())),
         }
     }
+}
 
+impl Default for ScannerManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ScannerManager {
     /// Queries current scan execution status.
     pub fn get_status(&self) -> ActiveScanStatusDto {
         let is_scanning = self.is_scanning.load(Ordering::SeqCst);
@@ -137,9 +145,7 @@ impl ScannerManager {
                 .prepare("SELECT path FROM folders WHERE id = ?1 AND is_active = 1")
                 .map_err(|e| e.to_string())?;
 
-            let path_opt: Option<String> = stmt
-                .query_row([&folder_id], |row| row.get(0))
-                .ok();
+            let path_opt: Option<String> = stmt.query_row([&folder_id], |row| row.get(0)).ok();
 
             match path_opt {
                 Some(p) => PathBuf::from(p),
@@ -193,30 +199,31 @@ impl ScannerManager {
                 const THROTTLE_INTERVAL: Duration = Duration::from_millis(100);
 
                 // Helper to emit throttled progress
-                let maybe_emit_progress = |force: bool,
-                                           phase_str: &'static str,
-                                           current_file_path: &str,
-                                           last_emit: &mut Instant| {
-                    if force || last_emit.elapsed() >= THROTTLE_INTERVAL {
-                        *last_emit = Instant::now();
-                        let payload = {
-                            let mut counters = counters_clone.lock().unwrap();
-                            counters.current_file = current_file_path.to_string();
-                            ScanProgressPayload {
-                                folder_id: folder_id_worker.clone(),
-                                phase: phase_str.to_string(),
-                                scanned_files: counters.scanned_files,
-                                total_files: counters.total_files,
-                                new_tracks: counters.new_tracks,
-                                updated_tracks: counters.updated_tracks,
-                                removed_tracks: counters.removed_tracks,
-                                current_file: current_file_path.to_string(),
-                                elapsed_ms: start_instant.elapsed().as_millis() as u64,
-                            }
-                        };
-                        let _ = app_handle.emit("library://scan-progress", payload);
-                    }
-                };
+                let maybe_emit_progress =
+                    |force: bool,
+                     phase_str: &'static str,
+                     current_file_path: &str,
+                     last_emit: &mut Instant| {
+                        if force || last_emit.elapsed() >= THROTTLE_INTERVAL {
+                            *last_emit = Instant::now();
+                            let payload = {
+                                let mut counters = counters_clone.lock().unwrap();
+                                counters.current_file = current_file_path.to_string();
+                                ScanProgressPayload {
+                                    folder_id: folder_id_worker.clone(),
+                                    phase: phase_str.to_string(),
+                                    scanned_files: counters.scanned_files,
+                                    total_files: counters.total_files,
+                                    new_tracks: counters.new_tracks,
+                                    updated_tracks: counters.updated_tracks,
+                                    removed_tracks: counters.removed_tracks,
+                                    current_file: current_file_path.to_string(),
+                                    elapsed_ms: start_instant.elapsed().as_millis() as u64,
+                                }
+                            };
+                            let _ = app_handle.emit("library://scan-progress", payload);
+                        }
+                    };
 
                 // 1. Discovering Phase: Pre fetch DB timestamps and traverse folder
                 let existing_timestamps: HashMap<String, i64> = {
@@ -266,7 +273,10 @@ impl ScannerManager {
                                 Ok(data) => Some(data),
                                 Err(err_msg) => {
                                     // Resilient error tolerance: capture non-fatal error (AC-10)
-                                    eprintln!("Audio parse warning for {}: {}", file.path_str, err_msg);
+                                    eprintln!(
+                                        "Audio parse warning for {}: {}",
+                                        file.path_str, err_msg
+                                    );
                                     None
                                 }
                             }
@@ -300,11 +310,13 @@ impl ScannerManager {
                         }
                     }
 
-                    let last_file_name = chunk
-                        .last()
-                        .map(|f| f.path_str.as_str())
-                        .unwrap_or("");
-                    maybe_emit_progress(false, "committing", last_file_name, &mut last_progress_emit);
+                    let last_file_name = chunk.last().map(|f| f.path_str.as_str()).unwrap_or("");
+                    maybe_emit_progress(
+                        false,
+                        "committing",
+                        last_file_name,
+                        &mut last_progress_emit,
+                    );
                 }
 
                 // 3. Pruning Phase (AC-8): If and only if the scan was uncancelled
@@ -316,7 +328,11 @@ impl ScannerManager {
                     maybe_emit_progress(true, "pruning", "", &mut last_progress_emit);
 
                     if let Ok(mut conn) = db_manager.conn.lock() {
-                        match prune_missing_folder_tracks(&mut conn, &folder_id_worker, &all_disk_paths) {
+                        match prune_missing_folder_tracks(
+                            &mut conn,
+                            &folder_id_worker,
+                            &all_disk_paths,
+                        ) {
                             Ok(removed) => {
                                 if let Ok(mut c) = counters_clone.lock() {
                                     c.removed_tracks = removed;

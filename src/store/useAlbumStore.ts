@@ -3,6 +3,7 @@ import { create } from "zustand";
 import type { Album, AlbumSortOption, AlbumTrack, SortDirection } from "../types/album";
 import type { Track } from "../types/discovery";
 import { initialAlbums, initialAlbumTracks } from "../data/mockAlbums";
+import { favoritesSync } from "../services/favoritesSync";
 import { usePlayerStore } from "./usePlayerStore";
 
 export interface AlbumStoreState {
@@ -163,6 +164,30 @@ export const useAlbumStore = create<AlbumStoreState>()((set, get) => ({
     usePlayerStore.getState().playCollection(shuffled, 0);
   },
 }));
+
+// Synchronize track favorite status across all loaded album tracks
+favoritesSync.subscribe((trackId: string, isLiked: boolean) => {
+  useAlbumStore.setState((state) => {
+    let hasChanged = false;
+    const updatedAlbumTracks: Record<string, AlbumTrack[]> = {};
+
+    for (const [albumId, tracks] of Object.entries(state.albumTracks)) {
+      let albumChanged = false;
+      const mappedTracks = tracks.map((t) => {
+        if (t.id === trackId && t.isLiked !== isLiked) {
+          hasChanged = true;
+          albumChanged = true;
+          return { ...t, isLiked };
+        }
+        return t;
+      });
+      updatedAlbumTracks[albumId] = albumChanged ? mappedTracks : tracks;
+    }
+
+    if (!hasChanged) return state;
+    return { albumTracks: updatedAlbumTracks };
+  });
+});
 
 // Granular selector hooks for optimal component rendering
 export function useAlbums(): Album[] {

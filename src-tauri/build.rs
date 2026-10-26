@@ -36,10 +36,20 @@ fn main() {
 "#;
 
         if fs::write(&manifest_path, manifest_content).is_ok() {
-            let rc_content = format!(r#"1 24 "{}""#, manifest_path.display().to_string().replace('\\', "\\\\"));
+            let rc_content = format!(
+                r#"1 24 "{}""#,
+                manifest_path.display().to_string().replace('\\', "\\\\")
+            );
             if fs::write(&rc_path, rc_content).is_ok() {
                 if let Ok(status) = Command::new("windres")
-                    .args(["-i", rc_path.to_str().unwrap(), "-O", "coff", "-o", obj_path.to_str().unwrap()])
+                    .args([
+                        "-i",
+                        rc_path.to_str().unwrap(),
+                        "-O",
+                        "coff",
+                        "-o",
+                        obj_path.to_str().unwrap(),
+                    ])
                     .status()
                 {
                     if status.success() {

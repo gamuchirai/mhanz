@@ -35,9 +35,8 @@ pub struct DiscoveryResult {
 }
 
 /// Supported audio format extensions (case insensitive).
-pub const SUPPORTED_EXTENSIONS: &[&str] = &[
-    "mp3", "flac", "m4a", "aac", "ogg", "wav", "aiff", "opus",
-];
+pub const SUPPORTED_EXTENSIONS: &[&str] =
+    &["mp3", "flac", "m4a", "aac", "ogg", "wav", "aiff", "opus"];
 
 /// Checks if a file extension matches supported audio formats.
 pub fn is_supported_audio_extension(ext: &str) -> bool {
@@ -50,7 +49,8 @@ pub fn fetch_existing_file_timestamps(
     conn: &Connection,
     folder_id: &str,
 ) -> Result<HashMap<String, i64>, rusqlite::Error> {
-    let mut stmt = conn.prepare("SELECT file_path, file_modified_at FROM tracks WHERE folder_id = ?1")?;
+    let mut stmt =
+        conn.prepare("SELECT file_path, file_modified_at FROM tracks WHERE folder_id = ?1")?;
     let rows = stmt.query_map([folder_id], |row| {
         let path: String = row.get(0)?;
         let modified: i64 = row.get(1)?;
@@ -75,7 +75,10 @@ pub fn discover_audio_files(
     if !folder_path.exists() || !folder_path.is_dir() {
         return Err(std::io::Error::new(
             std::io::ErrorKind::NotFound,
-            format!("Folder does not exist or is not a directory: {}", folder_path.display()),
+            format!(
+                "Folder does not exist or is not a directory: {}",
+                folder_path.display()
+            ),
         ));
     }
 
@@ -84,9 +87,7 @@ pub fn discover_audio_files(
     let mut unchanged_count = 0;
 
     // Recursive traversal without following directory symlinks (AC-1)
-    let walker = WalkDir::new(folder_path)
-        .follow_links(false)
-        .into_iter();
+    let walker = WalkDir::new(folder_path).follow_links(false).into_iter();
 
     for entry in walker.filter_entry(|e| !is_hidden_file_or_dir(e)) {
         let entry = match entry {
@@ -112,7 +113,11 @@ pub fn discover_audio_files(
         let metadata = match fs::metadata(path) {
             Ok(m) => m,
             Err(err) => {
-                eprintln!("Scanner cannot read metadata for {}: {}", path.display(), err);
+                eprintln!(
+                    "Scanner cannot read metadata for {}: {}",
+                    path.display(),
+                    err
+                );
                 continue;
             }
         };

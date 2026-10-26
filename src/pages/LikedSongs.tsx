@@ -17,6 +17,14 @@ export function LikedSongs({ onNavigate }: LikedSongsProps) {
   const tracks = useLikedTracks();
   const unlikedPendingIds = useUnlikedPendingIds();
   const cleanupUnlikedTracks = useLikedSongsStore((state) => state.cleanupUnlikedTracks);
+  const initializeLikedSongs = useLikedSongsStore((state) => state.initializeLikedSongs);
+  const isLoaded = useLikedSongsStore((state) => state.isLoaded);
+
+  useEffect(() => {
+    if (!isLoaded) {
+      initializeLikedSongs().catch(() => {});
+    }
+  }, [isLoaded, initializeLikedSongs]);
 
   // AC-12: Purge unliked tracks upon navigating away from the view
   useEffect(() => {

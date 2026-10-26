@@ -27,7 +27,10 @@ export interface LikedSongsState {
   unlikedPendingIds: string[];
   filterQuery: string;
   sortState: LikedSortState;
+  isLoaded: boolean;
+  isLoading: boolean;
 
+  initializeLikedSongs: () => Promise<void>;
   toggleLikeTrack: (trackId: string) => void;
   setFilterQuery: (query: string) => void;
   setSortColumn: (column: LikedSortColumn) => void;

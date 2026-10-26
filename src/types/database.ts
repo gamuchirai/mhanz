@@ -43,6 +43,7 @@ export interface TrackDto {
   format: string;
   cover_art_path: string | null;
   is_favorite: boolean;
+  liked_at: number | null;
   play_count: number;
   last_played_at: number | null;
   file_modified_at: number;
@@ -59,6 +60,8 @@ export interface TrackFilterDto {
   artist_id?: string;
   album_id?: string;
   genre?: string;
+  sort_by?: string;
+  sort_direction?: "asc" | "desc";
 }
 
 export interface PaginatedTracksDto {
@@ -111,9 +114,18 @@ export interface PlaylistDto {
   cover_art_path: string | null;
   gradient_preset: string | null;
   is_favorite: boolean;
+  is_curated: boolean;
   track_count: number;
   created_at: number;
   updated_at: number;
+}
+
+export interface PlaylistInputDto {
+  id?: string;
+  name: string;
+  description?: string;
+  gradient_preset?: string;
+  cover_art_path?: string;
 }
 
 export interface PlaylistTrackDto {
