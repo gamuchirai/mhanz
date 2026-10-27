@@ -22,6 +22,7 @@ describe("Search and Explore Screen", () => {
           tracks: [],
           albums: [],
           artists: [],
+          playlists: [],
           genres: [],
           totalMatches: 0,
         },

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { usePlayerStore } from "../../store/usePlayerStore";
 import { useSearchStore } from "../../store/useSearchStore";
 import type { Track } from "../../types/discovery";
-import type { AlbumCard, ArtistCard, GenreCard } from "../../types/search";
+import type { AlbumCard, ArtistCard, GenreCard, PlaylistCard } from "../../types/search";
 import { useAlbumStore } from "../../store/useAlbumStore";
 import { useArtistStore } from "../../store/useArtistStore";
 
@@ -402,6 +402,33 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
             </section>
           )}
 
+          {/* Playlists Section */}
+          {results.playlists.length > 0 && (
+            <section
+              aria-label="Playlists"
+              style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+            >
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600, color: "var(--t)" }}>
+                Playlists
+              </h3>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+                  gap: "20px",
+                }}
+              >
+                {results.playlists.map((playlist) => (
+                  <PlaylistCardItem
+                    key={playlist.id}
+                    playlist={playlist}
+                    onNavigate={onNavigate}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Genres Section */}
           {results.genres.length > 0 && (
             <section
@@ -659,6 +686,30 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
         </section>
       )}
 
+      {/* ISOLATED PLAYLISTS VIEW */}
+      {activeCategory === "playlists" && (
+        <section
+          aria-label="Playlist results"
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+              gap: "24px",
+            }}
+          >
+            {results.playlists.map((playlist) => (
+              <PlaylistCardItem
+                key={playlist.id}
+                playlist={playlist}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ISOLATED GENRES VIEW */}
       {activeCategory === "genres" && (
         <section
@@ -893,3 +944,138 @@ function ArtistCardItem({
     </div>
   );
 }
+
+function PlaylistCardItem({
+  playlist,
+  onNavigate,
+}: {
+  playlist: PlaylistCard;
+  onNavigate?: (nav: string) => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+
+  const handlePlaylistClick = () => {
+    onNavigate?.("Playlists");
+  };
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Navigate to playlist or start playback if available
+    onNavigate?.("Playlists");
+  };
+
+  const gradient = playlist.gradientPreset || "linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)";
+
+  return (
+    <div
+      onClick={handlePlaylistClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handlePlaylistClick();
+        }
+      }}
+      aria-label={`Playlist ${playlist.name}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "12px",
+        padding: "16px",
+        borderRadius: "14px",
+        background: hovered ? "rgba(255, 255, 255, 0.04)" : "rgba(24, 17, 15, 0.4)",
+        border: hovered ? "1px solid rgba(240, 169, 130, 0.3)" : "1px solid var(--l)",
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+        transform: hovered ? "translateY(-2px)" : "none",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          aspectRatio: "1 / 1",
+          borderRadius: "10px",
+          overflow: "hidden",
+          position: "relative",
+          background: gradient,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 6px 18px rgba(0,0,0,0.3)",
+        }}
+      >
+        {playlist.coverArtPath ? (
+          <img
+            src={playlist.coverArtPath}
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          <svg className="i" width="32" height="32" style={{ color: "rgba(255,255,255,0.8)" }}>
+            <use href="#queue" />
+          </svg>
+        )}
+
+        <button
+          type="button"
+          onClick={handlePlay}
+          aria-label={`Play ${playlist.name}`}
+          style={{
+            position: "absolute",
+            bottom: "10px",
+            right: "10px",
+            width: "38px",
+            height: "38px",
+            borderRadius: "50%",
+            background: "var(--accent)",
+            border: 0,
+            color: "#fff",
+            display: "grid",
+            placeItems: "center",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+            opacity: hovered ? 1 : 0,
+            transform: hovered ? "translateY(0)" : "translateY(8px)",
+            transition: "all 0.2s ease",
+            cursor: "pointer",
+          }}
+        >
+          <svg className="i" width="16" height="16" aria-hidden="true">
+            <use href="#play" />
+          </svg>
+        </button>
+      </div>
+
+      <div style={{ minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: "14px",
+            fontWeight: 600,
+            color: "var(--t)",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {playlist.name}
+        </div>
+        <div
+          style={{
+            fontSize: "12px",
+            color: "var(--m)",
+            marginTop: "4px",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {playlist.trackCount} {playlist.trackCount === 1 ? "track" : "tracks"}
+          {playlist.description ? ` • ${playlist.description}` : ""}
+        </div>
+      </div>
+    </div>
+  );
+}
+

@@ -15,9 +15,13 @@ import type {
   PlaylistDetailDto,
   PlaylistDto,
   PlaylistInputDto,
+  SearchGenreDto,
+  SearchResultsDto,
   TrackDto,
   TrackFilterDto,
 } from "../types/database";
+import type { Track } from "../types/discovery";
+import type { AlbumCard, ArtistCard, GenreCard, PlaylistCard, SearchResults } from "../types/search";
 
 /**
  * Queries database connection status, schema version, and total record counts.
@@ -201,4 +205,114 @@ export async function dbGetSetting(key: string): Promise<string | null> {
  */
 export async function dbSetSetting(key: string, value: string): Promise<boolean> {
   return invoke<boolean>("db_set_setting", { key, value });
+}
+
+/**
+ * Searches the local music library across tracks, albums, artists, playlists, and genres.
+ */
+export async function dbSearchLibrary(
+  query: string,
+  category?: string,
+  limit?: number
+): Promise<SearchResultsDto> {
+  return invoke<SearchResultsDto>("db_search_library", {
+    query,
+    category,
+    limit,
+  });
+}
+
+/**
+ * Adapts database TrackDto to UI Track model.
+ */
+export function mapTrackDtoToUi(dto: TrackDto): Track {
+  return {
+    id: dto.id,
+    title: dto.title,
+    artist: dto.artist_name,
+    album: dto.album_name || "Unknown Album",
+    durationSeconds: Math.round(dto.duration),
+    artworkUrl: dto.cover_art_path || "/assets/images/defaults/album-art.webp",
+    isLiked: dto.is_favorite,
+    playsCount: dto.play_count,
+    filePath: dto.file_path,
+    genre: dto.genre || undefined,
+  };
+}
+
+/**
+ * Adapts database AlbumDto to UI AlbumCard model.
+ */
+export function mapAlbumDtoToUi(dto: AlbumDto): AlbumCard {
+  return {
+    id: dto.id,
+    title: dto.title,
+    artist: dto.artist_name,
+    releaseYear: dto.year || 0,
+    coverUrl: dto.cover_art_path || "/assets/images/defaults/album-art.webp",
+    trackCount: dto.track_count,
+    tracks: [],
+  };
+}
+
+/**
+ * Adapts database ArtistDto to UI ArtistCard model.
+ */
+export function mapArtistDtoToUi(dto: ArtistDto): ArtistCard {
+  return {
+    id: dto.id,
+    name: dto.name,
+    avatarUrl: dto.avatar_path || "/assets/images/defaults/artist-avatar.webp",
+    followersCount: dto.track_count * 128,
+    monthlyListeners: dto.track_count * 256,
+    popularTracks: [],
+  };
+}
+
+/**
+ * Adapts database PlaylistDto to UI PlaylistCard model.
+ */
+export function mapPlaylistDtoToUi(dto: PlaylistDto): PlaylistCard {
+  return {
+    id: dto.id,
+    name: dto.name,
+    description: dto.description || "",
+    coverArtPath: dto.cover_art_path || undefined,
+    gradientPreset: dto.gradient_preset || undefined,
+    isFavorite: dto.is_favorite,
+    isCurated: dto.is_curated,
+    trackCount: dto.track_count,
+  };
+}
+
+/**
+ * Adapts SearchGenreDto to UI GenreCard model.
+ */
+export function mapGenreDtoToUi(dto: SearchGenreDto): GenreCard {
+  const slug = dto.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return {
+    id: slug,
+    name: dto.name,
+    slug,
+    colorGradient: dto.gradient,
+    accentColor: "#f43f5e",
+    icon: "music",
+    trackCount: dto.track_count,
+  };
+}
+
+/**
+ * Adapts backend SearchResultsDto to frontend UI SearchResults.
+ */
+export function mapSearchResultsDtoToUi(dto: SearchResultsDto): SearchResults {
+  return {
+    query: dto.query,
+    tracks: dto.tracks.map(mapTrackDtoToUi),
+    albums: dto.albums.map(mapAlbumDtoToUi),
+    artists: dto.artists.map(mapArtistDtoToUi),
+    playlists: dto.playlists.map(mapPlaylistDtoToUi),
+    genres: dto.genres.map(mapGenreDtoToUi),
+    totalMatches: dto.total_matches,
+    executionTimeMs: dto.execution_time_ms,
+  };
 }

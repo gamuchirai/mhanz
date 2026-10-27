@@ -34,16 +34,29 @@ export interface ArtistCard {
   popularTracks: Track[];
 }
 
+export interface PlaylistCard {
+  id: string;
+  name: string;
+  description: string;
+  coverArtPath?: string;
+  gradientPreset?: string;
+  isFavorite: boolean;
+  isCurated: boolean;
+  trackCount: number;
+}
+
 export interface SearchResults {
   query: string;
   tracks: Track[];
   albums: AlbumCard[];
   artists: ArtistCard[];
+  playlists: PlaylistCard[];
   genres: GenreCard[];
   totalMatches: number;
+  executionTimeMs?: number;
 }
 
-export type SearchCategory = "all" | "songs" | "albums" | "artists" | "genres";
+export type SearchCategory = "all" | "songs" | "albums" | "artists" | "playlists" | "genres";
 
 export interface SearchState {
   query: string;

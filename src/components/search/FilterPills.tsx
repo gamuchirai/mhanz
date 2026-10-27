@@ -6,6 +6,7 @@ const CATEGORIES: { id: SearchCategory; label: string }[] = [
   { id: "songs", label: "Songs" },
   { id: "albums", label: "Albums" },
   { id: "artists", label: "Artists" },
+  { id: "playlists", label: "Playlists" },
   { id: "genres", label: "Genres" },
 ];
 
@@ -26,6 +27,8 @@ export function FilterPills() {
         return results.albums.length;
       case "artists":
         return results.artists.length;
+      case "playlists":
+        return results.playlists.length;
       case "genres":
         return results.genres.length;
     }

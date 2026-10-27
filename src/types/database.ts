@@ -140,3 +140,20 @@ export interface PlaylistDetailDto {
   playlist: PlaylistDto;
   tracks: PlaylistTrackDto[];
 }
+
+export interface SearchGenreDto {
+  name: string;
+  track_count: number;
+  gradient: string;
+}
+
+export interface SearchResultsDto {
+  query: string;
+  tracks: TrackDto[];
+  albums: AlbumDto[];
+  artists: ArtistDto[];
+  playlists: PlaylistDto[];
+  genres: SearchGenreDto[];
+  total_matches: number;
+  execution_time_ms: number;
+}
