@@ -25,8 +25,8 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 12  | Now playing fullscreen view        | Phase 1    | in-progress |
 | 13  | Data model & SQLite storage        | Phase 2    | in-progress |
 | 14  | Core audio playback engine         | Phase 2    | in-progress |
-| 15  | Local library scanner & metadata   | Phase 2    | in-progress |
-| 16  | Playlists & favorites persistence  | Phase 2    | in-progress |
+| 15  | Local library scanner & metadata   | Phase 2    | done        |
+| 16  | Playlists & favorites persistence  | Phase 2    | done        |
 | 17  | Fast local library search indexing | Phase 2    | in-progress |
 | 18  | Desktop UI responsiveness          | Foundation | in-progress |
 
@@ -256,7 +256,7 @@ spec [0013](../specs/0013-core-audio-playback-engine/index.md)
         code in `src-tauri/src/audio/`, `src-tauri/src/commands/audio.rs`, `src/services/audio.ts`, `src/types/audio.ts`, `src/store/usePlayerStore.ts`
 - [x] Verify it: `/check verify core audio playback engine`
 
-### 15. Local library scanner & metadata · in-progress
+### 15. Local library scanner & metadata · done
 
 Scan music folders in a background worker thread, extract audio tags and embedded artwork with lofty, and persist records into SQLite.
 **Done when:** selecting a music folder recursively finds audio files, saves track tags and album art into SQLite, and populates the library view with real local music.
@@ -273,7 +273,7 @@ spec [0016](../specs/0016-local-library-scanner-metadata/index.md)
 - [x] Verify it: `/check verify local library scanner & metadata`
 - [x] Review it: `/check review local library scanner & metadata` · findings in `docs/reviews/2026-10-26-feat-local-library-scanner-metadata.md` · verdict: Approve with nits
 
-### 16. Playlists & favorites persistence · in-progress
+### 16. Playlists & favorites persistence · done
 
 Wire playlist creation, editing, track reordering, and liking songs to immediate SQLite database persistence.
 **Done when:** creating or editing playlists and clicking hearts updates SQLite records, and changes persist across application restarts.

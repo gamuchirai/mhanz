@@ -1,7 +1,7 @@
 # 0016. Local library scanner and metadata
 
 **Date**: 2026-10-24
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
