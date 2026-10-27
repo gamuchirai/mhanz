@@ -19,7 +19,7 @@ This directory contains code reviews, audit records, and process analysis report
 
 | ID | Title | Severity | Status | Quick Action | Governing Feature / Resolution | Source Report |
 |---|---|---|---|---|---|---|
-| F-4 | [Search interface filters mock data instead of indexed library](process-0001-unlinked-ui-backend-flows.md#finding-f-4-search-interface-filters-mock-data-instead-of-indexed-library--major--scope) | major | enrolled | `/develop fast local library search indexing` | Governed by Feature 17 Fast local library search indexing ([spec 0014](../specs/0014-fast-local-library-search-indexing/index.md)) | [process-0001-unlinked-ui-backend-flows.md](process-0001-unlinked-ui-backend-flows.md) |
+| F-4 | [Search interface filters mock data instead of indexed library](process-0001-unlinked-ui-backend-flows.md#finding-f-4-search-interface-filters-mock-data-instead-of-indexed-library--major--scope) | major | resolved | `/check verify fast local library search indexing` | Governed by Feature 17 Fast local library search indexing ([spec 0014](../specs/0014-fast-local-library-search-indexing/index.md)) | [process-0001-unlinked-ui-backend-flows.md](process-0001-unlinked-ui-backend-flows.md) |
 
 ## Review and Audit Documents Index
 

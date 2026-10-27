@@ -1,7 +1,7 @@
 # 0014. Fast local library search indexing
 
 **Date**: 2026-10-24
-**Status**: Proposed
+**Status**: Accepted
 
 ## Summary
 
