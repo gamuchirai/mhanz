@@ -5,7 +5,7 @@ use tauri::State;
 use crate::db::{
     AlbumDetailDto, AlbumDto, ArtistDto, ArtistProfileDto, DatabaseError, DatabaseStatusDto,
     DbState, FolderDto, PaginatedTracksDto, PlaylistDetailDto, PlaylistDto, PlaylistInputDto,
-    TrackDto, TrackFilterDto,
+    SearchResultsDto, TrackDto, TrackFilterDto,
 };
 
 /// Queries database health, migration schema version, and record statistics.
@@ -198,4 +198,15 @@ pub async fn db_set_setting(
     state: State<'_, DbState>,
 ) -> Result<bool, DatabaseError> {
     state.set_setting(&key, &value)
+}
+
+/// Unified full text search querying tracks, albums, artists, playlists, and genres.
+#[tauri::command]
+pub async fn db_search_library(
+    query: String,
+    category: Option<String>,
+    limit: Option<u32>,
+    state: State<'_, DbState>,
+) -> Result<SearchResultsDto, DatabaseError> {
+    state.search_library(&query, category.as_deref(), limit)
 }

@@ -6,6 +6,7 @@ pub mod error;
 pub mod folder_repo;
 pub mod models;
 pub mod playlist_repo;
+pub mod search_repo;
 pub mod seeding;
 pub mod settings_repo;
 pub mod track_repo;
@@ -195,6 +196,17 @@ impl DbState {
         self.0
             .with_conn(|conn| settings_repo::set_setting(conn, key, value))
     }
+
+    /// Executes unified full text search across library tracks, albums, artists, playlists, and genres.
+    pub fn search_library(
+        &self,
+        query: &str,
+        category: Option<&str>,
+        limit: Option<u32>,
+    ) -> Result<SearchResultsDto, DatabaseError> {
+        self.0
+            .with_conn(|conn| search_repo::search_library(conn, query, category, limit))
+    }
 }
 
 #[cfg(test)]
@@ -208,7 +220,7 @@ mod tests {
 
         let status = state.get_status().expect("Status should be readable");
         assert!(status.is_ready);
-        assert_eq!(status.schema_version, 2);
+        assert_eq!(status.schema_version, 3);
         assert_eq!(status.track_count, 0);
         // Default sample playlists are seeded automatically
         assert_eq!(status.playlist_count, 5);

@@ -63,6 +63,7 @@ pub fn run() {
             commands::db::db_reorder_playlist_tracks,
             commands::db::db_get_setting,
             commands::db::db_set_setting,
+            commands::db::db_search_library,
             commands::audio::audio_play_track,
             commands::audio::audio_pause,
             commands::audio::audio_resume,

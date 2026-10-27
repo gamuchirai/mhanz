@@ -16,9 +16,16 @@ pub const MIGRATION_V001: &str = include_str!("../../migrations/V001__initial_sc
 /// Embedded V002 playlists and favorites enhancement migration script.
 pub const MIGRATION_V002: &str = include_str!("../../migrations/V002__playlists_and_favorites.sql");
 
+/// Embedded V003 search index and triggers migration script.
+pub const MIGRATION_V003: &str = include_str!("../../migrations/V003__search_index.sql");
+
 /// Construct the compiled migrations suite for Mumhanzi.
 pub fn create_migrations() -> Migrations<'static> {
-    Migrations::new(vec![M::up(MIGRATION_V001), M::up(MIGRATION_V002)])
+    Migrations::new(vec![
+        M::up(MIGRATION_V001),
+        M::up(MIGRATION_V002),
+        M::up(MIGRATION_V003),
+    ])
 }
 
 /// Applies required SQLite pragmas for thread safety, WAL concurrency, and foreign keys.

@@ -256,3 +256,35 @@ pub struct PlaylistDetailDto {
     /// Sequenced tracklist items.
     pub tracks: Vec<PlaylistTrackDto>,
 }
+
+/// Dynamic genre match result with track count and procedural gradient.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SearchGenreDto {
+    /// Name of musical genre.
+    pub name: String,
+    /// Number of matching tracks belonging to this genre.
+    pub track_count: u32,
+    /// Procedural CSS gradient string.
+    pub gradient: String,
+}
+
+/// Unified search result envelope returned to frontend consumers.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SearchResultsDto {
+    /// Original query term submitted.
+    pub query: String,
+    /// Matching track records.
+    pub tracks: Vec<TrackDto>,
+    /// Matching album catalog entries.
+    pub albums: Vec<AlbumDto>,
+    /// Matching artist catalog entries.
+    pub artists: Vec<ArtistDto>,
+    /// Matching playlist records.
+    pub playlists: Vec<PlaylistDto>,
+    /// Dynamically aggregated genres.
+    pub genres: Vec<SearchGenreDto>,
+    /// Combined total of all categorized matches.
+    pub total_matches: u32,
+    /// Measured query execution duration in milliseconds.
+    pub execution_time_ms: f64,
+}
