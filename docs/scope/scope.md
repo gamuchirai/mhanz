@@ -286,7 +286,7 @@ spec [0015](../specs/0015-playlists-favorites-persistence/index.md)
   - [x] Frontend playlist and liked songs stores: SQLite hydration on boot, lazy detail fetching, optimistic CRUD, and atomic drag reordering (AC-5, AC-6, AC-7, AC-8)
   - [x] Playback context coordination and test suite: Player store context cleanup on playlist deletion, optimistic rollback handling, and comprehensive unit and integration tests (AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
         code in `src-tauri/migrations/V002__playlists_and_favorites.sql`, `src-tauri/src/db/`, `src/services/favoritesSync.ts`, `src/store/usePlaylistStore.ts`, `src/store/useLikedSongsStore.ts`, `src/store/usePlayerStore.ts`, `src/test/playlistsPersistence.test.tsx`
-- [ ] Verify it: `/check verify playlists & favorites persistence`
+- [x] Verify it: `/check verify playlists & favorites persistence`
 
 ### 17. Fast local library search indexing · in-progress
 

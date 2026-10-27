@@ -1,7 +1,7 @@
 # 0015. Playlists and favorites persistence
 
 **Date**: 2026-10-24
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
