@@ -287,6 +287,7 @@ spec [0015](../specs/0015-playlists-favorites-persistence/index.md)
   - [x] Playback context coordination and test suite: Player store context cleanup on playlist deletion, optimistic rollback handling, and comprehensive unit and integration tests (AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
         code in `src-tauri/migrations/V002__playlists_and_favorites.sql`, `src-tauri/src/db/`, `src/services/favoritesSync.ts`, `src/store/usePlaylistStore.ts`, `src/store/useLikedSongsStore.ts`, `src/store/usePlayerStore.ts`, `src/test/playlistsPersistence.test.tsx`
 - [x] Verify it: `/check verify playlists & favorites persistence`
+- [x] Review it: `/check review playlists & favorites persistence` · findings in `docs/reviews/2026-10-27-feat-playlists-favorites-persistence.md` · verdict: Approve with nits
 
 ### 17. Fast local library search indexing · in-progress
 
