@@ -29,6 +29,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 16  | Playlists & favorites persistence  | Phase 2    | done        |
 | 17  | Fast local library search indexing | Phase 2    | in-progress |
 | 18  | Desktop UI responsiveness          | Foundation | in-progress |
+| 19  | App branding & logo integration    | Foundation | in-progress |
 
 ## Foundations
 
@@ -73,6 +74,22 @@ spec [0017](../specs/0017-desktop-ui-responsiveness/index.md)
         code in `src/components/layout/`, `src/components/player/`, `src/components/library/`, `src/components/liked/`, `src/components/playlists/`, `src/test/responsive.test.tsx`, `src-tauri/tauri.conf.json`
 - [x] Verify it: `/check verify desktop UI responsiveness`
 - [x] Review it: `/check review desktop UI responsiveness` · findings in `docs/reviews/2026-10-26-feat-desktop-ui-responsiveness.md` · verdict: Approve with nits
+
+### 19. App branding & logo integration · in-progress
+
+Incorporate official Mumhanzi logos across the sidebar navigation header, browser document favicon, and native desktop bundle icons.
+**Done when:** the sidebar renders the Mumhanzi logo lockup in expanded mode and standalone symbol in collapsed mode, index.html links the new favicon, and Tauri bundle configuration includes generated platform icons.
+spec [0018](../specs/0018-app-branding-logo-integration/index.md)
+
+- [x] Design it (spec): `/architect app branding & logo integration`
+- [ ] Build it: `/develop app branding & logo integration`
+  - [ ] Asset normalization in public/logos with clean kebab case copies (AC-1)
+  - [ ] Navigation sidebar brand header integration with expanded and collapsed rail states (AC-2, AC-3)
+  - [ ] Web document favicon linkage in index.html (AC-4)
+  - [ ] Native desktop icon bundle generation via Tauri CLI from vector master (AC-5, AC-6)
+  - [ ] Responsive test suite update and brand verification (AC-7)
+- [ ] Verify it: `/check verify app branding & logo integration`
+- [ ] Test it: `/test app branding & logo integration`
 
 ## Phase 1: Clickable UI prototype
 
@@ -296,13 +313,13 @@ Filter the music collection by title, artist, or album using indexed SQLite quer
 spec [0014](../specs/0014-fast-local-library-search-indexing/index.md)
 
 - [x] Design it (spec): `/architect fast local library search indexing`
-- [ ] Build it: `/develop fast local library search indexing`
-  - [ ] rusqlite full extension dependency and V002 search index migration with B Tree locator table and targeted triggers (AC-1, AC-2, AC-3, AC-4, AC-5)
-  - [ ] Rust search repository with query sanitization, tokenization, BM25 scoring, exact match boosting, and dynamic genre aggregation (AC-6, AC-7, AC-8, AC-9, AC-10)
-  - [ ] Tauri IPC command db_search_library, client service helper, and frontend model adapters (AC-7, AC-11, AC-17)
-  - [ ] Zustand search store wiring with debounced IPC queries, monotonic request tokens, and badge count preservation (AC-12, AC-13, AC-14, AC-16)
-  - [ ] Search UI playlist filter pill and playlist card grid integration with queue playback (AC-14, AC-15)
-- [ ] Verify it: `/check verify fast local library search indexing`
+- [x] Build it: `/develop fast local library search indexing`
+  - [x] rusqlite full extension dependency and V003 search index migration with B Tree locator table and targeted triggers (AC-1, AC-2, AC-3, AC-4, AC-5)
+  - [x] Rust search repository with query sanitization, tokenization, BM25 scoring, exact match boosting, and dynamic genre aggregation (AC-6, AC-7, AC-8, AC-9, AC-10)
+  - [x] Tauri IPC command db_search_library, client service helper, and frontend model adapters (AC-7, AC-11, AC-17)
+  - [x] Zustand search store wiring with debounced IPC queries, monotonic request tokens, and badge count preservation (AC-12, AC-13, AC-14, AC-16)
+  - [x] Search UI playlist filter pill and playlist card grid integration with queue playback (AC-14, AC-15)
+- [x] Verify it: `/check verify fast local library search indexing`
 
 ## Deferred
 
