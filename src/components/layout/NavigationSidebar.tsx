@@ -39,13 +39,23 @@ export function NavigationSidebar({
       className="col-start-1 row-span-2 w-[232px] max-lg:w-[68px] h-full bg-[#0b0706] border-r border-white/5 py-7 px-4 max-lg:px-2 max-lg:py-5 flex flex-col gap-1 select-none overflow-y-auto overflow-x-hidden transition-all duration-200"
     >
       {/* Brand Header */}
-      <div className="flex flex-col items-center gap-1.5 mb-7 text-[#f4ebe4] transition-all">
-        <svg className="i w-[22px] h-[22px] shrink-0 text-[#f0a982]" aria-hidden="true">
-          <use href="#star" />
-        </svg>
-        <span className="font-light text-base tracking-[0.34em] pl-[0.34em] max-lg:hidden">
-          MIDNIGHT
-        </span>
+      <div className="flex flex-col items-center justify-center mb-7 px-2 transition-all">
+        {/* Expanded Lockup: Full wordmark SVG visible on wide viewports (>=1024px) */}
+        <img
+          src="/logos/primary-dark.svg"
+          alt="Mutinhimira by Mumhanzi"
+          data-testid="brand-logo-expanded"
+          className="h-8 w-auto aspect-[2206/499] max-lg:hidden object-contain select-none"
+          draggable={false}
+        />
+        {/* Collapsed Symbol: Standalone emblem visible on compact rail (<1024px) */}
+        <img
+          src="/logos/standalone-dark.svg"
+          alt="Mumhanzi symbol"
+          data-testid="brand-logo-collapsed"
+          className="w-7 h-7 hidden max-lg:block object-contain select-none"
+          draggable={false}
+        />
       </div>
 
       {/* Main Navigation links */}
