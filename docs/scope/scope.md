@@ -85,7 +85,7 @@ spec [0018](../specs/0018-app-branding-logo-integration/index.md)
 - [ ] Build it: `/develop app branding & logo integration`
   - [x] Asset normalization in public/logos with clean kebab case copies (AC-1)
   - [x] Navigation sidebar brand header integration with expanded and collapsed rail states (AC-2, AC-3)
-  - [ ] Web document favicon linkage in index.html (AC-4)
+  - [x] Web document favicon linkage in index.html (AC-4)
   - [ ] Native desktop icon bundle generation via Tauri CLI from vector master (AC-5, AC-6)
   - [ ] Responsive test suite update and brand verification (AC-7)
 - [ ] Verify it: `/check verify app branding & logo integration`

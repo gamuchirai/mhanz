@@ -127,7 +127,7 @@ The build plan follows the project Facade approach (UI shell first with assets, 
 
 - [x] Milestone 1: Asset normalization in public/logos with clean kebab case copies (AC-1)
 - [x] Milestone 2: Navigation sidebar brand header integration with expanded and collapsed rail states (AC-2, AC-3)
-- [ ] Milestone 3: Web document favicon linkage in index.html (AC-4)
+- [x] Milestone 3: Web document favicon linkage in index.html (AC-4)
 - [ ] Milestone 4: Native desktop icon bundle generation via Tauri CLI from vector master (AC-5, AC-6)
 - [ ] Milestone 5: Responsive test suite update and brand verification (AC-7)
 
