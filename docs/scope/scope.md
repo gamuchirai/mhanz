@@ -82,12 +82,13 @@ Incorporate official Mumhanzi logos across the sidebar navigation header, browse
 spec [0018](../specs/0018-app-branding-logo-integration/index.md)
 
 - [x] Design it (spec): `/architect app branding & logo integration`
-- [ ] Build it: `/develop app branding & logo integration`
+- [x] Build it: `/develop app branding & logo integration`
   - [x] Asset normalization in public/logos with clean kebab case copies (AC-1)
   - [x] Navigation sidebar brand header integration with expanded and collapsed rail states (AC-2, AC-3)
   - [x] Web document favicon linkage in index.html (AC-4)
   - [x] Native desktop icon bundle generation via Tauri CLI from vector master (AC-5, AC-6)
-  - [ ] Responsive test suite update and brand verification (AC-7)
+  - [x] Responsive test suite update and brand verification (AC-7)
+        code in `public/logos/`, `src/components/layout/NavigationSidebar.tsx`, `index.html`, `src-tauri/icons/`, `src/test/responsive.test.tsx`
 - [ ] Verify it: `/check verify app branding & logo integration`
 - [ ] Test it: `/test app branding & logo integration`
 

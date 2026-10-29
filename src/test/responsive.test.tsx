@@ -84,9 +84,13 @@ describe("Desktop UI Responsiveness & Adaptive Layout Shell", () => {
     expect(sidebar.className).toContain("w-[232px]");
     expect(sidebar.className).toContain("max-lg:w-[68px]");
 
-    // Brand logo text hides below 1024px
-    const brandText = screen.getByText("MIDNIGHT");
-    expect(brandText.className).toContain("max-lg:hidden");
+    // Brand logos adapt to responsive sidebar breakpoints
+    const expandedLogo = screen.getByTestId("brand-logo-expanded");
+    expect(expandedLogo.className).toContain("max-lg:hidden");
+
+    const collapsedLogo = screen.getByTestId("brand-logo-collapsed");
+    expect(collapsedLogo.className).toContain("hidden");
+    expect(collapsedLogo.className).toContain("max-lg:block");
 
     // Nav items have tooltip titles and max-lg:hidden on labels
     const homeLink = screen.getByTitle("Home");
