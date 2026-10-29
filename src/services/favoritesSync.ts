@@ -1,5 +1,5 @@
 /**
- * Centralized favorite synchronization coordinator for Mumhanzi.
+ * Centralized favorite synchronization coordinator for Mutinhimira.
  *
  * Provides serialized SQLite persistence per track identifier to prevent race conditions,
  * optimistic updates with automatic rollback on error, and reactive event broadcast

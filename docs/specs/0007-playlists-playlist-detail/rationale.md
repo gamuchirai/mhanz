@@ -2,9 +2,9 @@
 
 ## Context
 
-Mumhanzi is a modern desktop music player inspired by Windows Groove Music and the dark Midnight visual layout. A core expectation of any personal music manager is the ability to create, customize, and curate personal playlists. Listeners need to organize their local tracks into themed collections, mood mixes, and listening sessions.
+Mutinhimira is a modern desktop music player inspired by Windows Groove Music and the dark Midnight visual layout. A core expectation of any personal music manager is the ability to create, customize, and curate personal playlists. Listeners need to organize their local tracks into themed collections, mood mixes, and listening sessions.
 
-In earlier milestones, Mumhanzi scaffolded the application shell, established coding standards, and delivered clickable screens for Home Discovery, Search, Your Library, and Liked Songs. Curated playlists currently exist as static cards in discovery fixtures, and the sidebar contains hardcoded playlist titles under a YOUR PLAYLISTS header with a non functional plus button.
+In earlier milestones, Mutinhimira scaffolded the application shell, established coding standards, and delivered clickable screens for Home Discovery, Search, Your Library, and Liked Songs. Curated playlists currently exist as static cards in discovery fixtures, and the sidebar contains hardcoded playlist titles under a YOUR PLAYLISTS header with a non functional plus button.
 
 Feature 8 in the project scope requires building the Playlists overview screen and dedicated Playlist Detail screen under the Facade build approach. The primary challenge is designing a flexible playlist architecture that supports custom creation with visual cover art, track addition from the library, duplicate song handling, and track reordering, while maintaining clean separation between UI state, track hydration, and future Phase 2 SQLite persistence.
 
@@ -51,6 +51,6 @@ Skip the in memory Zustand prototype and implement Rust SQLite tables, migration
 
 ## Rationale
 
-Option 2 is chosen because it perfectly aligns with Mumhanzi's Facade development methodology and architectural guidelines. Placing playlist state in a dedicated `usePlaylistStore` keeps `usePlayerStore` focused strictly on audio playback and queue execution. Normalizing playlist items into `PlaylistTrackEntry` records with explicit positions ensures that track metadata changes in the library reflect immediately in playlists, while giving listeners the freedom to add duplicate songs and arrange custom track sequences.
+Option 2 is chosen because it perfectly aligns with Mutinhimira's Facade development methodology and architectural guidelines. Placing playlist state in a dedicated `usePlaylistStore` keeps `usePlayerStore` focused strictly on audio playback and queue execution. Normalizing playlist items into `PlaylistTrackEntry` records with explicit positions ensures that track metadata changes in the library reflect immediately in playlists, while giving listeners the freedom to add duplicate songs and arrange custom track sequences.
 
 Furthermore, integrating custom Midnight visual gradients into the creation modal ensures every playlist card looks stunning without requiring external image uploads. The inline add songs drawer allows immediate curation without navigating away from the playlist detail screen, making playlist building intuitive and delightful.

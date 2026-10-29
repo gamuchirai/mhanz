@@ -43,7 +43,7 @@ export function NavigationSidebar({
         {/* Expanded Lockup: Full wordmark SVG visible on wide viewports (>=1024px) */}
         <img
           src="/logos/primary-dark.svg"
-          alt="Mutinhimira by Mumhanzi"
+          alt="Mutinhimira by Mutinhimira"
           data-testid="brand-logo-expanded"
           className="h-8 w-auto aspect-[2206/499] max-lg:hidden object-contain select-none"
           draggable={false}
@@ -51,7 +51,7 @@ export function NavigationSidebar({
         {/* Collapsed Symbol: Standalone emblem visible on compact rail (<1024px) */}
         <img
           src="/logos/standalone-dark.svg"
-          alt="Mumhanzi symbol"
+          alt="Mutinhimira symbol"
           data-testid="brand-logo-collapsed"
           className="w-7 h-7 hidden max-lg:block object-contain select-none"
           draggable={false}
@@ -71,11 +71,10 @@ export function NavigationSidebar({
                 e.preventDefault();
                 onNavigate(item.id);
               }}
-              className={`flex items-center gap-3.5 max-lg:gap-0 max-lg:justify-center px-3.5 py-2.5 max-lg:px-2 rounded-xl transition-all duration-150 cursor-pointer ${
-                isActive
-                  ? "bg-gradient-to-r from-[rgba(240,169,130,0.22)] to-[rgba(240,169,130,0.06)] text-[#f4ebe4] shadow-sm font-medium"
-                  : "text-[#a89b91] hover:text-[#f4ebe4] hover:bg-white/[0.04]"
-              }`}
+              className={`flex items-center gap-3.5 max-lg:gap-0 max-lg:justify-center px-3.5 py-2.5 max-lg:px-2 rounded-xl transition-all duration-150 cursor-pointer ${isActive
+                ? "bg-gradient-to-r from-[rgba(240,169,130,0.22)] to-[rgba(240,169,130,0.06)] text-[#f4ebe4] shadow-sm font-medium"
+                : "text-[#a89b91] hover:text-[#f4ebe4] hover:bg-white/[0.04]"
+                }`}
             >
               <svg
                 className="i w-[18px] h-[18px] max-lg:w-5 max-lg:h-5 shrink-0"
@@ -117,11 +116,10 @@ export function NavigationSidebar({
                 e.preventDefault();
                 onSelectPlaylist(playlist.id);
               }}
-              className={`flex items-center gap-3 max-lg:gap-0 max-lg:justify-center px-3 max-lg:px-1.5 py-1.5 rounded-lg transition-all duration-150 cursor-pointer ${
-                isSelected
-                  ? "bg-[rgba(240,169,130,0.12)] text-[#f0a982]"
-                  : "text-[#f4ebe4] hover:bg-white/[0.04]"
-              }`}
+              className={`flex items-center gap-3 max-lg:gap-0 max-lg:justify-center px-3 max-lg:px-1.5 py-1.5 rounded-lg transition-all duration-150 cursor-pointer ${isSelected
+                ? "bg-[rgba(240,169,130,0.12)] text-[#f0a982]"
+                : "text-[#f4ebe4] hover:bg-white/[0.04]"
+                }`}
             >
               <span
                 className="w-8 h-8 max-lg:w-7 max-lg:h-7 rounded-md shrink-0 relative overflow-hidden flex items-center justify-center text-xs shadow-inner"
@@ -162,11 +160,10 @@ export function NavigationSidebar({
           aria-label="Open audio preferences settings"
           title="Settings"
           onClick={onToggleSettings}
-          className={`border-0 p-1.5 cursor-pointer rounded-lg grid place-items-center transition-colors duration-150 ${
-            activeOverlay === "settings"
-              ? "text-[#f0a982] bg-white/10"
-              : "text-[#a89b91] hover:text-[#f4ebe4] hover:bg-white/5"
-          }`}
+          className={`border-0 p-1.5 cursor-pointer rounded-lg grid place-items-center transition-colors duration-150 ${activeOverlay === "settings"
+            ? "text-[#f0a982] bg-white/10"
+            : "text-[#a89b91] hover:text-[#f4ebe4] hover:bg-white/5"
+            }`}
         >
           <svg className="i w-[18px] h-[18px]" viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="3" />

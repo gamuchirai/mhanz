@@ -47,7 +47,7 @@ const DEFAULT_SAMPLE_PLAYLISTS: &[SamplePlaylist] = &[
     SamplePlaylist {
         id: "playlist-5",
         name: "Midnight Essentials",
-        description: "Handcrafted selections from the Mumhanzi editorial desk.",
+        description: "Handcrafted selections from the Mutinhimira editorial desk.",
         gradient_preset: "velvet-glow",
         is_curated: true,
     },

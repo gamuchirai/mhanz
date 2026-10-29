@@ -2,7 +2,7 @@
 
 ## Context
 
-Mumhanzi is designed as a local music player inspired by Windows Groove Music and the Midnight UI aesthetic. A music player has distinct operational and performance constraints compared to typical web applications.
+Mutinhimira is designed as a local music player inspired by Windows Groove Music and the Midnight UI aesthetic. A music player has distinct operational and performance constraints compared to typical web applications.
 
 First, audio playback requires glitch free streaming (steady continuous sound output without pauses or stuttering) and low latency controls (immediate response when a user pauses, skips, or seeks). Doing audio processing in a standard web browser sandbox or heavy runtime often leads to buffer underruns, high memory consumption, and stutter during intensive garbage collection cycles.
 
@@ -60,7 +60,7 @@ This option pairs Tauri v2 with plain TypeScript and standard Web Components, om
 
 ## Rationale
 
-Tauri v2 gives Mumhanzi the responsiveness and lightweight footprint expected of a native utility (basis: your scope.md foundation intent). By offloading audio playback to Rodio on a dedicated Rust background thread, playback never stutters when the user navigates heavy playlist views or runs full text searches (basis: dedicated audio worker thread pattern).
+Tauri v2 gives Mutinhimira the responsiveness and lightweight footprint expected of a native utility (basis: your scope.md foundation intent). By offloading audio playback to Rodio on a dedicated Rust background thread, playback never stutters when the user navigates heavy playlist views or runs full text searches (basis: dedicated audio worker thread pattern).
 
 React 19 with Vite provides the ideal balance between developer velocity and component structure, matching the existing Midnight prototype in demo-ui. Tailwind CSS v4 allows seamless mapping of the custom Midnight theme tokens into concise utility classes without complex build step configuration (basis: tailwind-4-docs conventions).
 

@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification defines the architecture and folder structure for the Home and discovery screen in Mumhanzi. It modularizes the raw discovery elements currently sitting in the prototype App.tsx into a clean feature folder structure under src/components/home/ and src/pages/Home.tsx. Following the Facade build approach, this screen refines the visual styling, adds smooth hover states and marquee text, and connects interactive cards and tables to a shared Zustand store, transforming static mock elements into a polished, complete desktop music player experience.
+This specification defines the architecture and folder structure for the Home and discovery screen in Mutinhimira. It modularizes the raw discovery elements currently sitting in the prototype App.tsx into a clean feature folder structure under src/components/home/ and src/pages/Home.tsx. Following the Facade build approach, this screen refines the visual styling, adds smooth hover states and marquee text, and connects interactive cards and tables to a shared Zustand store, transforming static mock elements into a polished, complete desktop music player experience.
 
 ## Decision
 
@@ -19,7 +19,7 @@ Implement the Home and discovery screen as a modular feature inside `src/compone
 
 **User stories**:
 
-- As a listener opening Mumhanzi, I want an inviting home view with featured releases, curated playlists, and recent tracks so that I can quickly jump into music.
+- As a listener opening Mutinhimira, I want an inviting home view with featured releases, curated playlists, and recent tracks so that I can quickly jump into music.
 - As a listener browsing popular songs, I want to double click a row or click its play button so that playback starts immediately with the remaining tracks queued.
 - As a listener exploring cards and lists, I want long song titles to marquee on hover and missing artwork to fall back gracefully so that the interface always looks polished.
 - As a new listener without local music scanned yet, I want helpful empty state prompts so that I understand how to add music or preview sample tracks.

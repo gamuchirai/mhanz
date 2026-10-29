@@ -10,7 +10,7 @@
 
 ## Summary
 
-This PR introduces a comprehensive responsive layout shell across the entire Mumhanzi codebase. The three core deliverables, the adaptive `NavigationSidebar`, the isolated `Scrubber`, and `@tanstack/react-virtual` integration in `SongTable`, are implemented correctly and match their spec acceptance criteria. Architecture is clean: the Scrubber isolation pattern is well-executed, the selector hooks at the bottom of `usePlayerStore.ts` are a genuine improvement over inline lambdas, and the progressive column hiding approach is robust. The test suite in `responsive.test.tsx` covers every acceptance criterion. No blockers or majors found.
+This PR introduces a comprehensive responsive layout shell across the entire Mutinhimira codebase. The three core deliverables, the adaptive `NavigationSidebar`, the isolated `Scrubber`, and `@tanstack/react-virtual` integration in `SongTable`, are implemented correctly and match their spec acceptance criteria. Architecture is clean: the Scrubber isolation pattern is well-executed, the selector hooks at the bottom of `usePlayerStore.ts` are a genuine improvement over inline lambdas, and the progressive column hiding approach is robust. The test suite in `responsive.test.tsx` covers every acceptance criterion. No blockers or majors found.
 
 Two minor issues and three nits are noted below.
 

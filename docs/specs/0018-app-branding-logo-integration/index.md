@@ -5,33 +5,33 @@
 
 ## Summary
 
-This specification defines the integration of official Mumhanzi brand assets across the desktop application. It replaces placeholder Midnight text and star icons with official vector logos in the navigation sidebar, supporting both the expanded 232px sidebar lockup and the collapsed 68px icon rail. It connects the standalone symbol as the document favicon in index.html, generates high resolution native desktop operating system icons directly from the master vector SVG through the Tauri CLI, establishes clean kebab case asset copies in public/logos, and updates the responsive test suite to ensure automated quality gates pass cleanly.
+This specification defines the integration of official Mutinhimira brand assets across the desktop application. It replaces placeholder Midnight text and star icons with official vector logos in the navigation sidebar, supporting both the expanded 232px sidebar lockup and the collapsed 68px icon rail. It connects the standalone symbol as the document favicon in index.html, generates high resolution native desktop operating system icons directly from the master vector SVG through the Tauri CLI, establishes clean kebab case asset copies in public/logos, and updates the responsive test suite to ensure automated quality gates pass cleanly.
 
 ## Requirements
 
 **User stories**:
 
-- As a desktop music listener, I want to see the authentic Mumhanzi brand lockup in the sidebar so the application feels distinct, polished, and cohesive with the dark Midnight aesthetic.
-- As a desktop music listener using a compact window or small screen, I want the collapsed navigation rail to display the standalone Mumhanzi symbol without clipped text or awkward wrapping.
-- As a desktop user, I want the Mumhanzi icon to appear cleanly on my operating system taskbar, dock, application launcher, and window title bar at native retina resolutions.
+- As a desktop music listener, I want to see the authentic Mutinhimira brand lockup in the sidebar so the application feels distinct, polished, and cohesive with the dark Midnight aesthetic.
+- As a desktop music listener using a compact window or small screen, I want the collapsed navigation rail to display the standalone Mutinhimira symbol without clipped text or awkward wrapping.
+- As a desktop user, I want the Mutinhimira icon to appear cleanly on my operating system taskbar, dock, application launcher, and window title bar at native retina resolutions.
 - As a screen reader user, I want clear and distinct accessibility labels for the expanded lockup and compact emblem without duplicate image announcements.
 - As a developer, I want public brand asset paths to use standardized kebab case file names without URL encoded spaces, and automated tests to validate brand responsiveness cleanly.
 
 **Acceptance criteria**:
 
 - **AC-1**: Standardized asset files with normalized kebab case naming (`primary-dark.svg`, `standalone-dark.svg`, `primary-light.svg`, `standalone-light.svg`) are placed in `public/logos/`.
-- **AC-2**: Navigation sidebar header in expanded state (width 232px) displays the official `primary-dark.svg` brand lockup with `alt="Mutinhimira by Mumhanzi"` and `data-testid="brand-logo-expanded"`, replacing the placeholder `#star` SVG and `MIDNIGHT` text.
-- **AC-3**: Navigation sidebar header in collapsed state (width 68px below 1024px) displays the `standalone-dark.svg` symbol with `alt="Mumhanzi symbol"` and `data-testid="brand-logo-collapsed"` centered at 28px width and height without text labels or overflow.
+- **AC-2**: Navigation sidebar header in expanded state (width 232px) displays the official `primary-dark.svg` brand lockup with `alt="Mutinhimira by Mutinhimira"` and `data-testid="brand-logo-expanded"`, replacing the placeholder `#star` SVG and `MIDNIGHT` text.
+- **AC-3**: Navigation sidebar header in collapsed state (width 68px below 1024px) displays the `standalone-dark.svg` symbol with `alt="Mutinhimira symbol"` and `data-testid="brand-logo-collapsed"` centered at 28px width and height without text labels or overflow.
 - **AC-4**: Document head in `index.html` links `/logos/standalone-dark.svg` as the application favicon with `type="image/svg+xml"`, replacing `/vite.svg`.
 - **AC-5**: Tauri native desktop icons in `src-tauri/icons/` (`icon.ico`, `icon.icns`, `32x32.png`, `128x128.png`, `128x128@2x.png`, and Windows Store square logo assets) are generated directly from the 2481x2481 vector master `public/logos/standalone-dark.svg` via `tauri icon` CLI, replacing default Tauri scaffold icons with crisp vector rasterizations.
-- **AC-6**: Tauri configuration in `src-tauri/tauri.conf.json` correctly points to the updated desktop icon bundle and preserves window title as `Mumhanzi`.
+- **AC-6**: Tauri configuration in `src-tauri/tauri.conf.json` correctly points to the updated desktop icon bundle and preserves window title as `Mutinhimira`.
 - **AC-7**: Responsive test suite in `src/test/responsive.test.tsx` updates obsolete `MIDNIGHT` text queries to assert `max-lg:hidden` on `brand-logo-expanded` and `hidden max-lg:block` on `brand-logo-collapsed`, validating brand responsiveness with zero regressions.
 
 ## Decision
 
 **Chosen option**: Option 1: Multi surface brand asset integration using vector SVGs for UI components, web favicon linkage, direct vector Tauri CLI OS icon generation, and refactored responsive test assertions.
 
-We adopt official Mumhanzi brand assets across all shell surfaces. We maintain normalized kebab case asset files in `public/logos/`, render `primary-dark.svg` in the expanded sidebar header, render `standalone-dark.svg` in the collapsed icon rail, link `standalone-dark.svg` as the SVG favicon in `index.html`, generate complete platform icons directly from the vector master via the Tauri CLI into `src-tauri/icons/`, and update responsive test assertions to keep automated checks green.
+We adopt official Mutinhimira brand assets across all shell surfaces. We maintain normalized kebab case asset files in `public/logos/`, render `primary-dark.svg` in the expanded sidebar header, render `standalone-dark.svg` in the collapsed icon rail, link `standalone-dark.svg` as the SVG favicon in `index.html`, generate complete platform icons directly from the vector master via the Tauri CLI into `src-tauri/icons/`, and update responsive test assertions to keep automated checks green.
 
 **Implementation skills**: `tauri-v2` (`nodnarbnitram/claude-code-extensions`, `.agents/skills/tauri-v2/`) · `tailwind-4-docs` (`lombiq/tailwind-agent-skills`, `.agents/skills/tailwind-4-docs/`) · `vercel-react-best-practices` (`vercel-labs/agent-skills`, `.agents/skills/vercel-react-best-practices/`)
 
@@ -60,7 +60,7 @@ The brand header block at the top of the sidebar replaces the existing SVG star 
   {/* Expanded Lockup: Full wordmark SVG visible on wide viewports (>=1024px) */}
   <img
     src="/logos/primary-dark.svg"
-    alt="Mutinhimira by Mumhanzi"
+    alt="Mutinhimira by Mutinhimira"
     data-testid="brand-logo-expanded"
     className="h-8 w-auto aspect-[2206/499] max-lg:hidden object-contain select-none"
     draggable={false}
@@ -68,7 +68,7 @@ The brand header block at the top of the sidebar replaces the existing SVG star 
   {/* Collapsed Symbol: Standalone emblem visible on compact rail (<1024px) */}
   <img
     src="/logos/standalone-dark.svg"
-    alt="Mumhanzi symbol"
+    alt="Mutinhimira symbol"
     data-testid="brand-logo-collapsed"
     className="w-7 h-7 hidden max-lg:block object-contain select-none"
     draggable={false}
@@ -139,5 +139,5 @@ The build plan follows the project Facade approach (UI shell first with assets, 
 
 ## Follow-up
 
-- Consider adding an About Mumhanzi information card with version and logo emblem in a future Settings modal enhancement.
+- Consider adding an About Mutinhimira information card with version and logo emblem in a future Settings modal enhancement.
 - If light theme support is introduced in the future, wire `primary-light.svg` and `standalone-light.svg` to active theme mode.

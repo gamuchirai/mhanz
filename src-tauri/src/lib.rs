@@ -1,4 +1,4 @@
-//! Mumhanzi application runtime, lifecycle initialization, and Tauri IPC registration.
+//! Mutinhimira application runtime, lifecycle initialization, and Tauri IPC registration.
 
 use tauri::{Emitter, Manager};
 
@@ -18,7 +18,7 @@ pub fn run() {
                 .path()
                 .app_local_data_dir()
                 .expect("Failed to resolve local app data directory");
-            let db_path = app_data_dir.join("mumhanzi.db");
+            let db_path = app_data_dir.join("Mutinhimira.db");
 
             let db_manager = db::DatabaseManager::new_at_path(&db_path)
                 .expect("Failed to initialize SQLite database and migrations");

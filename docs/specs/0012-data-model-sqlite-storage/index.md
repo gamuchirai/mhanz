@@ -5,13 +5,13 @@
 
 ## Summary
 
-This specification defines the relational database architecture, domain models, and persistence layer for Mumhanzi. It introduces an embedded SQLite storage engine using rusqlite with bundled SQLite, managed schema migrations via rusqlite migration, and a clean domain repository architecture in Rust. Following the Clean Architecture boundaries and Facade delivery strategy, this foundation establishes robust local persistence for audio tracks, albums, artists, playlists, indexed library folders, and user settings, exposing safe and strongly typed Tauri IPC commands to the TypeScript presentation layer.
+This specification defines the relational database architecture, domain models, and persistence layer for Mutinhimira. It introduces an embedded SQLite storage engine using rusqlite with bundled SQLite, managed schema migrations via rusqlite migration, and a clean domain repository architecture in Rust. Following the Clean Architecture boundaries and Facade delivery strategy, this foundation establishes robust local persistence for audio tracks, albums, artists, playlists, indexed library folders, and user settings, exposing safe and strongly typed Tauri IPC commands to the TypeScript presentation layer.
 
 ## Decision
 
 **Chosen option**: Option 3: Embedded SQLite with rusqlite bundled feature, rusqlite migration runner, connection guarded by an asynchronous Mutex with WAL mode, and Clean Architecture Rust repositories exposing db prefixed Tauri commands
 
-Adopt a self contained SQLite engine compiled directly into the Mumhanzi binary using rusqlite with the bundled feature flag. Manage schema versioning through rusqlite migration using embedded SQL files compiled via include str. Concurrency is handled through SQLite Write Ahead Logging mode, foreign keys enforcement, a five second busy timeout, and a thread safe connection wrapper registered into Tauri managed state. Domain repositories isolate SQL operations behind clean interfaces, returning strongly typed Result types that serialize to TypeScript contracts.
+Adopt a self contained SQLite engine compiled directly into the Mutinhimira binary using rusqlite with the bundled feature flag. Manage schema versioning through rusqlite migration using embedded SQL files compiled via include str. Concurrency is handled through SQLite Write Ahead Logging mode, foreign keys enforcement, a five second busy timeout, and a thread safe connection wrapper registered into Tauri managed state. Domain repositories isolate SQL operations behind clean interfaces, returning strongly typed Result types that serialize to TypeScript contracts.
 
 **Implementation skills**: `tauri-v2` (`nodnarbnitram/claude-code-extensions`, `.agents/skills/tauri-v2/`) · `rust-best-practices` (`apollographql/skills`, `.agents/skills/rust-best-practices/`)
 
@@ -30,7 +30,7 @@ Adopt a self contained SQLite engine compiled directly into the Mumhanzi binary 
 
 - **AC-1**: Cargo configuration includes rusqlite with the bundled feature flag and rusqlite migration for self contained, zero dependency compilation across Windows, macOS, and Linux.
 - **AC-2**: Initial SQL migration V001 defines normalized relational tables for folders, artists, albums, tracks, playlists, playlist tracks, and player settings with primary keys, unique indices, and foreign keys.
-- **AC-3**: Database file location resolves automatically to the standard operating system local application data directory using Tauri path resolver (`app_local_data_dir/mumhanzi.db`).
+- **AC-3**: Database file location resolves automatically to the standard operating system local application data directory using Tauri path resolver (`app_local_data_dir/Mutinhimira.db`).
 - **AC-4**: SQLite pragmas are enforced on every opened connection: `journal_mode = WAL`, `synchronous = NORMAL`, `foreign_keys = ON`, and `busy_timeout = 5000`.
 - **AC-5**: Database connection and migrations execute synchronously during the Tauri setup lifecycle hook before the frontend webview renders, ensuring the schema is always ready before UI invocations.
 - **AC-6**: All database Tauri IPC commands adopt an explicit `db_` prefix and return typed `Result<T, DatabaseError>` payloads where errors serialize with structured error codes and descriptive messages.
@@ -38,7 +38,7 @@ Adopt a self contained SQLite engine compiled directly into the Mumhanzi binary 
 - **AC-8**: Track repository supports paginated retrieval, filtering by folder or favorite status, toggling liked state, incrementing play counters, and updating playback timestamps.
 - **AC-9**: Album and artist repositories support retrieval by unique identifier, alphabetical catalog listing, and detailed relationship lookups linking tracks and discographies.
 - **AC-10**: Playlist repository enables playlist creation, renaming, description updates, deletion, track appending with position indices, track removal, and batch track reordering.
-- **AC-11**: If SQLite file corruption or migration failure occurs on startup, the engine creates a timestamped backup copy (`mumhanzi.db.bak`), initializes a fresh schema, and emits a notification event to the frontend.
+- **AC-11**: If SQLite file corruption or migration failure occurs on startup, the engine creates a timestamped backup copy (`Mutinhimira.db.bak`), initializes a fresh schema, and emits a notification event to the frontend.
 - **AC-12**: Settings repository persists arbitrary key value preferences as string records with automatic update timestamps.
 
 ## Rationale
@@ -50,7 +50,7 @@ Reasoning and options: see [rationale.md](rationale.md).
 **Data model sketch**:
 
 ```sql
--- Migration V001: Initial Mumhanzi Relational Schema
+-- Migration V001: Initial Mutinhimira Relational Schema
 
 CREATE TABLE IF NOT EXISTS folders (
     id TEXT PRIMARY KEY,
@@ -209,7 +209,7 @@ CREATE INDEX IF NOT EXISTS idx_playlist_tracks_playlist ON playlist_tracks(playl
 
 **Configuration required**:
 
-No external environment variables or cloud credentials required. The SQLite database resides locally at `mumhanzi.db` inside the operating system local app data folder.
+No external environment variables or cloud credentials required. The SQLite database resides locally at `Mutinhimira.db` inside the operating system local app data folder.
 
 **Critical test scenarios**:
 

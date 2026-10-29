@@ -1,12 +1,12 @@
 [package]
-name = "mumhanzi"
+name = "Mutinhimira"
 version = "0.1.0"
-description = "Mumhanzi Desktop Music Player"
-authors = ["Mumhanzi Contributors"]
+description = "Mutinhimira Desktop Music Player"
+authors = ["Mutinhimira Contributors"]
 edition = "2021"
 
 [lib]
-name = "mumhanzi_lib"
+name = "Mutinhimira_lib"
 crate-type = ["staticlib", "rlib"]
 
 [build-dependencies]

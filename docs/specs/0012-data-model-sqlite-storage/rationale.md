@@ -2,11 +2,11 @@
 
 ## Context
 
-Mumhanzi is evolving from its Phase 1 clickable UI facade into a fully functional offline desktop audio player. During Phase 1, UI views across Home, Search, Library, Liked Songs, Playlists, Albums, and Artists were developed using in memory Zustand stores backed by mock data fixtures. While this validated the visual layout and user interactions, a real desktop player requires durable persistence that survives application restarts, scales to tens of thousands of local tracks, and coordinates across native audio playback threads and background file scanning workers.
+Mutinhimira is evolving from its Phase 1 clickable UI facade into a fully functional offline desktop audio player. During Phase 1, UI views across Home, Search, Library, Liked Songs, Playlists, Albums, and Artists were developed using in memory Zustand stores backed by mock data fixtures. While this validated the visual layout and user interactions, a real desktop player requires durable persistence that survives application restarts, scales to tens of thousands of local tracks, and coordinates across native audio playback threads and background file scanning workers.
 
 Several key forces shape this architecture decision:
 
-1. **Local and offline first architecture**: Mumhanzi is fundamentally a local audio player for desktop environments. It must operate with zero cloud dependencies, zero external database servers, and zero mandatory network connectivity. All user playlists, liked tracks, playback counts, and scanned folder metadata must reside on the user device.
+1. **Local and offline first architecture**: Mutinhimira is fundamentally a local audio player for desktop environments. It must operate with zero cloud dependencies, zero external database servers, and zero mandatory network connectivity. All user playlists, liked tracks, playback counts, and scanned folder metadata must reside on the user device.
 
 2. **Concurrency across threads**: In Phase 2, background file scanner threads (using lofty) will parse audio tags and write records in bulk, the Rodio audio engine thread will update track progress and play counts, and the React frontend will issue concurrent search and playlist read queries. The persistence layer must support concurrent reads without blocking on writes or throwing database lock errors.
 
@@ -58,6 +58,6 @@ Compile SQLite directly into the application binary using rusqlite with the bund
 
 ## Rationale
 
-Option 3 was chosen because it represents the gold standard for reliable, high performance desktop application persistence. SQLite is the most widely tested database engine in the world, and compiling it directly into the Mumhanzi binary through rusqlite ensures that every desktop installation behaves predictably regardless of host operating system configuration.
+Option 3 was chosen because it represents the gold standard for reliable, high performance desktop application persistence. SQLite is the most widely tested database engine in the world, and compiling it directly into the Mutinhimira binary through rusqlite ensures that every desktop installation behaves predictably regardless of host operating system configuration.
 
-Write Ahead Logging mode combined with a five second busy timeout elegantly resolves concurrency requirements between background library scanning, audio playback tracking, and interactive user queries. Wrapping the schema in rusqlite migration guarantees smooth, reproducible version upgrades as Mumhanzi expands throughout Phase 2 and beyond.
+Write Ahead Logging mode combined with a five second busy timeout elegantly resolves concurrency requirements between background library scanning, audio playback tracking, and interactive user queries. Wrapping the schema in rusqlite migration guarantees smooth, reproducible version upgrades as Mutinhimira expands throughout Phase 2 and beyond.

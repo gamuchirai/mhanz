@@ -5,7 +5,7 @@
 
 ## Summary
 
-This decision defines the foundational technology stack and architecture for Mumhanzi, a lightweight modern desktop music player. We choose Tauri v2 with Rust for the native desktop core and audio engine, paired with React 19, TypeScript, Vite, and Tailwind CSS v4 for the Midnight dark UI. This foundation provides native audio playback performance, minimal memory usage, and instant local library indexing while preserving rapid web front end development.
+This decision defines the foundational technology stack and architecture for Mutinhimira, a lightweight modern desktop music player. We choose Tauri v2 with Rust for the native desktop core and audio engine, paired with React 19, TypeScript, Vite, and Tailwind CSS v4 for the Midnight dark UI. This foundation provides native audio playback performance, minimal memory usage, and instant local library indexing while preserving rapid web front end development.
 
 ## Decision
 

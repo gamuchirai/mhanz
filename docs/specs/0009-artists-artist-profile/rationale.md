@@ -2,9 +2,9 @@
 
 ## Context
 
-Mumhanzi is a desktop music player inspired by Windows Groove Music and the dark Midnight visual aesthetic. Exploring music through artists is a central pillar of desktop music discovery. Listeners want to see their favourite musicians, discover popular songs, explore full discographies, and read artist backgrounds.
+Mutinhimira is a desktop music player inspired by Windows Groove Music and the dark Midnight visual aesthetic. Exploring music through artists is a central pillar of desktop music discovery. Listeners want to see their favourite musicians, discover popular songs, explore full discographies, and read artist backgrounds.
 
-In preceding milestones, Mumhanzi built the foundational architecture, coding standards, and delivered clickable screens for Home Discovery, Search Explore, Your Library, Liked Songs, Playlists, and Albums. While artist names and portrait avatars appear as visual teasers on Home and Search cards, clicking them currently has no destination.
+In preceding milestones, Mutinhimira built the foundational architecture, coding standards, and delivered clickable screens for Home Discovery, Search Explore, Your Library, Liked Songs, Playlists, and Albums. While artist names and portrait avatars appear as visual teasers on Home and Search cards, clicking them currently has no destination.
 
 Feature 10 in the project scope requires building the Artists overview collection grid and the dedicated Artist Profile view following the Facade build approach. The technical challenge is designing an artist architecture that supports rich catalogue browsing with fast search and sorting, an atmospheric hero profile with follow controls, expandable top tracks with stream stats, filtered discography releases, and seamless cross view navigation from Home, Search, and Album Detail, all while keeping state cleanly separated before Phase 2 SQLite integration.
 
@@ -58,6 +58,6 @@ Bypass the in memory Zustand facade and implement native Rust SQLite tables, mig
 
 ## Rationale
 
-Option 2 is chosen because it adheres strictly to Mumhanzi's Facade build methodology, Clean Architecture layers, and established project patterns. Placing artist catalogue state, active selection, sorting, follow tracking, and discography filtering into a dedicated `useArtistStore` keeps concerns cleanly isolated. Audio playback remains delegated to `usePlayerStore`, while song likes synchronize with `useLikedSongsStore`.
+Option 2 is chosen because it adheres strictly to Mutinhimira's Facade build methodology, Clean Architecture layers, and established project patterns. Placing artist catalogue state, active selection, sorting, follow tracking, and discography filtering into a dedicated `useArtistStore` keeps concerns cleanly isolated. Audio playback remains delegated to `usePlayerStore`, while song likes synchronize with `useLikedSongsStore`.
 
 Providing a full screen Artist Profile view allows the atmospheric hero banner, popular tracks table, discography grid, and biography card to breathe with rich Midnight theme aesthetics. The expandable top tracks table gives listeners fast access to hits without cluttering the initial view. Procedural gradient avatar placeholders ensure that artists missing photographic assets render with polish rather than broken icons. Furthermore, enabling active artist selection in the store allows seamless deep navigation from Home, Search, and Album Detail screens directly into the Artist Profile.

@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification establishes a cross cutting responsiveness standard for Mumhanzi as a modern desktop music player. It introduces a three tier adaptive layout shell with an automatic 68px icon rail navigation below 1024px window width, fluid auto fill card grids, progressive column hiding on track tables, and a compact player deck below 900px. It standardizes styling across all pages from fixed inline styles onto Tailwind CSS v4 responsive classes while enforcing 60 frames per second desktop performance through `@tanstack/react-virtual` table row virtualization and fine grained Zustand selector isolation for audio playback ticks.
+This specification establishes a cross cutting responsiveness standard for Mutinhimira as a modern desktop music player. It introduces a three tier adaptive layout shell with an automatic 68px icon rail navigation below 1024px window width, fluid auto fill card grids, progressive column hiding on track tables, and a compact player deck below 900px. It standardizes styling across all pages from fixed inline styles onto Tailwind CSS v4 responsive classes while enforcing 60 frames per second desktop performance through `@tanstack/react-virtual` table row virtualization and fine grained Zustand selector isolation for audio playback ticks.
 
 ## Requirements
 

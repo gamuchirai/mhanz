@@ -7,7 +7,7 @@ import type {
 } from "../types/overlays";
 import { defaultUserSettings, mockAudioDevices } from "../data/mockAudioDevices";
 
-const SETTINGS_STORAGE_KEY = "mumhanzi:settings:v1";
+const SETTINGS_STORAGE_KEY = "Mutinhimira:settings:v1";
 
 /**
  * Validates and sanitizes raw data from local storage against the UserSettings schema.

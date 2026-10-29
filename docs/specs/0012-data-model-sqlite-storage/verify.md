@@ -5,7 +5,7 @@ _Steps derived from spec 0012 acceptance criteria. `/check verify` runs these; `
 
 - [ ] Inspect Cargo.toml dependencies -> rusqlite with bundled feature and rusqlite migration configured cleanly -> AC-1
 - [ ] Inspect V001 initial schema migration -> Tables defined for folders, artists, albums, tracks, playlists, playlist tracks, and settings with indices -> AC-2
-- [ ] Inspect database initialization path -> Resolves to app local data directory with mumhanzi.db database file name -> AC-3
+- [ ] Inspect database initialization path -> Resolves to app local data directory with Mutinhimira.db database file name -> AC-3
 - [ ] Verify SQLite connection pragmas -> journal mode is WAL, synchronous is NORMAL, foreign keys is ON, and busy timeout is 5000 -> AC-4
 - [ ] Verify startup lifecycle hook -> Database connection initializes and applies migrations synchronously in Tauri setup before window displays -> AC-5
 - [ ] Verify IPC command naming and error responses -> All commands use db prefix and return structured DatabaseError on failure -> AC-6

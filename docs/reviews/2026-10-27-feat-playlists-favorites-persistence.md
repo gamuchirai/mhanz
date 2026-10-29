@@ -8,7 +8,7 @@
 
 ## Summary
 
-This pull request implements SQLite persistence and synchronized favorite state for playlists and liked songs in Mumhanzi. It introduces schema migration V002 with composite indexing, adds structured Rust DTO contracts and transactional repository operations, seeds default sample playlist containers safely on first boot, and coordinates favorite toggles across all five presentation stores via a centralized coordinator. The implementation honors Clean Architecture, provides optimistic state updates with rollback handling, and prevents active playback cutoff when a playlist is deleted. All 14 Rust tests and 159 frontend tests pass cleanly with zero lint errors. No blockers or majors were found.
+This pull request implements SQLite persistence and synchronized favorite state for playlists and liked songs in Mutinhimira. It introduces schema migration V002 with composite indexing, adds structured Rust DTO contracts and transactional repository operations, seeds default sample playlist containers safely on first boot, and coordinates favorite toggles across all five presentation stores via a centralized coordinator. The implementation honors Clean Architecture, provides optimistic state updates with rollback handling, and prevents active playback cutoff when a playlist is deleted. All 14 Rust tests and 159 frontend tests pass cleanly with zero lint errors. No blockers or majors were found.
 
 Three minor improvements and two nits are noted below.
 

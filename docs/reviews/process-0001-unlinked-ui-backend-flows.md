@@ -93,7 +93,7 @@ The Home screen features a recently played carousel and a popular tracks list, b
 
 ### Finding F-7: Settings bypass SQLite persistence and audio device controls are simulated · major · bug
 
-The settings modal stores user preferences inside browser local storage under key `mumhanzi:settings:v1`. The SQLite database already contains a `player_settings` table with registered commands `db_get_setting` and `db_set_setting`, but the settings store ignores them. Additionally, the audio output device selector offers fake mock devices, while volume normalization and crossfade sliders do not connect to the Rodio audio engine.
+The settings modal stores user preferences inside browser local storage under key `Mutinhimira:settings:v1`. The SQLite database already contains a `player_settings` table with registered commands `db_get_setting` and `db_set_setting`, but the settings store ignores them. Additionally, the audio output device selector offers fake mock devices, while volume normalization and crossfade sliders do not connect to the Rodio audio engine.
 
 **Step(s)**: 6
 **Evidence**: `src/store/useSettingsStore.ts:10` persists to `window.localStorage`. Backend commands `db_get_setting` and `db_set_setting` exist in `src-tauri/src/commands/db.rs:242` but are unused. `mockAudioDevices` in `src/data/mockAudioDevices.ts` supplies dummy device names. `src-tauri/src/audio/` does not implement device selection, crossfade, or normalization.

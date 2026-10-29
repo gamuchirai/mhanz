@@ -2,9 +2,9 @@
 
 ## Context
 
-Mumhanzi is designed as a fast, modern desktop music player that gives listeners immediate access to their personal local music collections. In Phase 1, the user interface shell was created using placeholder mock data fixtures to simulate library navigation, folder management, and track listings. In spec 0012, a robust SQLite database persistence layer was established with relational schema tables for folders, artists, albums, tracks, and playlists.
+Mutinhimira is designed as a fast, modern desktop music player that gives listeners immediate access to their personal local music collections. In Phase 1, the user interface shell was created using placeholder mock data fixtures to simulate library navigation, folder management, and track listings. In spec 0012, a robust SQLite database persistence layer was established with relational schema tables for folders, artists, albums, tracks, and playlists.
 
-To transform Mumhanzi into a fully operational music player, the application requires an automated scanning engine capable of exploring local folders on disk, parsing diverse audio file containers and tag formats, extracting embedded cover art pictures, and synchronizing these records into the SQLite database.
+To transform Mutinhimira into a fully operational music player, the application requires an automated scanning engine capable of exploring local folders on disk, parsing diverse audio file containers and tag formats, extracting embedded cover art pictures, and synchronizing these records into the SQLite database.
 
 Music collections present specific technical forces and challenges:
 
@@ -58,7 +58,7 @@ Package or execute an external command line utility such as ffprobe or exiftool 
 
 **Pros**:
 
-- Isolates third party parsing bugs and crashes outside the main Mumhanzi process.
+- Isolates third party parsing bugs and crashes outside the main Mutinhimira process.
 - Avoids compiling heavy native audio tag parsing libraries directly into the Rust application binary.
 
 **Cons**:
@@ -69,7 +69,7 @@ Package or execute an external command line utility such as ffprobe or exiftool 
 
 ## Rationale
 
-Option 1 is selected because it directly aligns with Mumhanzi architectural goals of high performance, offline local autonomy, and clean software boundaries.
+Option 1 is selected because it directly aligns with Mutinhimira architectural goals of high performance, offline local autonomy, and clean software boundaries.
 
 By combining `walkdir` for filesystem traversal with `rayon` parallel iterators and `lofty` audio tag reading, metadata parsing utilizes available hardware concurrency efficiently. Audio files are read concurrently across CPU cores while database writes are coordinated in batches of 250 tracks through the existing SQLite connection pool. This ensures that the user interface never freezes, while database write transactions remain brief and well within the configured SQLite WAL busy timeout.
 

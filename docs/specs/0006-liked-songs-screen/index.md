@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification defines the architecture, user experience, and state management for the Liked Songs screen in Mumhanzi. It establishes a dedicated feature folder under src/components/liked/, a page container at src/pages/LikedSongs.tsx, and a reactive store at src/store/useLikedSongsStore.ts. Following the Facade build approach, this screen provides an expressive view featuring a glowing Midnight hero banner with total track counts and duration, quick action buttons for Play All and Shuffle, an inline search filter, and an interactive songs table with sortable columns, unlike retention, and playback integration with the player footer.
+This specification defines the architecture, user experience, and state management for the Liked Songs screen in Mutinhimira. It establishes a dedicated feature folder under src/components/liked/, a page container at src/pages/LikedSongs.tsx, and a reactive store at src/store/useLikedSongsStore.ts. Following the Facade build approach, this screen provides an expressive view featuring a glowing Midnight hero banner with total track counts and duration, quick action buttons for Play All and Shuffle, an inline search filter, and an interactive songs table with sortable columns, unlike retention, and playback integration with the player footer.
 
 ## Decision
 

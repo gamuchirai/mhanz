@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification defines the architecture, user interface, and state management for the Albums overview grid and dedicated Album Detail screens in Mumhanzi. It introduces a dedicated feature module under src/components/albums/, a page container at src/pages/Albums.tsx, and a reactive store at src/store/useAlbumStore.ts. Following the Facade build approach, this feature delivers a visual collection grid of albums with search filtering and multi criteria sorting, high impact hero headers with vinyl placeholder fallbacks, conditional disc section grouping for multi disc releases, full album playback queueing, and cross view deep linking from Home and Search screens.
+This specification defines the architecture, user interface, and state management for the Albums overview grid and dedicated Album Detail screens in Mutinhimira. It introduces a dedicated feature module under src/components/albums/, a page container at src/pages/Albums.tsx, and a reactive store at src/store/useAlbumStore.ts. Following the Facade build approach, this feature delivers a visual collection grid of albums with search filtering and multi criteria sorting, high impact hero headers with vinyl placeholder fallbacks, conditional disc section grouping for multi disc releases, full album playback queueing, and cross view deep linking from Home and Search screens.
 
 ## Decision
 

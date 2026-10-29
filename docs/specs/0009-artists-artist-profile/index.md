@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification defines the architecture, user interface, and state management for the Artists collection overview and dedicated Artist Profile views in Mumhanzi. It introduces a dedicated feature module under src/components/artists/, a page container at src/pages/Artists.tsx, and a reactive store at src/store/useArtistStore.ts. Following the Facade build approach, this feature delivers a responsive circular portrait grid of artists with follower counts and search sorting, an atmospheric hero banner with live follow toggles, an expandable top tracks table with playback queueing, discography release category filters with deep links to album detail, and smooth cross screen navigation from Home, Search, and Album views.
+This specification defines the architecture, user interface, and state management for the Artists collection overview and dedicated Artist Profile views in Mutinhimira. It introduces a dedicated feature module under src/components/artists/, a page container at src/pages/Artists.tsx, and a reactive store at src/store/useArtistStore.ts. Following the Facade build approach, this feature delivers a responsive circular portrait grid of artists with follower counts and search sorting, an atmospheric hero banner with live follow toggles, an expandable top tracks table with playback queueing, discography release category filters with deep links to album detail, and smooth cross screen navigation from Home, Search, and Album views.
 
 ## Decision
 

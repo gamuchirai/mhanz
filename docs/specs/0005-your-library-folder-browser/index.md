@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification defines the architecture, user experience, and state management for the Your Library and Folder Browser screen in Mumhanzi. It establishes a dedicated feature folder under src/components/library/, a page container at src/pages/Library.tsx, and a reactive Zustand store at src/store/useLibraryStore.ts. Following the Facade build approach, this screen provides a unified view featuring a summary hero bar, a collapsible folder management panel with folder adding and rescan simulation, and an interactive songs table with sortable columns, quick search filtering, and playback integration with the player footer.
+This specification defines the architecture, user experience, and state management for the Your Library and Folder Browser screen in Mutinhimira. It establishes a dedicated feature folder under src/components/library/, a page container at src/pages/Library.tsx, and a reactive Zustand store at src/store/useLibraryStore.ts. Following the Facade build approach, this screen provides a unified view featuring a summary hero bar, a collapsible folder management panel with folder adding and rescan simulation, and an interactive songs table with sortable columns, quick search filtering, and playback integration with the player footer.
 
 ## Decision
 

@@ -19,7 +19,7 @@ pub const MIGRATION_V002: &str = include_str!("../../migrations/V002__playlists_
 /// Embedded V003 search index and triggers migration script.
 pub const MIGRATION_V003: &str = include_str!("../../migrations/V003__search_index.sql");
 
-/// Construct the compiled migrations suite for Mumhanzi.
+/// Construct the compiled migrations suite for Mutinhimira.
 pub fn create_migrations() -> Migrations<'static> {
     Migrations::new(vec![
         M::up(MIGRATION_V001),
@@ -108,7 +108,7 @@ impl DatabaseManager {
                         db_path
                             .file_name()
                             .and_then(|f| f.to_str())
-                            .unwrap_or("mumhanzi.db"),
+                            .unwrap_or("Mutinhimira.db"),
                         timestamp
                     );
                     let backup_path = db_path.with_file_name(backup_filename);

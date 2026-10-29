@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification defines the native audio playback engine architecture for Mumhanzi. It introduces an embedded audio subsystem in Rust using Rodio with Symphonia decoders, running audio playback on a dedicated native thread isolated from user interface rendering. Following the Clean Architecture boundaries and Facade delivery strategy, this foundation provides high fidelity local music decoding across standard formats (MP3, FLAC, WAV, AAC, and OGG Vorbis), thread safe playback state tracking, high resolution timeline streaming via Tauri events, and robust error recovery, cleanly replacing the frontend simulated timer with real desktop audio playback.
+This specification defines the native audio playback engine architecture for Mutinhimira. It introduces an embedded audio subsystem in Rust using Rodio with Symphonia decoders, running audio playback on a dedicated native thread isolated from user interface rendering. Following the Clean Architecture boundaries and Facade delivery strategy, this foundation provides high fidelity local music decoding across standard formats (MP3, FLAC, WAV, AAC, and OGG Vorbis), thread safe playback state tracking, high resolution timeline streaming via Tauri events, and robust error recovery, cleanly replacing the frontend simulated timer with real desktop audio playback.
 
 ## Decision
 

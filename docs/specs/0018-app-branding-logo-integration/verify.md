@@ -1,62 +1,28 @@
-# Verification Steps: App Branding and Logo Integration
+# Verify: app branding & logo integration (spec 0018)
 
-This document defines automated and manual verification procedures for Spec 0018 (App Branding and Logo Integration).
+## UI and manual checks
 
-## Automated Verification
+- [x] Expanded sidebar brand display: at viewport width greater than or equal to 1024px, the sidebar renders primary-dark.svg brand lockup with alt "Mutinhimira by Mutinhimira" and data-testid "brand-logo-expanded" (AC-2)
+- [x] Collapsed sidebar rail brand display: at viewport width below 1024px, the sidebar collapses to a 68px rail and renders standalone-dark.svg symbol with alt "Mutinhimira symbol" and data-testid "brand-logo-collapsed" at 28px width and height without overflow (AC-3)
+- [x] Document favicon: index.html links /logos/standalone-dark.svg with type image/svg+xml replacing the placeholder vite favicon (AC-4)
+- [x] Native desktop application icons: generated icons present in src-tauri/icons/ including icon.ico, icon.icns, 32x32.png, 128x128.png, 128x128@2x.png, and Windows Store square logos (AC-5)
+- [x] Desktop application configuration: tauri.conf.json points to the updated icon bundle and retains Mutinhimira window title (AC-6)
 
-Run the test suite and quality gates from the repository root:
+## Commands
 
-```bash
-# 1. Run the navigation and responsiveness test suites
-npm test src/test/responsive.test.tsx
+- [x] `npm test src/test/responsive.test.tsx`: responsive brand assertions pass cleanly (AC-7)
+- [x] `npm test`: all 15 test suites and 159 tests pass cleanly (AC-7)
+- [x] `npm run typecheck`: TypeScript compiles with zero errors
+- [x] `npm run build`: production bundle builds cleanly
+- [x] `cargo check --manifest-path src-tauri/Cargo.toml`: Tauri Rust backend passes with zero errors (AC-6)
+- [x] `cargo test --manifest-path src-tauri/Cargo.toml`: all native tests pass cleanly
 
-# 2. Run the full unit and component test suite
-npm test
+## Acceptance criteria coverage
 
-# 3. Validate TypeScript type safety
-npm run typecheck
-
-# 4. Verify production bundle build
-npm run build
-
-# 5. Verify Tauri desktop compilation and configuration
-cargo check --manifest-path src-tauri/Cargo.toml
-```
-
-### Expected Automated Outcomes
-
-- `src/test/responsive.test.tsx` passes cleanly, verifying that `brand-logo-expanded` carries `max-lg:hidden` and `brand-logo-collapsed` carries `hidden max-lg:block`.
-- Full test run passes all test suites cleanly.
-- Typecheck completes with zero diagnostic errors.
-- Production client bundle compiles without broken asset references.
-- Cargo check passes with zero compilation errors.
-
-## Manual UI Verification
-
-Launch the desktop development environment:
-
-```bash
-npm run tauri dev
-```
-
-### 1. Expanded Sidebar Brand Display (AC-2)
-1. Launch the application on a desktop screen with width greater than 1024px.
-2. Confirm the navigation sidebar brand header at top displays the full Mumhanzi primary dark logo lockup.
-3. Confirm the logo renders cleanly with proper spacing and transparent background against the dark sidebar.
-4. Confirm no visual artifacts, clipping, or placeholder text appears.
-
-### 2. Collapsed Sidebar Rail Brand Display (AC-3)
-1. Resize the application window to a width narrower than 1024px.
-2. Confirm the sidebar collapses to a 68px icon rail.
-3. Confirm the brand header switches smoothly to the standalone Mumhanzi symbol centered at 28px.
-4. Confirm text labels are completely hidden and no horizontal scrollbar or overflow appears.
-
-### 3. Document Favicon Verification (AC-4)
-1. Run `npm run dev` and open the app in a web browser.
-2. Observe the browser tab icon.
-3. Confirm the tab icon displays the standalone Mumhanzi symbol rather than the default Vite logo.
-
-### 4. Native Desktop Application Icons (AC-5, AC-6)
-1. Check the Windows taskbar, macOS dock, or Linux desktop launcher when Mumhanzi is running.
-2. Confirm the operating system displays the official Mumhanzi dark app icon rather than the default Tauri placeholder icon.
-3. Check the application window title bar icon to ensure crisp rendering.
+- AC-1 Normalized kebab case logos placed in public/logos/: met
+- AC-2 Expanded navigation sidebar renders primary-dark.svg: met
+- AC-3 Collapsed navigation sidebar renders standalone-dark.svg emblem: met
+- AC-4 Document favicon links standalone-dark.svg: met
+- AC-5 Tauri desktop icons generated from vector master SVG: met
+- AC-6 Tauri bundle configuration points to icons and sets window title: met
+- AC-7 Responsive test suite updated and passing: met

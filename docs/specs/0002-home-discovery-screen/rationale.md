@@ -2,7 +2,7 @@
 
 ## Context
 
-Mumhanzi aims to provide a fast, elegant desktop music listening experience inspired by Windows Groove Music and the Midnight visual aesthetic. The initial proof of concept placed all visual components directly inside a single 800 line App.tsx file. While this established the visual look, the code lacks a structured component hierarchy, and the discovery elements need to be decoupled so other views can reuse common controls like track rows, cards, and player state.
+Mutinhimira aims to provide a fast, elegant desktop music listening experience inspired by Windows Groove Music and the Midnight visual aesthetic. The initial proof of concept placed all visual components directly inside a single 800 line App.tsx file. While this established the visual look, the code lacks a structured component hierarchy, and the discovery elements need to be decoupled so other views can reuse common controls like track rows, cards, and player state.
 
 This specification designs the migration of the existing home UI elements into clean, dedicated components with well defined props and store connections. It also elevates the visual polish: adding auto scrolling marquee text on hover, graceful gradient fallbacks for images, helpful empty state prompts, and continuous playback timer simulation in the player footer bar so the application looks and feels like a complete desktop music player.
 

@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification defines the architecture, background worker pipelines, metadata extraction rules, and persistence strategies for the Mumhanzi local music library scanner. It introduces high performance audio tag reading and embedded cover art extraction using lofty and walkdir with rayon parallel execution in native Rust. Following the Clean Architecture boundaries and Facade delivery strategy, this capability connects monitored filesystem folders to the SQLite persistence layer, giving users seamless, fast, and automated catalog discovery with live progress feedback in the React presentation shell.
+This specification defines the architecture, background worker pipelines, metadata extraction rules, and persistence strategies for the Mutinhimira local music library scanner. It introduces high performance audio tag reading and embedded cover art extraction using lofty and walkdir with rayon parallel execution in native Rust. Following the Clean Architecture boundaries and Facade delivery strategy, this capability connects monitored filesystem folders to the SQLite persistence layer, giving users seamless, fast, and automated catalog discovery with live progress feedback in the React presentation shell.
 
 ## Decision
 
@@ -19,7 +19,7 @@ Adopt a native background worker thread managed inside the Rust backend that rec
 
 **User stories**:
 
-- As a listener with local audio files, I want to add my music folders so that Mumhanzi automatically imports my tracks, albums, and artists into my library.
+- As a listener with local audio files, I want to add my music folders so that Mutinhimira automatically imports my tracks, albums, and artists into my library.
 - As a collector with a large library, I want rescans to process quickly so that I do not wait minutes for unchanged files to reindex.
 - As a listener viewing albums and songs, I want embedded cover artwork extracted and displayed so that visual album art appears throughout the application.
 - As a desktop user with tagged and untagged music, I want missing titles to fall back to clean file basenames and missing artists or albums to show unknown placeholders so that my library remains organized and playable.
@@ -162,7 +162,7 @@ Folder scan lifecycle state machine:
 
 **Configuration required**:
 
-No external environment variables or API keys required. The application utilizes the standard operating system cache folder (`mumhanzi/covers/`) for extracted artwork files.
+No external environment variables or API keys required. The application utilizes the standard operating system cache folder (`Mutinhimira/covers/`) for extracted artwork files.
 
 **Critical test scenarios**:
 

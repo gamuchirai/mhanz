@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification defines the persistence architecture connecting Mumhanzi playlist management and liked songs to the local SQLite database. Following the Facade build approach, it transitions the existing user interface shells from placeholder fixtures to durable SQLite storage using Tauri IPC commands and reactive Zustand stores. Users can create, update, reorder, and delete playlists with custom visual gradient presets, while song likes persist instantly across application restarts with optimistic interface updates and rollback protection.
+This specification defines the persistence architecture connecting Mutinhimira playlist management and liked songs to the local SQLite database. Following the Facade build approach, it transitions the existing user interface shells from placeholder fixtures to durable SQLite storage using Tauri IPC commands and reactive Zustand stores. Users can create, update, reorder, and delete playlists with custom visual gradient presets, while song likes persist instantly across application restarts with optimistic interface updates and rollback protection.
 
 ## Requirements
 

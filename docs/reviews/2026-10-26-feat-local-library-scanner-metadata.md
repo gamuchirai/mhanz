@@ -8,7 +8,7 @@
 
 ## Summary
 
-This pull request introduces the native local library scanner and metadata extraction engine for Mumhanzi. It connects monitored filesystem folders to SQLite storage through background worker threads using walkdir, rayon, lofty, and sha2 hashing. The architecture follows Clean Architecture with clean separation between discovery, tag parsing, chunked transactional batch writes, and frontend presentation. User curation stats (favorites, play counts, timestamps) are preserved atomically on rescans via SQLite conflict update clauses, and orphaned records are pruned safely when completed scans finish. All 14 Rust tests and 146 frontend tests pass cleanly with zero lint errors. No blockers or majors were found.
+This pull request introduces the native local library scanner and metadata extraction engine for Mutinhimira. It connects monitored filesystem folders to SQLite storage through background worker threads using walkdir, rayon, lofty, and sha2 hashing. The architecture follows Clean Architecture with clean separation between discovery, tag parsing, chunked transactional batch writes, and frontend presentation. User curation stats (favorites, play counts, timestamps) are preserved atomically on rescans via SQLite conflict update clauses, and orphaned records are pruned safely when completed scans finish. All 14 Rust tests and 146 frontend tests pass cleanly with zero lint errors. No blockers or majors were found.
 
 Three minor improvements and two nits are noted below.
 

@@ -70,9 +70,8 @@ export function PlayerFooter({ className = "" }: PlayerFooterProps) {
               : "Open fullscreen view"
           }
           title="Open fullscreen view"
-          className={`w-[52px] h-[52px] max-lg:w-11 max-lg:h-11 rounded-lg shrink-0 overflow-hidden relative border-0 p-0 block transition-transform duration-150 hover:scale-105 active:scale-95 ${
-            currentTrack ? "cursor-pointer" : "cursor-default"
-          }`}
+          className={`w-[52px] h-[52px] max-lg:w-11 max-lg:h-11 rounded-lg shrink-0 overflow-hidden relative border-0 p-0 block transition-transform duration-150 hover:scale-105 active:scale-95 ${currentTrack ? "cursor-pointer" : "cursor-default"
+            }`}
           style={{ background: defaultBg }}
         >
           {!imageError && currentTrack?.artworkUrl ? (
@@ -94,9 +93,8 @@ export function PlayerFooter({ className = "" }: PlayerFooterProps) {
                 : "Open fullscreen view"
             }
             title="Open fullscreen view"
-            className={`bg-transparent border-0 p-0 text-left block w-full truncate ${
-              currentTrack ? "cursor-pointer" : "cursor-default"
-            }`}
+            className={`bg-transparent border-0 p-0 text-left block w-full truncate ${currentTrack ? "cursor-pointer" : "cursor-default"
+              }`}
           >
             <MarqueeText
               text={currentTrack?.title ?? "No track selected"}
@@ -104,7 +102,7 @@ export function PlayerFooter({ className = "" }: PlayerFooterProps) {
             />
           </button>
           <div className="text-xs text-[#a89b91] mt-0.5 truncate">
-            {currentTrack?.artist ?? "Mumhanzi"}
+            {currentTrack?.artist ?? "Mutinhimira"}
           </div>
         </div>
 
@@ -133,9 +131,8 @@ export function PlayerFooter({ className = "" }: PlayerFooterProps) {
         <button
           aria-label={isShuffle ? "Disable shuffle" : "Enable shuffle"}
           onClick={toggleShuffle}
-          className={`bg-transparent border-0 p-2 grid place-items-center cursor-pointer max-[900px]:hidden transition-colors ${
-            isShuffle ? "text-[#f0a982]" : "text-[#a89b91] hover:text-[#f4ebe4]"
-          }`}
+          className={`bg-transparent border-0 p-2 grid place-items-center cursor-pointer max-[900px]:hidden transition-colors ${isShuffle ? "text-[#f0a982]" : "text-[#a89b91] hover:text-[#f4ebe4]"
+            }`}
         >
           <svg className="i w-[18px] h-[18px]" aria-hidden="true">
             <use href="#shuffle" />
@@ -175,9 +172,8 @@ export function PlayerFooter({ className = "" }: PlayerFooterProps) {
         <button
           aria-label={`Repeat mode: ${repeatMode}`}
           onClick={toggleRepeat}
-          className={`bg-transparent border-0 p-2 grid place-items-center cursor-pointer relative max-[900px]:hidden transition-colors ${
-            repeatMode !== "off" ? "text-[#f0a982]" : "text-[#a89b91] hover:text-[#f4ebe4]"
-          }`}
+          className={`bg-transparent border-0 p-2 grid place-items-center cursor-pointer relative max-[900px]:hidden transition-colors ${repeatMode !== "off" ? "text-[#f0a982]" : "text-[#a89b91] hover:text-[#f4ebe4]"
+            }`}
         >
           <svg className="i w-[18px] h-[18px]" aria-hidden="true">
             <use href="#repeat" />
@@ -198,9 +194,8 @@ export function PlayerFooter({ className = "" }: PlayerFooterProps) {
           <button
             aria-label={isMuted ? "Unmute" : "Mute"}
             onClick={toggleMute}
-            className={`bg-transparent border-0 p-1 cursor-pointer grid place-items-center transition-colors ${
-              isMuted ? "text-[#f0a982]" : "text-[#a89b91] hover:text-[#f4ebe4]"
-            }`}
+            className={`bg-transparent border-0 p-1 cursor-pointer grid place-items-center transition-colors ${isMuted ? "text-[#f0a982]" : "text-[#a89b91] hover:text-[#f4ebe4]"
+              }`}
           >
             <svg className="i w-[18px] h-[18px]" aria-hidden="true">
               <use href="#vol" />
@@ -224,11 +219,10 @@ export function PlayerFooter({ className = "" }: PlayerFooterProps) {
             aria-label={isMuted ? "Unmute" : "Mute"}
             aria-expanded={volumePopoverOpen}
             onClick={() => setVolumePopoverOpen(!volumePopoverOpen)}
-            className={`bg-transparent border-0 p-1.5 rounded-lg cursor-pointer grid place-items-center transition-colors ${
-              isMuted || volumePopoverOpen
+            className={`bg-transparent border-0 p-1.5 rounded-lg cursor-pointer grid place-items-center transition-colors ${isMuted || volumePopoverOpen
                 ? "text-[#f0a982] bg-white/10"
                 : "text-[#a89b91] hover:text-[#f4ebe4]"
-            }`}
+              }`}
           >
             <svg className="i w-[18px] h-[18px]" aria-hidden="true">
               <use href="#vol" />
@@ -270,11 +264,10 @@ export function PlayerFooter({ className = "" }: PlayerFooterProps) {
         <button
           aria-label="Toggle lyrics overlay"
           onClick={() => toggleOverlay("lyrics")}
-          className={`bg-transparent border-0 p-2 rounded-lg cursor-pointer grid place-items-center max-[900px]:hidden transition-colors ${
-            activeOverlay === "lyrics"
+          className={`bg-transparent border-0 p-2 rounded-lg cursor-pointer grid place-items-center max-[900px]:hidden transition-colors ${activeOverlay === "lyrics"
               ? "text-[#f0a982] bg-white/10"
               : "text-[#a89b91] hover:text-[#f4ebe4] hover:bg-white/5"
-          }`}
+            }`}
           title="Lyrics"
         >
           <svg className="i w-[18px] h-[18px]" viewBox="0 0 24 24" aria-hidden="true">
@@ -286,11 +279,10 @@ export function PlayerFooter({ className = "" }: PlayerFooterProps) {
         <button
           aria-label="Toggle playback queue drawer"
           onClick={() => toggleOverlay("queue")}
-          className={`bg-transparent border-0 p-2 rounded-lg cursor-pointer grid place-items-center max-[900px]:hidden transition-colors ${
-            activeOverlay === "queue"
+          className={`bg-transparent border-0 p-2 rounded-lg cursor-pointer grid place-items-center max-[900px]:hidden transition-colors ${activeOverlay === "queue"
               ? "text-[#f0a982] bg-white/10"
               : "text-[#a89b91] hover:text-[#f4ebe4] hover:bg-white/5"
-          }`}
+            }`}
           title="Queue"
         >
           <svg className="i w-[18px] h-[18px]" aria-hidden="true">
@@ -302,13 +294,11 @@ export function PlayerFooter({ className = "" }: PlayerFooterProps) {
         <button
           aria-label="Open fullscreen view"
           onClick={() => currentTrack && toggleOverlay("fullscreen")}
-          className={`bg-transparent border-0 p-2 rounded-lg grid place-items-center transition-colors ${
-            currentTrack ? "cursor-pointer" : "cursor-default"
-          } ${
-            activeOverlay === "fullscreen"
+          className={`bg-transparent border-0 p-2 rounded-lg grid place-items-center transition-colors ${currentTrack ? "cursor-pointer" : "cursor-default"
+            } ${activeOverlay === "fullscreen"
               ? "text-[#f0a982] bg-white/10"
               : "text-[#a89b91] hover:text-[#f4ebe4] hover:bg-white/5"
-          }`}
+            }`}
           title="Fullscreen (expand view)"
         >
           <svg className="i w-[18px] h-[18px]" viewBox="0 0 24 24" aria-hidden="true">

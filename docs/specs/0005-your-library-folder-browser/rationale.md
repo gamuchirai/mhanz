@@ -2,7 +2,7 @@
 
 ## Context
 
-In Mumhanzi, listeners need a central location to explore their indexed local music collection and manage the music folders monitored on their computer. While the Home screen highlights featured discoveries and Search provides instant querying across all content, Your Library serves as the home base for personal local music files.
+In Mutinhimira, listeners need a central location to explore their indexed local music collection and manage the music folders monitored on their computer. While the Home screen highlights featured discoveries and Search provides instant querying across all content, Your Library serves as the home base for personal local music files.
 
 The design must satisfy multiple user needs simultaneously: giving listeners immediate access to their entire track collection with flexible sorting and filtering, while offering clear visibility and control over indexed music directories. Without a cohesive design, the interface risks becoming fragmented into disjointed screens or burying folder management inside hidden application settings.
 

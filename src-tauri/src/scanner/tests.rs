@@ -15,7 +15,7 @@ mod tests {
 
     fn create_test_temp_dir(suffix: &str) -> PathBuf {
         let temp_dir =
-            std::env::temp_dir().join(format!("mumhanzi_test_{}_{}", suffix, uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("Mutinhimira_test_{}_{}", suffix, uuid::Uuid::new_v4()));
         fs::create_dir_all(&temp_dir).expect("Failed to create test temp dir");
         temp_dir
     }

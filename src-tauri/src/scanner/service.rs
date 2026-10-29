@@ -191,7 +191,7 @@ impl ScannerManager {
         let folder_id_worker = folder_id.clone();
 
         std::thread::Builder::new()
-            .name("mumhanzi-scanner-worker".to_string())
+            .name("Mutinhimira-scanner-worker".to_string())
             .spawn(move || {
                 let start_instant = Instant::now();
                 let mut scan_errors: Vec<ScanErrorItem> = Vec::new();

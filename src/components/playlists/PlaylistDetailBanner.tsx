@@ -163,7 +163,7 @@ export function PlaylistDetailBanner({ playlist }: PlaylistDetailBannerProps) {
             }}
           >
             <span style={{ color: "var(--t)", fontWeight: 500 }}>
-              {playlist.isCurated ? "Mumhanzi Editorial" : "madebyadah"}
+              {playlist.isCurated ? "Mutinhimira Editorial" : "madebyadah"}
             </span>
             <span style={{ opacity: 0.4 }}>•</span>
             <span>

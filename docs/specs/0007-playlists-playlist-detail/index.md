@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification defines the architecture, user experience, and state management for the Playlists and Playlist Detail screens in Mumhanzi. It establishes a dedicated feature folder under src/components/playlists/, a page container at src/pages/Playlists.tsx, and a reactive store at src/store/usePlaylistStore.ts. Following the Facade build approach, this feature provides a collection grid of curated and user created playlists, a floating modal for playlist creation and customization with Midnight color gradients, a dedicated playlist detail view with glowing cover art and duration metrics, an interactive track curation drawer to add library songs with one click, and direct playback integration with the player footer.
+This specification defines the architecture, user experience, and state management for the Playlists and Playlist Detail screens in Mutinhimira. It establishes a dedicated feature folder under src/components/playlists/, a page container at src/pages/Playlists.tsx, and a reactive store at src/store/usePlaylistStore.ts. Following the Facade build approach, this feature provides a collection grid of curated and user created playlists, a floating modal for playlist creation and customization with Midnight color gradients, a dedicated playlist detail view with glowing cover art and duration metrics, an interactive track curation drawer to add library songs with one click, and direct playback integration with the player footer.
 
 ## Decision
 

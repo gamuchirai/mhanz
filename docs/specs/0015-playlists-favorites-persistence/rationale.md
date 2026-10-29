@@ -2,7 +2,7 @@
 
 ## Context
 
-Mumhanzi completed Phase 1 by building interactive clickable user interface shells for the Playlists and Liked Songs screens. These screens demonstrated rich user interactions including creating playlists, assigning Midnight gradient covers, curating tracks from library search drawers, drag reordering playlist songs, and toggling song favorite hearts. However, all playlist and favorite state currently resides in memory using mock fixture data inside `usePlaylistStore` and `useLikedSongsStore`. When a user closes or restarts the application, all newly created playlists, track order customizations, and favorited songs vanish.
+Mutinhimira completed Phase 1 by building interactive clickable user interface shells for the Playlists and Liked Songs screens. These screens demonstrated rich user interactions including creating playlists, assigning Midnight gradient covers, curating tracks from library search drawers, drag reordering playlist songs, and toggling song favorite hearts. However, all playlist and favorite state currently resides in memory using mock fixture data inside `usePlaylistStore` and `useLikedSongsStore`. When a user closes or restarts the application, all newly created playlists, track order customizations, and favorited songs vanish.
 
 Phase 2 introduces durable SQLite storage using rusqlite with WAL mode and Clean Architecture repositories, defined in spec 0012. While the database schema and repositories for tracks and playlists exist in Rust, the frontend presentation layer remains decoupled from them. Feature 16 bridges this gap by wiring the existing Zustand stores to SQLite via Tauri IPC commands.
 

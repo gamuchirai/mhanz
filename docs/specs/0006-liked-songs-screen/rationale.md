@@ -2,7 +2,7 @@
 
 ## Context
 
-In Mumhanzi, listeners mark songs as favorites across various views including Home recommendations, Search discovery, and Your Library local folders. While each screen allows toggling the heart icon on any song, listeners expect a dedicated, prominent collection view where all favorited tracks are gathered in one place for instant listening.
+In Mutinhimira, listeners mark songs as favorites across various views including Home recommendations, Search discovery, and Your Library local folders. While each screen allows toggling the heart icon on any song, listeners expect a dedicated, prominent collection view where all favorited tracks are gathered in one place for instant listening.
 
 Without a dedicated Liked Songs screen, listeners must hunt through individual folders, playlists, or search results to find songs they loved. The screen must provide immediate playback options, including Play All and Shuffle, while displaying clear aggregate statistics such as total track count and total listening duration.
 
@@ -59,7 +59,7 @@ Implement Liked Songs as a filtered tab or filter toggle inside the existing You
 
 ## Rationale
 
-Option 2 is chosen because it delivers the most enjoyable, forgiving, and aesthetically cohesive listening experience for Mumhanzi. A dedicated Liked Songs screen gives listeners direct access to their favorite tracks with a distinctive illuminated heart hero banner, matching the Windows Groove Music and Midnight visual style.
+Option 2 is chosen because it delivers the most enjoyable, forgiving, and aesthetically cohesive listening experience for Mutinhimira. A dedicated Liked Songs screen gives listeners direct access to their favorite tracks with a distinctive illuminated heart hero banner, matching the Windows Groove Music and Midnight visual style.
 
 Retaining unliked tracks in place during the active session is a critical usability improvement. If a listener accidentally clicks the heart icon while browsing or playing music, they can immediately click it again to restore their favorite without losing their place in the list.
 

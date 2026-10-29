@@ -8,7 +8,7 @@ interface AlbumVinylPlaceholderProps {
 }
 
 export const AlbumVinylPlaceholder = memo(function AlbumVinylPlaceholder({
-  title = "Mumhanzi",
+  title = "Mutinhimira",
   size = "100%",
   showGrooves = true,
 }: AlbumVinylPlaceholderProps) {

@@ -2,7 +2,7 @@
 
 ## Context
 
-Mumhanzi is designed as a lightweight modern desktop music player inspired by Windows Groove Music and the Midnight visual aesthetic. During Phase 1 of development, the user interface was constructed following the Facade build approach. Views, drawer panels, playlists, queue manipulation, and fullscreen playback controls were built and verified against simulated timer ticks and static fixtures in `usePlayerStore.ts`. In this facade configuration, playback progress was driven by a coarse one second JavaScript `setInterval` timer, and audio duration was read from static mock objects without actual sound output.
+Mutinhimira is designed as a lightweight modern desktop music player inspired by Windows Groove Music and the Midnight visual aesthetic. During Phase 1 of development, the user interface was constructed following the Facade build approach. Views, drawer panels, playlists, queue manipulation, and fullscreen playback controls were built and verified against simulated timer ticks and static fixtures in `usePlayerStore.ts`. In this facade configuration, playback progress was driven by a coarse one second JavaScript `setInterval` timer, and audio duration was read from static mock objects without actual sound output.
 
 Phase 2 requires replacing this simulated shell with a real, high fidelity audio engine. Delivering desktop music playback introduces specific technical forces:
 
@@ -10,7 +10,7 @@ First, audio playback must remain completely immune to user interface stutter, g
 
 Second, personal local music libraries span diverse audio containers and codecs collected over decades. Users expect seamless playback of MP3, lossless FLAC, uncompressed WAV, Apple AAC and M4A, and open source OGG Vorbis files. The decoder architecture must handle these formats reliably without requiring users to install third party codecs, system media feature packs, or external software.
 
-Third, the desktop runtime must maintain a tiny memory and CPU footprint. Mumhanzi aims to run continuously in the background while users work, game, or browse. Spawning heavyweight external processes or embedding full browser media stacks conflicts directly with this core product goal.
+Third, the desktop runtime must maintain a tiny memory and CPU footprint. Mutinhimira aims to run continuously in the background while users work, game, or browse. Spawning heavyweight external processes or embedding full browser media stacks conflicts directly with this core product goal.
 
 Fourth, developers and automated CI pipelines need to run unit and component tests rapidly. Vitest component suites and browser previews must operate without crashing when native desktop runtime APIs are absent.
 
@@ -20,7 +20,7 @@ Not deciding this architecture cleanly would risk audio glitches, fragile format
 
 ### Option 1: Native Rodio engine with Symphonia decoders, thread safe Mutex state container, and Tauri IPC bridge (Chosen)
 
-Embed the pure Rust Rodio crate (version 0.20+) compiled with the `symphonia-all` feature set directly into the `mumhanzi_lib` Rust binary. Rodio manages the underlying hardware audio device output through CPAL on dedicated audio threads. Live playback status, active file path, track identifier, and volume are managed in an `Arc<Mutex<AudioPlaybackState>>` container. A dedicated background timer thread emits `audio:position` events at 100 millisecond intervals to Tauri webview listeners while active. Natural song completions trigger an `audio:track-ended` event, allowing the frontend Zustand queue store to advance playback smoothly.
+Embed the pure Rust Rodio crate (version 0.20+) compiled with the `symphonia-all` feature set directly into the `Mutinhimira_lib` Rust binary. Rodio manages the underlying hardware audio device output through CPAL on dedicated audio threads. Live playback status, active file path, track identifier, and volume are managed in an `Arc<Mutex<AudioPlaybackState>>` container. A dedicated background timer thread emits `audio:position` events at 100 millisecond intervals to Tauri webview listeners while active. Natural song completions trigger an `audio:track-ended` event, allowing the frontend Zustand queue store to advance playback smoothly.
 
 **Pros**:
 
@@ -88,7 +88,7 @@ First, Rodio runs audio rendering on a dedicated native operating system thread 
 
 Second, configuring Rodio with `symphonia-all` provides pure Rust decoders for MP3, FLAC, WAV, AAC, and OGG Vorbis. This ensures consistent decoding across all Windows installations without relying on external system codecs or webview platform variations.
 
-Third, Rodio compiles directly into the Mumhanzi binary with negligible memory overhead (typically under 15 megabytes during active playback) and negligible CPU usage (under one percent), far outperforming the heavy external process model of Option 4.
+Third, Rodio compiles directly into the Mutinhimira binary with negligible memory overhead (typically under 15 megabytes during active playback) and negligible CPU usage (under one percent), far outperforming the heavy external process model of Option 4.
 
 Fourth, Option 1 avoids the reinventing the wheel pitfalls of Option 3. Rodio already provides battle tested sink abstractions, pause and resume primitives, volume gain scaling, and stream lifecycle management, while leaving room for future DSP audio filter additions.
 

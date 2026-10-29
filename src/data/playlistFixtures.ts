@@ -80,7 +80,7 @@ export const initialPlaylists: Playlist[] = [
   {
     id: "playlist-5",
     title: "Midnight Essentials",
-    description: "Handcrafted selections from the Mumhanzi editorial desk.",
+    description: "Handcrafted selections from the Mutinhimira editorial desk.",
     coverGradient: "linear-gradient(145deg, #38182f, #702842 55%, #f0a982 95%)",
     isCurated: true,
     createdAt: "2026-10-01T00:00:00Z",

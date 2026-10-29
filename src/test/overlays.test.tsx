@@ -293,7 +293,7 @@ describe("Queue, Lyrics, and Settings Overlays", () => {
     expect(useSettingsStore.getState().settings.volumeNormalization).toBe(false);
 
     // Verify localStorage has persisted JSON
-    const stored = window.localStorage.getItem("mumhanzi:settings:v1");
+    const stored = window.localStorage.getItem("Mutinhimira:settings:v1");
     expect(stored).not.toBeNull();
     const parsed = JSON.parse(stored!);
     expect(parsed.outputDeviceId).toBe("dev-headphones");

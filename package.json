@@ -1,8 +1,8 @@
 {
-  "name": "mumhanzi",
+  "name": "Mutinhimira",
   "private": true,
   "version": "0.1.0",
-  "description": "Mumhanzi Desktop Music Player",
+  "description": "Mutinhimira Desktop Music Player",
   "type": "module",
   "scripts": {
     "dev": "vite",

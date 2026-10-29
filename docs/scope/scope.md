@@ -1,4 +1,4 @@
-# Scope: Mumhanzi
+# Scope: Mutinhimira
 
 A lightweight modern desktop music player inspired by Windows Groove Music and the Midnight visual layout, built with Tauri, Rust, Vite, and TypeScript.
 
@@ -77,8 +77,8 @@ spec [0017](../specs/0017-desktop-ui-responsiveness/index.md)
 
 ### 19. App branding & logo integration · in-progress
 
-Incorporate official Mumhanzi logos across the sidebar navigation header, browser document favicon, and native desktop bundle icons.
-**Done when:** the sidebar renders the Mumhanzi logo lockup in expanded mode and standalone symbol in collapsed mode, index.html links the new favicon, and Tauri bundle configuration includes generated platform icons.
+Incorporate official Mutinhimira logos across the sidebar navigation header, browser document favicon, and native desktop bundle icons.
+**Done when:** the sidebar renders the Mutinhimira logo lockup in expanded mode and standalone symbol in collapsed mode, index.html links the new favicon, and Tauri bundle configuration includes generated platform icons.
 spec [0018](../specs/0018-app-branding-logo-integration/index.md)
 
 - [x] Design it (spec): `/architect app branding & logo integration`
@@ -89,7 +89,7 @@ spec [0018](../specs/0018-app-branding-logo-integration/index.md)
   - [x] Native desktop icon bundle generation via Tauri CLI from vector master (AC-5, AC-6)
   - [x] Responsive test suite update and brand verification (AC-7)
         code in `public/logos/`, `src/components/layout/NavigationSidebar.tsx`, `index.html`, `src-tauri/icons/`, `src/test/responsive.test.tsx`
-- [ ] Verify it: `/check verify app branding & logo integration`
+- [x] Verify it: `/check verify app branding & logo integration`
 - [ ] Test it: `/test app branding & logo integration`
 
 ## Phase 1: Clickable UI prototype

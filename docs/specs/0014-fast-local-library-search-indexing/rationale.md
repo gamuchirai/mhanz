@@ -2,7 +2,7 @@
 
 ## Context
 
-Mumhanzi provides a desktop music player designed to handle collections ranging from hundreds of songs to tens of thousands of audio files. In Phase 1, the search and explore interface was constructed with mock fixtures and in memory JavaScript array filtering. While this mock implementation demonstrated the interface layout, category pills, and Explore genre grid, scaling to real personal libraries requires persistent indexing and high performance query execution.
+Mutinhimira provides a desktop music player designed to handle collections ranging from hundreds of songs to tens of thousands of audio files. In Phase 1, the search and explore interface was constructed with mock fixtures and in memory JavaScript array filtering. While this mock implementation demonstrated the interface layout, category pills, and Explore genre grid, scaling to real personal libraries requires persistent indexing and high performance query execution.
 
 The primary requirement is speed. When a user types a query, search results across tracks, albums, artists, playlists, and genres must appear almost instantly, with database query execution times under 50 milliseconds. Naive SQL queries using `LIKE '%query%'` patterns perform full table scans that fail to meet this threshold as collections expand, and they lack relevance ranking or multi word prefix matching.
 
@@ -58,6 +58,6 @@ Maintain an in memory search index in the Rust backend process using a specializ
 
 ## Rationale
 
-Option 1 is selected because it directly aligns with Mumhanzi's local first desktop architecture and embedded SQLite storage foundation established in spec 0012. SQLite FTS5 provides proven, battle tested full text search performance with microsecond level prefix queries, while automated database triggers eliminate an entire class of synchronization bugs between the background scanner and the search view.
+Option 1 is selected because it directly aligns with Mutinhimira's local first desktop architecture and embedded SQLite storage foundation established in spec 0012. SQLite FTS5 provides proven, battle tested full text search performance with microsecond level prefix queries, while automated database triggers eliminate an entire class of synchronization bugs between the background scanner and the search view.
 
 Pairing the FTS5 virtual table with a B Tree locator table resolves the known SQLite issue where deleting unindexed columns forces a full table scan. Restricting update triggers to textual columns preserves database throughput during playback. Combining this backend foundation with a 150 millisecond frontend debounce, monotonic sequence tokens in `useSearchStore`, and client side model adapters guarantees a smooth, responsive search experience with zero visual stutter or out of order response flickers.

@@ -145,7 +145,7 @@ export function LyricsModal() {
               {currentTrack?.title ?? "No Track"}
             </h2>
             <div style={{ fontSize: "12px", color: "var(--m)", marginTop: "2px" }}>
-              {currentTrack?.artist ?? "Mumhanzi"}
+              {currentTrack?.artist ?? "Mutinhimira"}
             </div>
           </div>
 

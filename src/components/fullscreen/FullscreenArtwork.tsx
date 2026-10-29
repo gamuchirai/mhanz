@@ -69,7 +69,7 @@ export function FullscreenArtwork({ track, isLiked, onToggleLike }: FullscreenAr
             <svg className="i" width="64" height="64" aria-hidden="true">
               <use href="#disc" />
             </svg>
-            <span style={{ fontSize: "12px", color: "var(--m)" }}>Mumhanzi</span>
+            <span style={{ fontSize: "12px", color: "var(--m)" }}>Mutinhimira</span>
           </div>
         )}
       </div>

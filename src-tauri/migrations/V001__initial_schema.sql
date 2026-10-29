@@ -1,4 +1,4 @@
--- Migration V001: Initial Mumhanzi Relational Schema
+-- Migration V001: Initial Mutinhimira Relational Schema
 
 CREATE TABLE IF NOT EXISTS folders (
     id TEXT PRIMARY KEY,

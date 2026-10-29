@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification defines the architecture, user interface, and state management for the full screen now playing immersion view in Mumhanzi. It introduces modular feature components under src/components/fullscreen/ along with extensions to src/store/useOverlayStore.ts, src/types/discovery.ts, and src/types/overlays.ts. Following the Facade build approach, this feature delivers a full viewport overlay that conceals the sidebar and bottom player bar, presenting an ambient gradient mesh, an enlarged album artwork stage, a synchronized lyrics stream with click to seek capability, an audio visualizer canvas capped at 720p for battery efficiency, full width timeline scrubbing, and an auto hide timer for controls during inactive listening.
+This specification defines the architecture, user interface, and state management for the full screen now playing immersion view in Mutinhimira. It introduces modular feature components under src/components/fullscreen/ along with extensions to src/store/useOverlayStore.ts, src/types/discovery.ts, and src/types/overlays.ts. Following the Facade build approach, this feature delivers a full viewport overlay that conceals the sidebar and bottom player bar, presenting an ambient gradient mesh, an enlarged album artwork stage, a synchronized lyrics stream with click to seek capability, an audio visualizer canvas capped at 720p for battery efficiency, full width timeline scrubbing, and an auto hide timer for controls during inactive listening.
 
 ## Decision
 
@@ -171,7 +171,7 @@ export interface OverlayState {
 
 - Desktop application running entirely in client memory and local SQLite/browser context.
 - No network requests, PII collection, or external credential requirements.
-- Preferences are saved safely in `localStorage` under key `mumhanzi_user_settings_v1`.
+- Preferences are saved safely in `localStorage` under key `Mutinhimira_user_settings_v1`.
 
 **Critical test scenarios**:
 

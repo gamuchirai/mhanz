@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification defines the architecture, database schema, and frontend integration for fast local music library search indexing in Mumhanzi. It introduces an embedded SQLite FTS5 (full text search version five) virtual table with a B Tree row locator table and column targeted database triggers that keep song titles, artists, albums, and playlists synchronized without manual application code. Tauri IPC commands expose unified search querying with BM25 relevance scoring, prefix token matching, and exact match boosting, while the presentation layer Zustand store connects through a 150 millisecond debounce and monotonic request sequence token to prevent out of order responses.
+This specification defines the architecture, database schema, and frontend integration for fast local music library search indexing in Mutinhimira. It introduces an embedded SQLite FTS5 (full text search version five) virtual table with a B Tree row locator table and column targeted database triggers that keep song titles, artists, albums, and playlists synchronized without manual application code. Tauri IPC commands expose unified search querying with BM25 relevance scoring, prefix token matching, and exact match boosting, while the presentation layer Zustand store connects through a 150 millisecond debounce and monotonic request sequence token to prevent out of order responses.
 
 ## Requirements
 

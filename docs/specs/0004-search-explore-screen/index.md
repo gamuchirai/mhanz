@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification defines the architecture, user experience, and implementation details for the Search and explore screen in Mumhanzi. It establishes a dedicated feature folder under src/components/search/, a page container at src/pages/Search.tsx, and a reactive Zustand store at src/store/useSearchStore.ts. Following the Facade build approach, this screen delivers a fast, responsive interface with instant debounced filtering, category pills for songs, albums, artists, and genres, a rich Explore view with colorful genre cards, and immediate playback integration with the player footer.
+This specification defines the architecture, user experience, and implementation details for the Search and explore screen in Mutinhimira. It establishes a dedicated feature folder under src/components/search/, a page container at src/pages/Search.tsx, and a reactive Zustand store at src/store/useSearchStore.ts. Following the Facade build approach, this screen delivers a fast, responsive interface with instant debounced filtering, category pills for songs, albums, artists, and genres, a rich Explore view with colorful genre cards, and immediate playback integration with the player footer.
 
 ## Decision
 

@@ -2,7 +2,7 @@
 
 ## Context
 
-Mumhanzi provides a desktop music player experience inspired by Windows Groove Music and the Midnight visual aesthetic. Finding music quickly through search and exploration is a core interaction loop for desktop listeners. The current application shell supports Home discovery and persistent player controls, but clicking Search in the navigation sidebar renders a placeholder holding message.
+Mutinhimira provides a desktop music player experience inspired by Windows Groove Music and the Midnight visual aesthetic. Finding music quickly through search and exploration is a core interaction loop for desktop listeners. The current application shell supports Home discovery and persistent player controls, but clicking Search in the navigation sidebar renders a placeholder holding message.
 
 This specification designs the Search and explore screen to fulfill Feature 5 of Phase 1. Listeners need an instant search experience with debounced filtering across titles, artists, albums, and genres, category filter pills to narrow large result sets, and an Explore view featuring colorful genre cards when the search query is empty. The design must also connect directly to the persistent PlayerFooter for instant playback while keeping search state decoupled and maintainable.
 

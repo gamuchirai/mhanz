@@ -2,9 +2,9 @@
 
 ## Context
 
-Mumhanzi is a desktop music player inspired by Windows Groove Music and the dark Midnight visual aesthetic. A fundamental pillar of any music listening experience is browsing music by albums. Albums represent cohesive artistic works with curated track sequences, cover art, release years, and liner metadata.
+Mutinhimira is a desktop music player inspired by Windows Groove Music and the dark Midnight visual aesthetic. A fundamental pillar of any music listening experience is browsing music by albums. Albums represent cohesive artistic works with curated track sequences, cover art, release years, and liner metadata.
 
-In preceding milestones, Mumhanzi established the foundational architecture, coding standards, and delivered clickable screens for Home Discovery, Search Explore, Your Library, Liked Songs, and Playlists. In the Home and Search views, album cards already exist as visual fixtures, but clicking them currently has no dedicated destination.
+In preceding milestones, Mutinhimira established the foundational architecture, coding standards, and delivered clickable screens for Home Discovery, Search Explore, Your Library, Liked Songs, and Playlists. In the Home and Search views, album cards already exist as visual fixtures, but clicking them currently has no dedicated destination.
 
 Feature 9 in the project scope requires building the Albums overview collection and the dedicated Album Detail view following the Facade build approach. The technical challenge is designing an album architecture that supports rich catalog browsing with fast search and multi criteria sorting, multi disc tracklist presentation, seamless cross view navigation from Home and Search, and smooth playback coordination with the player bar, all while keeping state cleanly separated before Phase 2 SQLite integration.
 
@@ -52,6 +52,6 @@ Bypass the in memory Zustand facade and implement native Rust SQLite tables, mig
 
 ## Rationale
 
-Option 2 is chosen because it adheres strictly to Mumhanzi's Facade build methodology, Clean Architecture layers, and established project patterns. Placing album catalog state, active selection, sorting, and album favorites into a dedicated `useAlbumStore` keeps concerns isolated. Audio playback remains cleanly delegated to `usePlayerStore`, while track like statuses synchronize with `useLikedSongsStore`.
+Option 2 is chosen because it adheres strictly to Mutinhimira's Facade build methodology, Clean Architecture layers, and established project patterns. Placing album catalog state, active selection, sorting, and album favorites into a dedicated `useAlbumStore` keeps concerns isolated. Audio playback remains cleanly delegated to `usePlayerStore`, while track like statuses synchronize with `useLikedSongsStore`.
 
 Handling multi disc groupings conditionally ensures classical, deluxe, or double albums display their natural disc divisions, while standard single disc albums retain a clean, uninterrupted tracklist. Procedural vinyl placeholders ensure that albums missing cover art look polished rather than broken. Furthermore, enabling active album selection in the store allows seamless deep navigation from Home and Search screens directly into the Album Detail view.

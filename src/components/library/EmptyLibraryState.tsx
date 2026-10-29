@@ -78,7 +78,7 @@ export function EmptyLibraryState() {
             lineHeight: 1.6,
           }}
         >
-          Add directories containing your favorite MP3, FLAC, WAV, and AAC music files. Mumhanzi
+          Add directories containing your favorite MP3, FLAC, WAV, and AAC music files. Mutinhimira
           indexes album metadata and artwork for seamless local playback.
         </p>
       </div>

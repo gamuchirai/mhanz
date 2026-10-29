@@ -5,7 +5,7 @@
 
 ## Summary
 
-This specification defines the architecture, user interface, and state management for the slide in queue drawer, immersive timestamped lyrics modal, and audio preferences settings dialog in Mumhanzi. It introduces modular feature components under src/components/queue/, src/components/lyrics/, and src/components/settings/, accompanied by reactive stores at src/store/useOverlayStore.ts and src/store/useSettingsStore.ts while extending src/store/usePlayerStore.ts. Following the Facade build approach, this feature delivers a slide in queue drawer with drag reordering and track removal, a glowing synchronised lyrics overlay with click to seek capability, and a settings panel for selecting audio output devices, crossfade duration, and visualizer styles with persistent local storage.
+This specification defines the architecture, user interface, and state management for the slide in queue drawer, immersive timestamped lyrics modal, and audio preferences settings dialog in Mutinhimira. It introduces modular feature components under src/components/queue/, src/components/lyrics/, and src/components/settings/, accompanied by reactive stores at src/store/useOverlayStore.ts and src/store/useSettingsStore.ts while extending src/store/usePlayerStore.ts. Following the Facade build approach, this feature delivers a slide in queue drawer with drag reordering and track removal, a glowing synchronised lyrics overlay with click to seek capability, and a settings panel for selecting audio output devices, crossfade duration, and visualizer styles with persistent local storage.
 
 ## Decision
 
@@ -165,7 +165,7 @@ Lyrics Scroll Tracking:
 **Security model**:
 
 - All overlay operations execute strictly within the local desktop application context with zero external telemetry or network calls.
-- Audio settings and device profiles persist safely in browser local storage under the namespace `mumhanzi:settings:v1`.
+- Audio settings and device profiles persist safely in browser local storage under the namespace `Mutinhimira:settings:v1`.
 - Drag and drop operations rely on local pointer coordinates and internal component state, avoiding unvetted third party script execution.
 
 **Configuration required**:

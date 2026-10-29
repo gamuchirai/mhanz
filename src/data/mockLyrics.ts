@@ -108,7 +108,7 @@ export function getLyricsForTrack(trackId: string, title?: string, artist?: stri
 
   // Procedural fallback lines based on title and artist
   const songTitle = title ?? "Current Track";
-  const songArtist = artist ?? "Mumhanzi Artist";
+  const songArtist = artist ?? "Mutinhimira Artist";
   return {
     trackId,
     isSynced: true,

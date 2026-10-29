@@ -1,6 +1,6 @@
 # Reviews and Audits
 
-This directory contains code reviews, audit records, and process analysis reports for Mumhanzi.
+This directory contains code reviews, audit records, and process analysis reports for Mutinhimira.
 
 ## Open and Actionable Issues
 

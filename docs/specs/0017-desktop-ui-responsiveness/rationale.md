@@ -2,7 +2,7 @@
 
 ## Context
 
-Mumhanzi is designed as a lightweight modern desktop music player built with Tauri v2, React 19, and Tailwind CSS v4. Desktop users expect fluid window management, including full screen playback on 1080p or 4K monitors, half screen snapping via Windows Snap Assist at 960px, and compact floating windows down to 640px.
+Mutinhimira is designed as a lightweight modern desktop music player built with Tauri v2, React 19, and Tailwind CSS v4. Desktop users expect fluid window management, including full screen playback on 1080p or 4K monitors, half screen snapping via Windows Snap Assist at 960px, and compact floating windows down to 640px.
 
 During earlier UI prototyping passes, many pages and components were implemented with hardcoded inline styles. The main layout shell locked the navigation sidebar to 232px, card grids used fixed column counts like `repeat(5, 1fr)`, track tables required seven columns regardless of available width, and the player footer used rigid margins. When users resized or snapped the desktop window, elements clipped, text truncated prematurely, and cards shrank into unreadable slivers.
 

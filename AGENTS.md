@@ -1,4 +1,4 @@
-# Mumhanzi
+# Mutinhimira
 
 ## Stack
 

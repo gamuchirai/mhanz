@@ -2,7 +2,7 @@
 
 ## Context
 
-Mumhanzi is designed as a desktop music player where listeners can immerse themselves in their local music collection. While the compact PlayerFooter bar provides convenient continuous controls during routine navigation across library, search, and playlists, listeners frequently want a lean back immersion mode where album art, synchronized lyrics, and dynamic visual rhythms take center stage across the entire screen.
+Mutinhimira is designed as a desktop music player where listeners can immerse themselves in their local music collection. While the compact PlayerFooter bar provides convenient continuous controls during routine navigation across library, search, and playlists, listeners frequently want a lean back immersion mode where album art, synchronized lyrics, and dynamic visual rhythms take center stage across the entire screen.
 
 Several forces shape this decision:
 
@@ -59,6 +59,6 @@ Mount a fixed top level overlay layer within `App.tsx` governed by `useOverlaySt
 
 Option 3 was chosen because it delivers the optimal combination of visual immersion, desktop responsiveness, and architectural simplicity. 
 
-By implementing the view as an overlay managed through `useOverlayStore`, Mumhanzi avoids the heavy IPC synchronization overhead of multi window architectures (Option 1) while solving the navigation state loss and layout disruption caused by page level swapping (Option 2). The underlying page (whether browsing an artist discography or viewing a filtered library list) remains mounted in place, allowing the listener to enter full screen and return with zero loss of context.
+By implementing the view as an overlay managed through `useOverlayStore`, Mutinhimira avoids the heavy IPC synchronization overhead of multi window architectures (Option 1) while solving the navigation state loss and layout disruption caused by page level swapping (Option 2). The underlying page (whether browsing an artist discography or viewing a filtered library list) remains mounted in place, allowing the listener to enter full screen and return with zero loss of context.
 
 The multi mode center stage addresses diverse listener habits: users who appreciate album cover aesthetics can enjoy an enlarged presentation with ambient glow, lyric enthusiasts can follow glowing synchronized text with instant seek capability, and visualizer fans can watch animated waveform bars. Capping the canvas visualizer buffer at 720p resolves the battery conservation force by ensuring crisp 60fps rendering without taxing laptop GPUs. Finally, auto hiding controls after four seconds of inactivity creates a true ambient display suitable for desk listening and home entertainment setups.
