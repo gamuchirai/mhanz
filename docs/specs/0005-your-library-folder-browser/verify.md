@@ -1,10 +1,13 @@
-# Verify: your library & folder browser · spec 0005 · updated 2026-10-23
+# Verify: your library & folder browser · spec 0005 · updated 2026-10-29
 _Steps derived from spec 0005 acceptance criteria. `/check verify` runs these; `/test` locks the durable ones._
 
 ## UI / manual
 - [ ] Select Your Library in the sidebar → Library screen renders with summary header (9 tracks, 32 mins, 2 folders), action buttons, and songs table → AC-1
 - [ ] Click Manage Folders in header → Collapsible folder management panel smoothly reveals cards for Afrobeats Grooves and Midnight Chill → AC-2
-- [ ] Click Add Folder in panel → Folder selection modal appears with preset collections and custom path form → AC-3
+- [ ] Click Add Folder in panel → Folder selection modal appears with preset collections, custom path form, and native system directory picker → AC-3, Finding F-1
+- [ ] Click Browse Folder on This PC → Native desktop file explorer dialog opens to select an audio directory from disk → Finding F-1
+- [ ] Select a music directory from native picker → Modal dismisses, folder registers with SQLite, and background scanner imports tracks → Finding F-1
+- [ ] Click Browse next to custom path input → Native directory picker opens and populates custom path input and display name → Finding F-1
 - [ ] Select Rock Classics preset → New folder card appears, and 3 rock tracks are indexed into the songs table (total 12 tracks) → AC-3
 - [ ] Click Rescan on Afrobeats Grooves card → Spinning loader appears on card for 1 second and last scanned timestamp updates to Just now → AC-4
 - [ ] Click Remove on Afrobeats Grooves card → Removal dialog opens with purge checkbox checked → AC-5
@@ -18,9 +21,11 @@ _Steps derived from spec 0005 acceptance criteria. `/check verify` runs these; `
 - [ ] Remove all folders → Empty library welcoming state card appears with Add Music Folder button → AC-11
 
 ## Commands
-- [ ] `npm test` → Vitest unit and component tests pass (27 passing tests) → AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11
+- [ ] `npm test src/test/library.test.tsx` → Vitest unit and component tests pass (12 passing tests) → AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11
+- [ ] `npm test src/test/libraryFolderPicker.test.tsx` → Vitest native picker integration tests pass (4 passing tests) → Finding F-1
 - [ ] `npx tsc --noEmit` → TypeScript strict compilation passes with zero diagnostics
 - [ ] `npx eslint .` → Code style and lint checks pass cleanly
+- [ ] `cargo check --manifest-path src-tauri/Cargo.toml` → Rust crate compilation with tauri-plugin-dialog passes cleanly
 - [ ] `npm run build` → Vite production client bundle builds successfully
 
 ## Acceptance-criteria coverage
@@ -35,3 +40,4 @@ _Steps derived from spec 0005 acceptance criteria. `/check verify` runs these; `
 - AC-9: Covered by Play All and Shuffle actions connecting to usePlayerStore
 - AC-10: Covered by row play button and double click row playback
 - AC-11: Covered by empty library state card with welcoming instructions
+- Finding F-1: Covered by native desktop folder picker button, path browse action, plugin registration, and test suite

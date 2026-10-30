@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { isTauri } from "@tauri-apps/api/core";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import type {
   LibrarySortColumn,
   LibrarySortState,
@@ -89,6 +90,7 @@ export interface LibraryState {
   openAddFolderModal: () => void;
   closeAddFolderModal: () => void;
   addFolder: (folderPath: string, displayName: string, mockTracks: LibraryTrack[]) => Promise<void>;
+  pickAndAddFolder: () => Promise<string | null>;
   openRemoveFolderDialog: (folder: MusicFolder) => void;
   closeRemoveFolderDialog: () => void;
   confirmRemoveFolder: (purgeTracks: boolean) => Promise<void>;
@@ -202,6 +204,28 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
       tracks: [...tracks, ...assignedTracks],
       isAddFolderModalOpen: false,
     });
+  },
+
+  pickAndAddFolder: async (): Promise<string | null> => {
+    if (!isTauri()) {
+      return null;
+    }
+    try {
+      const selected = await openDialog({
+        directory: true,
+        multiple: false,
+        title: "Select Music Folder",
+      });
+      if (typeof selected === "string" && selected.trim()) {
+        const chosen = selected.trim();
+        const folderName = chosen.split(/[/\\]/).filter(Boolean).pop() || "Music Folder";
+        await get().addFolder(chosen, folderName, []);
+        return chosen;
+      }
+    } catch (err) {
+      console.error("Failed to pick folder with native dialog:", err);
+    }
+    return null;
   },
 
   openRemoveFolderDialog: (folder: MusicFolder) => {
@@ -376,3 +400,4 @@ export const useLibrarySortState = () => useLibraryStore((state) => state.sortSt
 export const useIsAddFolderModalOpen = () => useLibraryStore((state) => state.isAddFolderModalOpen);
 export const useFolderPendingRemoval = () => useLibraryStore((state) => state.folderPendingRemoval);
 export const useScanProgress = () => useLibraryStore((state) => state.scanProgress);
+export const usePickAndAddFolder = () => useLibraryStore((state) => state.pickAndAddFolder);

@@ -13,12 +13,13 @@ pub mod scanner;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             let app_data_dir = app
                 .path()
                 .app_local_data_dir()
                 .expect("Failed to resolve local app data directory");
-            let db_path = app_data_dir.join("Mutinhimira.db");
+            let db_path = app_data_dir.join("mutinhimira.db");
 
             let db_manager = db::DatabaseManager::new_at_path(&db_path)
                 .expect("Failed to initialize SQLite database and migrations");

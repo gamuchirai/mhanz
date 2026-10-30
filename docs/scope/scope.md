@@ -30,6 +30,9 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 17  | Fast local library search indexing | Phase 2    | in-progress |
 | 18  | Desktop UI responsiveness          | Foundation | in-progress |
 | 19  | App branding & logo integration    | Foundation | in-progress |
+| 20  | Albums and album detail persistence | Phase 2    | planned     |
+| 21  | Artists and artist profile persistence | Phase 2    | planned     |
+| 22  | Local file lyrics parser and metadata extraction | Phase 2    | planned     |
 
 ## Foundations
 
@@ -139,7 +142,8 @@ spec [0005](../specs/0005-your-library-folder-browser/index.md)
   - [x] Modular components LibraryHeader, FolderManagerPanel, FolderSelectionModal, FolderRemovalDialog, SongTable, and EmptyLibraryState (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-10, AC-11)
   - [x] Library page assembly and App navigation shell wiring (AC-1, AC-9)
   - [x] Unit and component test suite (AC-1, AC-2, AC-4, AC-5, AC-7, AC-8, AC-10)
-        code in `src/pages/Library.tsx`, `src/components/library/`, `src/store/useLibraryStore.ts`
+  - [x] Native system folder picker dialog integration and review finding F-1 resolution (Finding F-1)
+        code in `src/pages/Library.tsx`, `src/components/library/`, `src/store/useLibraryStore.ts`, `src-tauri/Cargo.toml`, `src/test/libraryFolderPicker.test.tsx`
 - [ ] Verify it: `/check verify your library & folder browser`
 
 ### 7. Liked songs screen · in-progress
@@ -321,6 +325,27 @@ spec [0014](../specs/0014-fast-local-library-search-indexing/index.md)
   - [x] Zustand search store wiring with debounced IPC queries, monotonic request tokens, and badge count preservation (AC-12, AC-13, AC-14, AC-16)
   - [x] Search UI playlist filter pill and playlist card grid integration with queue playback (AC-14, AC-15)
 - [x] Verify it: `/check verify fast local library search indexing`
+
+### 20. Albums and album detail persistence · needs a decision
+
+Hydrate albums catalog and album detail views from SQLite, persist favorite album toggles across restarts, and synchronize with local library scanner updates.
+**Done when:** navigating to Albums loads scanned music albums from the database, opening an album shows its real tracklist and metadata from SQLite, and favorite states persist across restarts.
+
+- [ ] Design it (spec): `/architect albums and album detail persistence`
+
+### 21. Artists and artist profile persistence · needs a decision
+
+Hydrate artists catalog and artist profile views from SQLite, persist followed artist states across restarts, and coordinate discography releases with scanned library albums.
+**Done when:** navigating to Artists loads scanned musical artists from SQLite, opening an artist profile displays real popular tracks and discography releases from the database, and following or unfollowing artists persists across restarts.
+
+- [ ] Design it (spec): `/architect artists and artist profile persistence`
+
+### 22. Local file lyrics parser and metadata extraction · needs a decision
+
+Parse embedded lyrics tags and local companion lrc sidecar files from scanned music tracks, save or cache synchronized lines in SQLite, and deliver real lyrics to the player overlays via Tauri IPC.
+**Done when:** playing a local audio track with embedded tags or an adjacent lrc file displays synchronized or plain text lyrics in the lyrics modal and fullscreen view without mock data fallbacks.
+
+- [ ] Design it (spec): `/architect local file lyrics parser and metadata extraction`
 
 ## Deferred
 
