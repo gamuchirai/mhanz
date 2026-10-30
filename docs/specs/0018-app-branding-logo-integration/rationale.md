@@ -10,7 +10,7 @@ Integrating these assets across the desktop application shell gives Mutinhimira 
 
 During cross check review, several critical details were identified and incorporated:
 1. Icon generator input source: `app icon dark.png` is an ultra low resolution thumbnail of only 3.5 KB. Upscaling this file to 1024x1024 for macOS `.icns` or 310x310 for Windows AppX assets would cause severe pixelation or CLI failures. Because Tauri v2 natively accepts SVG inputs, passing `standalone-dark.svg` (which has a 2481x2481 square viewBox) generates crisp vector rasterizations at all OS resolutions.
-2. Label in Name accessibility: The vector lockup explicitly spells "Mutinhimira", the Shona word for rhythm and sound, as the title theme of the Mutinhimira player. Assigning `alt="Mutinhimira by Mutinhimira"` preserves the visible wordmark for screen readers while attributing it to the application.
+2. Label in Name accessibility: The vector lockup explicitly spells "Mutinhimira", the Shona word for rhythm and sound, as the title theme of the Mutinhimira player. Assigning `alt="Mutinhimira"` preserves the visible wordmark for screen readers while attributing it to the application.
 3. Test suite preservation: Existing responsive tests in `src/test/responsive.test.tsx` explicitly look for the string MIDNIGHT with class `max-lg:hidden`. Updating this assertion to use `data-testid` queries prevents automated test suite failures upon asset replacement.
 
 ## Options considered

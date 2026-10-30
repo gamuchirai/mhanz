@@ -38,7 +38,7 @@ describe("Database Service (src/services/db.ts)", () => {
     const mockStatus = {
       is_ready: true,
       schema_version: 1,
-      database_path: "C:/Users/AppData/Mutinhimira.db",
+      database_path: "C:/Users/AppData/mutinhimira.db",
       track_count: 1420,
       album_count: 85,
       artist_count: 32,

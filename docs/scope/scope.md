@@ -144,7 +144,7 @@ spec [0005](../specs/0005-your-library-folder-browser/index.md)
   - [x] Unit and component test suite (AC-1, AC-2, AC-4, AC-5, AC-7, AC-8, AC-10)
   - [x] Native system folder picker dialog integration and review finding F-1 resolution (Finding F-1)
         code in `src/pages/Library.tsx`, `src/components/library/`, `src/store/useLibraryStore.ts`, `src-tauri/Cargo.toml`, `src/test/libraryFolderPicker.test.tsx`
-- [ ] Verify it: `/check verify your library & folder browser`
+- [x] Verify it: `/check verify your library & folder browser`
 
 ### 7. Liked songs screen · in-progress
 

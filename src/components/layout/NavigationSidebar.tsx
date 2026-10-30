@@ -43,7 +43,7 @@ export function NavigationSidebar({
         {/* Expanded Lockup: Full wordmark SVG visible on wide viewports (>=1024px) */}
         <img
           src="/logos/primary-dark.svg"
-          alt="Mutinhimira by Mutinhimira"
+          alt="Mutinhimira"
           data-testid="brand-logo-expanded"
           className="h-8 w-auto aspect-[2206/499] max-lg:hidden object-contain select-none"
           draggable={false}

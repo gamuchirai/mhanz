@@ -108,7 +108,7 @@ impl DatabaseManager {
                         db_path
                             .file_name()
                             .and_then(|f| f.to_str())
-                            .unwrap_or("Mutinhimira.db"),
+                            .unwrap_or("mutinhimira.db"),
                         timestamp
                     );
                     let backup_path = db_path.with_file_name(backup_filename);

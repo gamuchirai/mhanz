@@ -2,7 +2,7 @@
 
 ## UI and manual checks
 
-- [x] Expanded sidebar brand display: at viewport width greater than or equal to 1024px, the sidebar renders primary-dark.svg brand lockup with alt "Mutinhimira by Mutinhimira" and data-testid "brand-logo-expanded" (AC-2)
+- [x] Expanded sidebar brand display: at viewport width greater than or equal to 1024px, the sidebar renders primary-dark.svg brand lockup with alt "Mutinhimira" and data-testid "brand-logo-expanded" (AC-2)
 - [x] Collapsed sidebar rail brand display: at viewport width below 1024px, the sidebar collapses to a 68px rail and renders standalone-dark.svg symbol with alt "Mutinhimira symbol" and data-testid "brand-logo-collapsed" at 28px width and height without overflow (AC-3)
 - [x] Document favicon: index.html links /logos/standalone-dark.svg with type image/svg+xml replacing the placeholder vite favicon (AC-4)
 - [x] Native desktop application icons: generated icons present in src-tauri/icons/ including icon.ico, icon.icns, 32x32.png, 128x128.png, 128x128@2x.png, and Windows Store square logos (AC-5)

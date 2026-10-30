@@ -20,7 +20,7 @@ This specification defines the integration of official Mutinhimira brand assets 
 **Acceptance criteria**:
 
 - **AC-1**: Standardized asset files with normalized kebab case naming (`primary-dark.svg`, `standalone-dark.svg`, `primary-light.svg`, `standalone-light.svg`) are placed in `public/logos/`.
-- **AC-2**: Navigation sidebar header in expanded state (width 232px) displays the official `primary-dark.svg` brand lockup with `alt="Mutinhimira by Mutinhimira"` and `data-testid="brand-logo-expanded"`, replacing the placeholder `#star` SVG and `MIDNIGHT` text.
+- **AC-2**: Navigation sidebar header in expanded state (width 232px) displays the official `primary-dark.svg` brand lockup with `alt="Mutinhimira"` and `data-testid="brand-logo-expanded"`, replacing the placeholder `#star` SVG and `MIDNIGHT` text.
 - **AC-3**: Navigation sidebar header in collapsed state (width 68px below 1024px) displays the `standalone-dark.svg` symbol with `alt="Mutinhimira symbol"` and `data-testid="brand-logo-collapsed"` centered at 28px width and height without text labels or overflow.
 - **AC-4**: Document head in `index.html` links `/logos/standalone-dark.svg` as the application favicon with `type="image/svg+xml"`, replacing `/vite.svg`.
 - **AC-5**: Tauri native desktop icons in `src-tauri/icons/` (`icon.ico`, `icon.icns`, `32x32.png`, `128x128.png`, `128x128@2x.png`, and Windows Store square logo assets) are generated directly from the 2481x2481 vector master `public/logos/standalone-dark.svg` via `tauri icon` CLI, replacing default Tauri scaffold icons with crisp vector rasterizations.
@@ -60,7 +60,7 @@ The brand header block at the top of the sidebar replaces the existing SVG star 
   {/* Expanded Lockup: Full wordmark SVG visible on wide viewports (>=1024px) */}
   <img
     src="/logos/primary-dark.svg"
-    alt="Mutinhimira by Mutinhimira"
+    alt="Mutinhimira"
     data-testid="brand-logo-expanded"
     className="h-8 w-auto aspect-[2206/499] max-lg:hidden object-contain select-none"
     draggable={false}
