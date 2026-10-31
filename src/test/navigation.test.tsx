@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { App } from "../App";
 import { AppShell } from "../components/layout/AppShell";
-import { TopNavBar, getNavTitle } from "../components/layout/TopNavBar";
+import { TopNavBar } from "../components/layout/TopNavBar";
 import {
   Button,
   IconButton,
@@ -11,6 +11,7 @@ import {
   TextInput,
 } from "../components/ui";
 import {
+  getNavTitle,
   sanitizeNavView,
   useNavigationStore,
 } from "../store/useNavigationStore";
@@ -523,4 +524,3 @@ describe("Design System and Navigation Shell", () => {
     });
   });
 });
-

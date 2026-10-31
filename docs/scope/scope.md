@@ -68,7 +68,7 @@ spec [0019](../specs/0019-design-system-navigation-shell/index.md) · code in sr
   - [x] Implement useNavigationStore with back/forward history and typed route params (AC-1, AC-2)
   - [x] Create TopNavBar with navigation buttons, breadcrumb, and desktop shortcut listeners (AC-3, AC-4, AC-5)
   - [x] Assemble modular AppShell and integrate App with clean scroll containment (AC-8)
-- [ ] Verify it: `/check verify design system & navigation shell`
+- [x] Verify it: `/check verify design system & navigation shell`
 - [ ] Test it: `/test design system & navigation shell`
 
 ### 18. Desktop UI responsiveness · done
