@@ -1,7 +1,7 @@
 # 0017. Desktop UI Responsiveness
 
 **Date**: 2026-10-25
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

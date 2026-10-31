@@ -1,7 +1,7 @@
 # 0013. Core audio playback engine
 
 **Date**: 2026-10-24
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

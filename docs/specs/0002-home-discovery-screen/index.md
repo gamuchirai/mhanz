@@ -1,7 +1,7 @@
 # 0002. Home and discovery screen
 
 **Date**: 2026-10-22
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

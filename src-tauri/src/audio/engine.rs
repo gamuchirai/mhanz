@@ -42,7 +42,7 @@ pub struct AudioEngine {
 fn spawn_audio_stream() -> Option<OutputStreamHandle> {
     let (tx, rx) = std::sync::mpsc::channel();
     let spawn_result = thread::Builder::new()
-        .name("Mutinhimira-audio-output".to_string())
+        .name("mutinhimira-audio-output".to_string())
         .spawn(move || match OutputStream::try_default() {
             Ok((_stream, handle)) => {
                 let _ = tx.send(Some(handle));
