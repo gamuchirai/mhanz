@@ -2,10 +2,11 @@
 
 @theme {
   --color-midnight-bg: #0b0706;
+  --color-midnight-surface: #110c0a;
   --color-midnight-panel: #18110f;
   --color-midnight-text: #f4ebe4;
   --color-midnight-muted: #a89b91;
-  --color-midnight-border: rgba(255, 255, 255, 0.09);
+  --color-midnight-border: rgba(255, 255, 255, 0.08);
   --color-midnight-accent: #f0a982;
   --font-sans: "Outfit", system-ui, sans-serif;
   --font-serif: "Cormorant Garamond", Georgia, serif;
@@ -15,8 +16,9 @@
 :root {
   --t: #f4ebe4;
   --m: #a89b91;
-  --l: rgba(255, 255, 255, 0.09);
+  --l: rgba(255, 255, 255, 0.08);
   --p: #18110f;
+  --surface: #110c0a;
   --accent: #f0a982;
 }
 

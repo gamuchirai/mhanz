@@ -13,7 +13,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | --- | ---------------------------------- | ---------- | ----------- |
 | 1   | Stack & architecture               | Foundation | done        |
 | 2   | Coding standards & tooling         | Foundation | done        |
-| 3   | Design system & navigation shell   | Foundation | planned     |
+| 3   | Design system & navigation shell   | Foundation | in-progress |
 | 4   | Home & discovery screen            | Phase 1    | done        |
 | 5   | Search & explore screen            | Phase 1    | in-progress |
 | 6   | Your library & folder browser      | Phase 1    | in-progress |
@@ -55,12 +55,21 @@ spec [0003](../specs/0003-coding-standards-tooling/verify.md)
 - [x] Capture conventions and tooling choices: `/audit`
 - [x] Verify it: `/check verify coding standards & tooling`
 
-### 3. Design system & navigation shell · needs a decision
+### 3. Design system & navigation shell · in-progress
 
 Extract the Midnight styling tokens and build the application shell with sidebar navigation, view switching state, and player footer container.
 **Done when:** the sidebar items switch the active view container, navigation buttons update, and the dark Midnight theme variables render consistently across all views.
 
-- [ ] Design it (spec): `/architect design system & navigation shell`
+spec [0019](../specs/0019-design-system-navigation-shell/index.md) · code in src/components/layout/, src/components/ui/, src/store/useNavigationStore.ts, src/App.tsx
+
+- [x] Design it (spec): `/architect design system & navigation shell`
+- [x] Build it: `/develop design system & navigation shell`
+  - [x] Formalize Tailwind CSS v4 Midnight tokens and reusable UI primitives (AC-6, AC-7)
+  - [x] Implement useNavigationStore with back/forward history and typed route params (AC-1, AC-2)
+  - [x] Create TopNavBar with navigation buttons, breadcrumb, and desktop shortcut listeners (AC-3, AC-4, AC-5)
+  - [x] Assemble modular AppShell and integrate App with clean scroll containment (AC-8)
+- [ ] Verify it: `/check verify design system & navigation shell`
+- [ ] Test it: `/test design system & navigation shell`
 
 ### 18. Desktop UI responsiveness · done
 
