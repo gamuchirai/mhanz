@@ -12,24 +12,24 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | #   | Feature                            | Phase      | Status      |
 | --- | ---------------------------------- | ---------- | ----------- |
 | 1   | Stack & architecture               | Foundation | done        |
-| 2   | Coding standards & tooling         | Foundation | in-progress |
+| 2   | Coding standards & tooling         | Foundation | done        |
 | 3   | Design system & navigation shell   | Foundation | planned     |
-| 4   | Home & discovery screen            | Phase 1    | in-progress |
+| 4   | Home & discovery screen            | Phase 1    | done        |
 | 5   | Search & explore screen            | Phase 1    | in-progress |
 | 6   | Your library & folder browser      | Phase 1    | in-progress |
 | 7   | Liked songs screen                 | Phase 1    | in-progress |
 | 8   | Playlists & playlist detail        | Phase 1    | in-progress |
 | 9   | Albums & album detail              | Phase 1    | in-progress |
-| 10  | Artists & artist profile           | Phase 1    | in-progress |
+| 10  | Artists & artist profile           | Phase 1    | done        |
 | 11  | Queue, lyrics & settings overlays  | Phase 1    | in-progress |
 | 12  | Now playing fullscreen view        | Phase 1    | in-progress |
 | 13  | Data model & SQLite storage        | Phase 2    | in-progress |
-| 14  | Core audio playback engine         | Phase 2    | in-progress |
+| 14  | Core audio playback engine         | Phase 2    | done        |
 | 15  | Local library scanner & metadata   | Phase 2    | done        |
 | 16  | Playlists & favorites persistence  | Phase 2    | done        |
-| 17  | Fast local library search indexing | Phase 2    | in-progress |
-| 18  | Desktop UI responsiveness          | Foundation | in-progress |
-| 19  | App branding & logo integration    | Foundation | in-progress |
+| 17  | Fast local library search indexing | Phase 2    | done        |
+| 18  | Desktop UI responsiveness          | Foundation | done        |
+| 19  | App branding & logo integration    | Foundation | done        |
 | 20  | Albums and album detail persistence | Phase 2    | planned     |
 | 21  | Artists and artist profile persistence | Phase 2    | planned     |
 | 22  | Local file lyrics parser and metadata extraction | Phase 2    | planned     |
@@ -46,7 +46,7 @@ spec [0001](../specs/0001-stack-architecture/index.md) · code in src/ and src-t
 - [x] Scaffold from the decision: `/develop stack & architecture`
 - [x] Verify it: `/check verify stack & architecture`
 
-### 2. Coding standards & tooling · in-progress
+### 2. Coding standards & tooling · done
 
 Capture conventions, then configure TypeScript checks, Rust clippy, formatting, and test commands from the scaffold.
 **Done when:** root `AGENTS.md` reflects the project stack, and typecheck, lint, and formatting run clean.
@@ -62,7 +62,7 @@ Extract the Midnight styling tokens and build the application shell with sidebar
 
 - [ ] Design it (spec): `/architect design system & navigation shell`
 
-### 18. Desktop UI responsiveness · in-progress
+### 18. Desktop UI responsiveness · done
 
 Standardize desktop window responsiveness and interaction performance across all pages and components with Tailwind CSS v4, collapsible navigation, virtualized tables, and isolated playback timer state.
 **Done when:** the desktop window resizes fluidly down to 640px by 480px without layout breakage, sidebar collapses to a 68px icon rail under 1024px, player footer adapts below 900px, track tables virtualize smoothly at 60 FPS via @tanstack/react-virtual, and audio timer ticks do not trigger whole page re renders.
@@ -78,7 +78,7 @@ spec [0017](../specs/0017-desktop-ui-responsiveness/index.md)
 - [x] Verify it: `/check verify desktop UI responsiveness`
 - [x] Review it: `/check review desktop UI responsiveness` · findings in `docs/reviews/2026-10-26-feat-desktop-ui-responsiveness.md` · verdict: Approve with nits
 
-### 19. App branding & logo integration · in-progress
+### 19. App branding & logo integration · done
 
 Incorporate official Mutinhimira logos across the sidebar navigation header, browser document favicon, and native desktop bundle icons.
 **Done when:** the sidebar renders the Mutinhimira logo lockup in expanded mode and standalone symbol in collapsed mode, index.html links the new favicon, and Tauri bundle configuration includes generated platform icons.
@@ -93,11 +93,11 @@ spec [0018](../specs/0018-app-branding-logo-integration/index.md)
   - [x] Responsive test suite update and brand verification (AC-7)
         code in `public/logos/`, `src/components/layout/NavigationSidebar.tsx`, `index.html`, `src-tauri/icons/`, `src/test/responsive.test.tsx`
 - [x] Verify it: `/check verify app branding & logo integration`
-- [ ] Test it: `/test app branding & logo integration`
+- [x] Test it: `/test app branding & logo integration`
 
 ## Phase 1: Clickable UI prototype
 
-### 4. Home & discovery screen · in-progress
+### 4. Home & discovery screen · done
 
 Build the home discovery view with hero showcase banner, playlist recommendation cards, recently played carousel, and popular tracks table.
 **Done when:** clicking Home displays the hero card, curated playlist cards, recently played items, and popular track list with mock data and play button triggers.
@@ -145,6 +145,7 @@ spec [0005](../specs/0005-your-library-folder-browser/index.md)
   - [x] Native system folder picker dialog integration and review finding F-1 resolution (Finding F-1)
         code in `src/pages/Library.tsx`, `src/components/library/`, `src/store/useLibraryStore.ts`, `src-tauri/Cargo.toml`, `src/test/libraryFolderPicker.test.tsx`
 - [x] Verify it: `/check verify your library & folder browser`
+- [x] Review it: `/check review your library & folder browser`, findings in `docs/reviews/2026-10-30-feat-your-library-folder-browser.md`, verdict: Changes requested
 
 ### 7. Liked songs screen · in-progress
 
@@ -194,7 +195,7 @@ spec [0008](../specs/0008-albums-album-detail/index.md)
         code in `src/pages/Albums.tsx`, `src/components/albums/`, `src/store/useAlbumStore.ts`
 - [ ] Verify it: `/check verify albums & album detail`
 
-### 10. Artists & artist profile · in-progress
+### 10. Artists & artist profile · done
 
 Present artists in a circular portrait grid with follower counts, along with an artist profile page showing hero banner, top tracks table, and album discography.
 **Done when:** selecting Artists shows artist cards, clicking an artist opens their profile with popular tracks, discography releases, and about blurb.
@@ -262,7 +263,7 @@ spec [0012](../specs/0012-data-model-sqlite-storage/index.md)
         code in `src-tauri/src/db/`, `src-tauri/src/commands/db.rs`, `src/services/db.ts`, `src/types/database.ts`
 - [ ] Verify it: `/check verify data model & SQLite storage`
 
-### 14. Core audio playback engine · in-progress
+### 14. Core audio playback engine · done
 
 Connect the player bar through Tauri IPC to the Rodio audio engine on a dedicated audio thread.
 **Done when:** clicking play loads local audio, sound plays through the output device, playback progress updates the UI bar in real time, and pause, resume, seek, and volume controls work.
@@ -311,7 +312,7 @@ spec [0015](../specs/0015-playlists-favorites-persistence/index.md)
 - [x] Verify it: `/check verify playlists & favorites persistence`
 - [x] Review it: `/check review playlists & favorites persistence` · findings in `docs/reviews/2026-10-27-feat-playlists-favorites-persistence.md` · verdict: Approve with nits
 
-### 17. Fast local library search indexing · in-progress
+### 17. Fast local library search indexing · done
 
 Filter the music collection by title, artist, or album using indexed SQLite queries with debounced UI input.
 **Done when:** typing in the search box queries SQLite and updates visible tracks and albums with matching results in under fifty milliseconds.

@@ -6,6 +6,8 @@ This directory contains code reviews, audit records, and process analysis report
 
 | ID | Title | Severity | Status | Quick Action | Source Report |
 |---|---|---|---|---|---|
+| REV-1 | [Manifest removal breaks native test runner on Windows](2026-10-30-feat-your-library-folder-browser.md#manifest-removal-breaks-native-test-runner-on-windows-src-tauribuildrs1) | major | action-required | `/debug manifest removal breaks native test runner on Windows` | [2026-10-30-feat-your-library-folder-browser.md](2026-10-30-feat-your-library-folder-browser.md) |
+| REV-2 | [Desktop database error falls through to browser mock fallback](2026-10-30-feat-your-library-folder-browser.md#desktop-database-error-falls-through-to-browser-mock-fallback-srcstoreuselibrarystorets178) | major | action-required | `/debug desktop database error falls through to browser mock fallback` | [2026-10-30-feat-your-library-folder-browser.md](2026-10-30-feat-your-library-folder-browser.md) |
 | F-7 | [Settings bypass SQLite persistence and audio device controls are simulated](process-0001-unlinked-ui-backend-flows.md#finding-f-7-settings-bypass-sqlite-persistence-and-audio-device-controls-are-simulated--major--bug) | major | action-required | `/develop queue, lyrics & settings overlays` | [process-0001-unlinked-ui-backend-flows.md](process-0001-unlinked-ui-backend-flows.md) |
 | F-5 | [Home header action buttons are dead clicks](process-0001-unlinked-ui-backend-flows.md#finding-f-5-home-header-action-buttons-are-dead-clicks--minor--ux) | minor | action-required | `/develop home & discovery screen` | [process-0001-unlinked-ui-backend-flows.md](process-0001-unlinked-ui-backend-flows.md) |
 | F-6 | [Home recent plays and popular songs ignore database play stats](process-0001-unlinked-ui-backend-flows.md#finding-f-6-home-recent-plays-and-popular-songs-ignore-database-play-stats--minor--scope) | minor | action-required | `/architect home & discovery screen: wire listening history and popular tracks to SQLite` | [process-0001-unlinked-ui-backend-flows.md](process-0001-unlinked-ui-backend-flows.md) |
@@ -23,6 +25,7 @@ This directory contains code reviews, audit records, and process analysis report
 
 ## Review and Audit Documents Index
 
+- [Review: Your Library and Folder Browser](2026-10-30-feat-your-library-folder-browser.md) (2026-10-30)
 - [Process 0001: Unlinked UI and Backend Flows](process-0001-unlinked-ui-backend-flows.md) (2026-10-27)
 - [Review: Playlists and Favorites Persistence](2026-10-27-feat-playlists-favorites-persistence.md) (2026-10-27)
 - [Review: Local Library Scanner and Metadata](2026-10-26-feat-local-library-scanner-metadata.md) (2026-10-26)
