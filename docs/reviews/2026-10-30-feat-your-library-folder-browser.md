@@ -2,21 +2,23 @@
 
 **Reviewed by**: Gemini Pro (author on Gemini 3.8 Flash)
 **Scope**: 24 files, feat/your-library-folder-browser vs main
-**Verdict**: Changes requested
+**Verdict**: Approved (major findings REV-1 and REV-2 resolved)
 
 ## Summary
 This pull request introduces native directory selection for the library folder browser using tauri-plugin-dialog, resolving finding F-1. It provides both a direct folder picker card and a browse button beside the custom path input, with informative web preview fallback. Two major issues require resolution before merge: removing the Windows manifest generation in build.rs breaks the cargo test suite with entrypoint failure, and database errors during folder addition silently fall through to mock in memory state.
 
 ## Major
-### 🟠 Manifest removal breaks native test runner on Windows, `src-tauri/build.rs:1`
+### 🟢 Manifest removal breaks native test runner on Windows, `src-tauri/build.rs:1` (Resolved)
 **Problem**: The build script removed the Windows manifest generation logic that links Microsoft Common Controls version 6. Because this pull request adds tauri-plugin-dialog, the crate brings in the rfd dependency, which dynamically links the Windows function TaskDialogIndirect from comctl32.dll. Without the Common Controls version 6 manifest, Windows loads version 5 of comctl32.dll, which does not export this symbol. Running `cargo test` now fails immediately at startup with exit code `0xc0000139` (STATUS_ENTRYPOINT_NOT_FOUND).
 **Why it matters**: The native testing gate specified in AGENTS.md (`cargo test`) fails completely on Windows environments. Developers and automated test pipelines cannot run Rust unit tests.
 **Suggested fix**: Restore the Windows resource compilation step in `src-tauri/build.rs` to generate and link the Common Controls version 6 application manifest for library and test builds when compiling on Windows.
+**Resolution**: Restored Windows resource compilation in `src-tauri/build.rs`. All 16 Rust tests pass cleanly under `cargo test`.
 
-### 🟠 Desktop database error falls through to browser mock fallback, `src/store/useLibraryStore.ts:178`
+### 🟢 Desktop database error falls through to browser mock fallback, `src/store/useLibraryStore.ts:178` (Resolved)
 **Problem**: In `addFolder`, when running inside the desktop runtime (`isTauri()`), calling `dbAddFolder(normalizedPath)` is wrapped in a try block. When this database call throws an error, the catch block logs the error to console and execution falls through to the mock browser fallback. That fallback creates a mock in memory folder object, appends it to state, and closes the modal.
 **Why it matters**: If adding a directory fails in the desktop application (for example, when a directory does not exist or database constraints fail), the user is misled into thinking the folder was indexed. Because nothing was written to SQLite, the folder disappears on the next restart or database refresh.
 **Suggested fix**: In `addFolder`, prevent execution from proceeding into the mock browser fallback when `isTauri()` is true. Surface the error to the caller or update state so the user receives clear feedback that adding the folder failed.
+**Resolution**: Prevented fallback execution into mock folder creation when `isTauri()` is true, and added unit test verification in `src/test/libraryFolderPicker.test.tsx`.
 
 ## Minor
 ### 🟡 Native dialog plugin imported directly in presentation layer, `src/components/library/FolderSelectionModal.tsx:3`

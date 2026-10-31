@@ -169,4 +169,34 @@ describe("Library Native Folder Picker Integration (Finding F-1)", () => {
       screen.getByText(/native desktop folder picker runs inside the desktop application/i)
     ).toBeInTheDocument();
   });
+
+  it("does not fall through to mock in-memory folder creation when desktop database insertion fails", async () => {
+    vi.mocked(tauriCore.isTauri).mockReturnValue(true);
+    vi.mocked(dialogPlugin.open).mockResolvedValue("D:/Music/HiFi Vault");
+    vi.mocked(tauriCore.invoke).mockImplementation(async (cmd: string) => {
+      if (cmd === "db_add_folder") {
+        throw new Error("Disk full or database constraint violation");
+      }
+      return null;
+    });
+
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    render(<Library />);
+
+    const addFolderButton = screen.getByRole("button", { name: /add music folder/i });
+    fireEvent.click(addFolderButton);
+
+    const nativePickerButton = screen.getByTestId("native-folder-picker-button");
+    await act(async () => {
+      fireEvent.click(nativePickerButton);
+    });
+
+    // Ensure mock in-memory folder was NOT created
+    const storeState = useLibraryStore.getState();
+    expect(storeState.folders.some((f) => f.folderPath === "D:/Music/HiFi Vault")).toBe(false);
+    expect(consoleSpy).toHaveBeenCalledWith("Failed to add folder to database:", expect.any(Error));
+
+    consoleSpy.mockRestore();
+  });
 });

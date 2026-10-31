@@ -89,7 +89,7 @@ export interface LibraryState {
   setSortColumn: (column: LibrarySortColumn) => void;
   openAddFolderModal: () => void;
   closeAddFolderModal: () => void;
-  addFolder: (folderPath: string, displayName: string, mockTracks: LibraryTrack[]) => Promise<void>;
+  addFolder: (folderPath: string, displayName: string, mockTracks: LibraryTrack[]) => Promise<boolean>;
   pickAndAddFolder: () => Promise<string | null>;
   openRemoveFolderDialog: (folder: MusicFolder) => void;
   closeRemoveFolderDialog: () => void;
@@ -157,12 +157,12 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
     set({ isAddFolderModalOpen: false });
   },
 
-  addFolder: async (folderPath: string, displayName: string, mockTracks: LibraryTrack[]) => {
+  addFolder: async (folderPath: string, displayName: string, mockTracks: LibraryTrack[]): Promise<boolean> => {
     const { folders, tracks } = get();
     const normalizedPath = folderPath.trim();
     if (folders.some((f) => f.folderPath.toLowerCase() === normalizedPath.toLowerCase())) {
       set({ isAddFolderModalOpen: false });
-      return;
+      return true;
     }
 
     if (isTauri()) {
@@ -172,9 +172,10 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
         set({ isAddFolderModalOpen: false });
         // Automatically kick off initial scan
         await get().rescanFolder(createdFolder.id);
-        return;
+        return true;
       } catch (err) {
         console.error("Failed to add folder to database:", err);
+        return false;
       }
     }
 
@@ -204,6 +205,7 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
       tracks: [...tracks, ...assignedTracks],
       isAddFolderModalOpen: false,
     });
+    return true;
   },
 
   pickAndAddFolder: async (): Promise<string | null> => {
@@ -219,8 +221,8 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
       if (typeof selected === "string" && selected.trim()) {
         const chosen = selected.trim();
         const folderName = chosen.split(/[/\\]/).filter(Boolean).pop() || "Music Folder";
-        await get().addFolder(chosen, folderName, []);
-        return chosen;
+        const success = await get().addFolder(chosen, folderName, []);
+        return success ? chosen : null;
       }
     } catch (err) {
       console.error("Failed to pick folder with native dialog:", err);
