@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Home } from "./pages/Home";
 import { Search } from "./pages/Search";
 import { Library } from "./pages/Library";
@@ -6,6 +6,7 @@ import { LikedSongs } from "./pages/LikedSongs";
 import { Playlists } from "./pages/Playlists";
 import { Albums } from "./pages/Albums";
 import { Artists } from "./pages/Artists";
+import { AppShell } from "./components/layout/AppShell";
 import { NavigationSidebar } from "./components/layout/NavigationSidebar";
 import { PlayerFooter } from "./components/player/PlayerFooter";
 import { QueueDrawer } from "./components/queue/QueueDrawer";
@@ -17,14 +18,39 @@ import { useActivePlaylistId, usePlaylistStore, usePlaylists } from "./store/use
 import { useLikedSongsStore } from "./store/useLikedSongsStore";
 import { useAlbumStore } from "./store/useAlbumStore";
 import { useArtistStore } from "./store/useArtistStore";
+import {
+  sanitizeNavView,
+  useNavigationStore,
+} from "./store/useNavigationStore";
 
 export function App() {
-  const [activeNav, setActiveNav] = useState("Home");
+  const currentNav = useNavigationStore((state) => state.current);
+  const activeNav = currentNav.view;
+  const navigate = useNavigationStore((state) => state.navigate);
   const playlists = usePlaylists();
   const activePlaylistId = useActivePlaylistId();
   const setActivePlaylistId = usePlaylistStore((state) => state.setActivePlaylistId);
   const setCreateModalOpen = usePlaylistStore((state) => state.setCreateModalOpen);
   const setActiveAlbumId = useAlbumStore((state) => state.setActiveAlbumId);
+
+  useEffect(() => {
+    if (currentNav.view === "Albums") {
+      const targetId = currentNav.params?.albumId ?? null;
+      if (useAlbumStore.getState().activeAlbumId !== targetId) {
+        useAlbumStore.getState().setActiveAlbumId(targetId);
+      }
+    } else if (currentNav.view === "Playlists") {
+      const targetId = currentNav.params?.playlistId ?? null;
+      if (usePlaylistStore.getState().activePlaylistId !== targetId) {
+        usePlaylistStore.getState().setActivePlaylistId(targetId);
+      }
+    } else if (currentNav.view === "Artists") {
+      const targetId = currentNav.params?.artistId ?? null;
+      if (useArtistStore.getState().activeArtistId !== targetId) {
+        useArtistStore.getState().setActiveArtistId(targetId);
+      }
+    }
+  }, [currentNav]);
 
   const activeOverlay = useActiveOverlay();
   const toggleOverlay = useOverlayStore((state) => state.toggleOverlay);
@@ -61,8 +87,67 @@ export function App() {
     testBackend();
   }, []);
 
+  const handleNavigate = (view: string) => {
+    const navView = sanitizeNavView(view);
+    if (navView === "Albums") {
+      const activeAlbumId = useAlbumStore.getState().activeAlbumId;
+      navigate(navView, activeAlbumId ? { albumId: activeAlbumId } : undefined);
+    } else if (navView === "Artists") {
+      const activeArtistId = useArtistStore.getState().activeArtistId;
+      navigate(navView, activeArtistId ? { artistId: activeArtistId } : undefined);
+    } else if (navView === "Playlists") {
+      const activePlaylistId = usePlaylistStore.getState().activePlaylistId;
+      navigate(navView, activePlaylistId ? { playlistId: activePlaylistId } : undefined);
+    } else {
+      navigate(navView);
+    }
+  };
+
   return (
-    <div className="relative w-screen h-screen overflow-hidden grid grid-rows-[1fr_96px] max-md:grid-rows-[1fr_84px] grid-cols-[232px_1fr] max-lg:grid-cols-[68px_1fr] bg-[#0b0706] text-[#f4ebe4] font-sans text-sm">
+    <AppShell
+      sidebar={
+        <NavigationSidebar
+          activeNav={activeNav}
+          onNavigate={(navId) => {
+            if (navId === "Playlists") setActivePlaylistId(null);
+            if (navId === "Albums") setActiveAlbumId(null);
+            if (navId === "Artists") useArtistStore.getState().setActiveArtistId(null);
+            navigate(sanitizeNavView(navId));
+          }}
+          playlists={playlists}
+          activePlaylistId={activePlaylistId}
+          onSelectPlaylist={(id) => {
+            setActivePlaylistId(id);
+            navigate("Playlists", { playlistId: id });
+          }}
+          onNewPlaylist={() => {
+            navigate("Playlists");
+            setActivePlaylistId(null);
+            setCreateModalOpen(true);
+          }}
+          activeOverlay={activeOverlay}
+          onToggleSettings={() => toggleOverlay("settings")}
+        />
+      }
+      footer={<PlayerFooter />}
+      overlays={
+        <>
+          {activeOverlay === "queue" && (
+            <>
+              <div
+                role="presentation"
+                onClick={() => useOverlayStore.getState().closeOverlay()}
+                className="fixed inset-0 z-35 bg-black/45"
+              />
+              <QueueDrawer />
+            </>
+          )}
+          {activeOverlay === "lyrics" && <LyricsModal />}
+          {activeOverlay === "settings" && <SettingsModal />}
+          {activeOverlay === "fullscreen" && <NowPlayingFullscreen />}
+        </>
+      }
+    >
       {/* SVG Icon Symbols definition */}
       <svg width="0" height="0" className="absolute" aria-hidden="true">
         <defs>
@@ -145,95 +230,49 @@ export function App() {
         </defs>
       </svg>
 
-      {/* Adaptive Navigation Sidebar with automatic 68px icon rail */}
-      <NavigationSidebar
-        activeNav={activeNav}
-        onNavigate={(navId) => {
-          if (navId === "Playlists") setActivePlaylistId(null);
-          if (navId === "Albums") setActiveAlbumId(null);
-          if (navId === "Artists") useArtistStore.getState().setActiveArtistId(null);
-          setActiveNav(navId);
-        }}
-        playlists={playlists}
-        activePlaylistId={activePlaylistId}
-        onSelectPlaylist={(id) => {
-          setActivePlaylistId(id);
-          setActiveNav("Playlists");
-        }}
-        onNewPlaylist={() => {
-          setActiveNav("Playlists");
-          setActivePlaylistId(null);
-          setCreateModalOpen(true);
-        }}
-        activeOverlay={activeOverlay}
-        onToggleSettings={() => toggleOverlay("settings")}
-      />
-
-      {/* Main Content Area */}
-      <div className="col-start-2 row-start-1 overflow-y-auto overflow-x-hidden min-w-0">
-        {activeNav === "Home" ? (
-          <Home onNavigate={setActiveNav} />
-        ) : activeNav === "Search" ? (
-          <Search onNavigate={setActiveNav} />
-        ) : activeNav === "Your Library" ? (
-          <Library />
-        ) : activeNav === "Liked Songs" ? (
-          <LikedSongs onNavigate={setActiveNav} />
-        ) : activeNav === "Playlists" ? (
-          <Playlists />
-        ) : activeNav === "Albums" ? (
-          <Albums
-            onNavigate={setActiveNav}
-            onNavigateArtist={(artistId) => {
-              useArtistStore.getState().setActiveArtistId(artistId);
-              setActiveNav("Artists");
-            }}
-          />
-        ) : activeNav === "Artists" ? (
-          <Artists onNavigate={setActiveNav} />
-        ) : (
-          <main
-            role="main"
-            className="flex flex-col items-center justify-center h-full bg-[#110c0a] text-[#a89b91] gap-4 p-8"
+      {/* Active View Container with clean scroll containment */}
+      {activeNav === "Home" ? (
+        <Home onNavigate={handleNavigate} />
+      ) : activeNav === "Search" ? (
+        <Search onNavigate={handleNavigate} />
+      ) : activeNav === "Your Library" ? (
+        <Library />
+      ) : activeNav === "Liked Songs" ? (
+        <LikedSongs onNavigate={handleNavigate} />
+      ) : activeNav === "Playlists" ? (
+        <Playlists />
+      ) : activeNav === "Albums" ? (
+        <Albums
+          onNavigate={handleNavigate}
+          onNavigateArtist={(artistId) => {
+            useArtistStore.getState().setActiveArtistId(artistId);
+            navigate("Artists", { artistId });
+          }}
+        />
+      ) : activeNav === "Artists" ? (
+        <Artists onNavigate={handleNavigate} />
+      ) : (
+        <main
+          role="main"
+          className="flex flex-col items-center justify-center h-full bg-[#110c0a] text-[#a89b91] gap-4 p-8"
+        >
+          <div className="w-14 h-14 rounded-full bg-[#f0a982]/10 text-[#f0a982] grid place-items-center">
+            <svg className="i w-7 h-7" aria-hidden="true">
+              <use href="#disc" />
+            </svg>
+          </div>
+          <h2 className="text-xl text-[#f4ebe4] m-0 font-medium">{activeNav}</h2>
+          <p className="m-0 text-sm max-w-[340px] text-center">
+            This view is queued in the upcoming scope slice.
+          </p>
+          <button
+            onClick={() => navigate("Home")}
+            className="px-5 py-2.5 rounded-full bg-[#f0a982] hover:bg-[#f5dec0] text-[#1c0f09] border-0 font-semibold cursor-pointer transition-all active:scale-95 shadow-md"
           >
-            <div className="w-14 h-14 rounded-full bg-[#f0a982]/10 text-[#f0a982] grid place-items-center">
-              <svg className="i w-7 h-7" aria-hidden="true">
-                <use href="#disc" />
-              </svg>
-            </div>
-            <h2 className="text-xl text-[#f4ebe4] m-0 font-medium">{activeNav}</h2>
-            <p className="m-0 text-sm max-w-[340px] text-center">
-              This view is queued in the upcoming scope slice.
-            </p>
-            <button
-              onClick={() => setActiveNav("Home")}
-              className="px-5 py-2.5 rounded-full bg-[#f0a982] hover:bg-[#f5dec0] text-[#1c0f09] border-0 font-semibold cursor-pointer transition-all active:scale-95 shadow-md"
-            >
-              Return to Home
-            </button>
-          </main>
-        )}
-      </div>
-
-      {/* Persistent Responsive Player Footer */}
-      <PlayerFooter />
-
-      {/* Overlays portal and backdrop */}
-      {activeOverlay === "queue" && (
-        <>
-          <div
-            role="presentation"
-            onClick={() => useOverlayStore.getState().closeOverlay()}
-            className="fixed inset-0 z-35 bg-black/45"
-          />
-          <QueueDrawer />
-        </>
+            Return to Home
+          </button>
+        </main>
       )}
-      {activeOverlay === "lyrics" && <LyricsModal />}
-      {activeOverlay === "settings" && <SettingsModal />}
-      {activeOverlay === "fullscreen" && <NowPlayingFullscreen />}
-    </div>
+    </AppShell>
   );
 }
-
-export default App;
