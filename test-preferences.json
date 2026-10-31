@@ -1,0 +1,14 @@
+{
+  "tool": "Vitest",
+  "gate": null,
+  "additionalTools": [
+    "@testing-library/react",
+    "@testing-library/jest-dom",
+    "@testing-library/user-event"
+  ],
+  "e2eTool": "none",
+  "testDir": "src/test",
+  "filePattern": "*.test.tsx",
+  "packageManager": "npm"
+}
+

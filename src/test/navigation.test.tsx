@@ -342,6 +342,63 @@ describe("Design System and Navigation Shell", () => {
         timestamp: Date.now(),
       });
       expect(plTitle).toBe(playlistTitle);
+
+      // Fallback titles when entity is missing
+      expect(
+        getNavTitle({
+          id: "missing-1",
+          view: "Albums",
+          params: { albumId: "nonexistent" },
+          timestamp: Date.now(),
+        })
+      ).toBe("Album");
+
+      expect(
+        getNavTitle({
+          id: "missing-2",
+          view: "Artists",
+          params: { artistId: "nonexistent" },
+          timestamp: Date.now(),
+        })
+      ).toBe("Artist");
+
+      expect(
+        getNavTitle({
+          id: "missing-3",
+          view: "Playlists",
+          params: { playlistId: "nonexistent" },
+          timestamp: Date.now(),
+        })
+      ).toBe("Playlist");
+    });
+
+    it("respects custom onBack, onForward, and explicit canGoBack overrides (AC-3, AC-4, AC-5)", () => {
+      const customBack = vi.fn();
+      const customForward = vi.fn();
+
+      render(
+        <TopNavBar
+          onBack={customBack}
+          onForward={customForward}
+          canGoBack={true}
+          canGoForward={true}
+          title="Custom View Title"
+        />
+      );
+
+      const backBtn = screen.getByTestId("nav-back-button");
+      const forwardBtn = screen.getByTestId("nav-forward-button");
+      const titleSpan = screen.getByTestId("nav-current-title");
+
+      expect(titleSpan).toHaveTextContent("Custom View Title");
+      expect(backBtn).toBeEnabled();
+      expect(forwardBtn).toBeEnabled();
+
+      fireEvent.click(backBtn);
+      expect(customBack).toHaveBeenCalledTimes(1);
+
+      fireEvent.click(forwardBtn);
+      expect(customForward).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -444,6 +501,67 @@ describe("Design System and Navigation Shell", () => {
       expect(screen.getByText("FLAC").className).toContain("bg-midnight-panel");
     });
 
+    it("renders Button in large size and prevents clicks when disabled (AC-7)", () => {
+      const handleClick = vi.fn();
+      const { rerender } = render(
+        <Button size="lg" onClick={handleClick}>
+          Large Button
+        </Button>
+      );
+
+      const btn = screen.getByRole("button", { name: "Large Button" });
+      expect(btn.className).toContain("text-base");
+      expect(btn.className).toContain("py-2.5");
+
+      rerender(
+        <Button size="lg" disabled={true} onClick={handleClick}>
+          Large Disabled
+        </Button>
+      );
+      const disabledBtn = screen.getByRole("button", { name: "Large Disabled" });
+      expect(disabledBtn).toBeDisabled();
+      fireEvent.click(disabledBtn);
+      expect(handleClick).not.toHaveBeenCalled();
+    });
+
+    it("renders IconButton without leading hash and supports primary and subtle variants (AC-7)", () => {
+      const { rerender } = render(
+        <IconButton icon="play" label="Play Track" variant="primary" size="lg" />
+      );
+
+      const primaryBtn = screen.getByRole("button", { name: "Play Track" });
+      expect(primaryBtn.className).toContain("bg-midnight-accent");
+      expect(primaryBtn.className).toContain("w-10");
+      const svgUse = primaryBtn.querySelector("use");
+      expect(svgUse).toHaveAttribute("href", "#play");
+
+      rerender(
+        <IconButton icon="#volume" label="Mute Volume" variant="subtle" size="sm" />
+      );
+      const subtleBtn = screen.getByRole("button", { name: "Mute Volume" });
+      expect(subtleBtn.className).toContain("bg-white/5");
+      expect(subtleBtn.className).toContain("w-7");
+    });
+
+    it("activates interactive Card via Space key and ignores other keys (AC-7)", () => {
+      const handleCardClick = vi.fn();
+      render(
+        <Card interactive={true} onClick={handleCardClick}>
+          <span>Space Activation Card</span>
+        </Card>
+      );
+
+      const card = screen.getByRole("button");
+
+      // Press Escape: should not trigger
+      fireEvent.keyDown(card, { key: "Escape" });
+      expect(handleCardClick).not.toHaveBeenCalled();
+
+      // Press Space: should trigger
+      fireEvent.keyDown(card, { key: " " });
+      expect(handleCardClick).toHaveBeenCalledTimes(1);
+    });
+
     it("renders TextInput with placeholder, icon, and handles change (AC-7)", () => {
       const handleChange = vi.fn();
       render(
@@ -461,6 +579,23 @@ describe("Design System and Navigation Shell", () => {
 
       fireEvent.change(input, { target: { value: "Jazz" } });
       expect(handleChange).toHaveBeenCalledWith("Jazz");
+    });
+
+    it("renders TextInput without icon and verifies disabled state (AC-7)", () => {
+      const handleChange = vi.fn();
+      render(
+        <TextInput
+          value=""
+          placeholder="Filter tracks..."
+          disabled={true}
+          onChange={handleChange}
+        />
+      );
+
+      const input = screen.getByPlaceholderText("Filter tracks...");
+      expect(input).toBeDisabled();
+      expect(input.className).toContain("px-3.5");
+      expect(input.className).toContain("disabled:opacity-40");
     });
   });
 
@@ -482,6 +617,23 @@ describe("Design System and Navigation Shell", () => {
       expect(screen.getByTestId("test-content")).toBeInTheDocument();
       expect(screen.getByTestId("test-footer")).toBeInTheDocument();
       expect(screen.getByTestId("test-overlays")).toBeInTheDocument();
+    });
+
+    it("renders AppShell without optional slots and applies custom className (AC-8)", () => {
+      const { container } = render(
+        <AppShell
+          sidebar={<aside data-testid="minimal-sidebar">Sidebar</aside>}
+          footer={<footer data-testid="minimal-footer">Footer</footer>}
+          className="custom-shell-class"
+        >
+          <div data-testid="minimal-content">Minimal Content</div>
+        </AppShell>
+      );
+
+      expect(screen.getByTestId("minimal-content")).toBeInTheDocument();
+      expect(screen.getByTestId("minimal-sidebar")).toBeInTheDocument();
+      expect(screen.getByTestId("minimal-footer")).toBeInTheDocument();
+      expect(container.firstElementChild?.className).toContain("custom-shell-class");
     });
 
     it("integrates App with useNavigationStore and TopNavBar across view changes (AC-1, AC-2, AC-8)", () => {
