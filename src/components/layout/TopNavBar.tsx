@@ -22,27 +22,27 @@ export interface TopNavBarProps {
 /**
  * Resolves the display title or breadcrumb for a given navigation entry.
  */
-export function getNavTitle(entry: NavHistoryEntry): string {
+export function getNavTitle(
+  entry: NavHistoryEntry,
+  stores?: {
+    albums?: Array<{ id: string; title: string }>;
+    playlists?: Array<{ id: string; title: string }>;
+    artists?: Array<{ id: string; name: string }>;
+  }
+): string {
   if (entry.params?.albumId) {
-    const album = useAlbumStore
-      .getState()
-      .albums.find((a) => a.id === entry.params?.albumId);
+    const albums = stores?.albums ?? useAlbumStore.getState().albums;
+    const album = albums.find((a) => a.id === entry.params?.albumId);
     return album?.title ?? "Album";
   }
   if (entry.params?.playlistId) {
-    const playlist = usePlaylistStore
-      .getState()
-      .playlists.find((p) => p.id === entry.params?.playlistId);
-    return (
-      playlist?.title ??
-      (playlist as unknown as { name?: string })?.name ??
-      "Playlist"
-    );
+    const playlists = stores?.playlists ?? usePlaylistStore.getState().playlists;
+    const playlist = playlists.find((p) => p.id === entry.params?.playlistId);
+    return playlist?.title ?? "Playlist";
   }
   if (entry.params?.artistId) {
-    const artist = useArtistStore
-      .getState()
-      .artists.find((a) => a.id === entry.params?.artistId);
+    const artists = stores?.artists ?? useArtistStore.getState().artists;
+    const artist = artists.find((a) => a.id === entry.params?.artistId);
     return artist?.name ?? "Artist";
   }
   return entry.view;
@@ -138,7 +138,12 @@ export function TopNavBar({
     };
   }, [handleBack, handleForward]);
 
-  const displayTitle = title ?? getNavTitle(currentEntry);
+  const albums = useAlbumStore((s) => s.albums);
+  const playlists = usePlaylistStore((s) => s.playlists);
+  const artists = useArtistStore((s) => s.artists);
+
+  const displayTitle =
+    title ?? getNavTitle(currentEntry, { albums, playlists, artists });
 
   return (
     <header
@@ -148,7 +153,7 @@ export function TopNavBar({
       data-tauri-drag-region
     >
       {/* Left controls: back, forward, and title */}
-      <div className="flex items-center gap-3 min-w-0" data-tauri-drag-region>
+      <div className="flex items-center gap-3 min-w-0">
         <div className="flex items-center gap-1.5 shrink-0">
           <IconButton
             icon="#cl"

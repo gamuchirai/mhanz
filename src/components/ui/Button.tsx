@@ -28,6 +28,7 @@ const sizeStyles: Record<ButtonSize, string> = {
  * Standard interactive button primitive for Midnight design system.
  */
 export function Button({
+  type = "button",
   variant = "primary",
   size = "md",
   disabled = false,
@@ -41,6 +42,7 @@ export function Button({
 
   return (
     <button
+      type={type}
       disabled={disabled}
       className={`inline-flex items-center justify-center transition-all duration-150 select-none ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyles} ${className}`}
       {...props}

@@ -25,6 +25,7 @@ This directory contains code reviews, audit records, and process analysis report
 
 ## Review and Audit Documents Index
 
+- [Review: Design System and Navigation Shell](2026-10-31-feat-design-system-navigation-shell.md) (2026-10-31)
 - [Review: Your Library and Folder Browser](2026-10-30-feat-your-library-folder-browser.md) (2026-10-30)
 - [Process 0001: Unlinked UI and Backend Flows](process-0001-unlinked-ui-backend-flows.md) (2026-10-27)
 - [Review: Playlists and Favorites Persistence](2026-10-27-feat-playlists-favorites-persistence.md) (2026-10-27)

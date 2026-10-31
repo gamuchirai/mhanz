@@ -20,18 +20,37 @@ import { useAlbumStore } from "./store/useAlbumStore";
 import { useArtistStore } from "./store/useArtistStore";
 import {
   sanitizeNavView,
-  useActiveView,
   useNavigationStore,
 } from "./store/useNavigationStore";
 
 export function App() {
-  const activeNav = useActiveView();
+  const currentNav = useNavigationStore((state) => state.current);
+  const activeNav = currentNav.view;
   const navigate = useNavigationStore((state) => state.navigate);
   const playlists = usePlaylists();
   const activePlaylistId = useActivePlaylistId();
   const setActivePlaylistId = usePlaylistStore((state) => state.setActivePlaylistId);
   const setCreateModalOpen = usePlaylistStore((state) => state.setCreateModalOpen);
   const setActiveAlbumId = useAlbumStore((state) => state.setActiveAlbumId);
+
+  useEffect(() => {
+    if (currentNav.view === "Albums") {
+      const targetId = currentNav.params?.albumId ?? null;
+      if (useAlbumStore.getState().activeAlbumId !== targetId) {
+        useAlbumStore.getState().setActiveAlbumId(targetId);
+      }
+    } else if (currentNav.view === "Playlists") {
+      const targetId = currentNav.params?.playlistId ?? null;
+      if (usePlaylistStore.getState().activePlaylistId !== targetId) {
+        usePlaylistStore.getState().setActivePlaylistId(targetId);
+      }
+    } else if (currentNav.view === "Artists") {
+      const targetId = currentNav.params?.artistId ?? null;
+      if (useArtistStore.getState().activeArtistId !== targetId) {
+        useArtistStore.getState().setActiveArtistId(targetId);
+      }
+    }
+  }, [currentNav]);
 
   const activeOverlay = useActiveOverlay();
   const toggleOverlay = useOverlayStore((state) => state.toggleOverlay);
@@ -69,7 +88,19 @@ export function App() {
   }, []);
 
   const handleNavigate = (view: string) => {
-    navigate(sanitizeNavView(view));
+    const navView = sanitizeNavView(view);
+    if (navView === "Albums") {
+      const activeAlbumId = useAlbumStore.getState().activeAlbumId;
+      navigate(navView, activeAlbumId ? { albumId: activeAlbumId } : undefined);
+    } else if (navView === "Artists") {
+      const activeArtistId = useArtistStore.getState().activeArtistId;
+      navigate(navView, activeArtistId ? { artistId: activeArtistId } : undefined);
+    } else if (navView === "Playlists") {
+      const activePlaylistId = usePlaylistStore.getState().activePlaylistId;
+      navigate(navView, activePlaylistId ? { playlistId: activePlaylistId } : undefined);
+    } else {
+      navigate(navView);
+    }
   };
 
   return (
@@ -245,5 +276,3 @@ export function App() {
     </AppShell>
   );
 }
-
-export default App;

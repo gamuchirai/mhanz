@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Album } from "../../types/album";
 import { useAlbumStore } from "../../store/useAlbumStore";
+import { useNavigationStore } from "../../store/useNavigationStore";
 import { AlbumVinylPlaceholder } from "./AlbumVinylPlaceholder";
 
 interface AlbumCardProps {
@@ -18,7 +19,10 @@ export function AlbumCard({ album }: AlbumCardProps) {
   return (
     <article
       aria-label={`Album ${album.title} by ${album.artistName}`}
-      onClick={() => setActiveAlbumId(album.id)}
+      onClick={() => {
+        setActiveAlbumId(album.id);
+        useNavigationStore.getState().navigate("Albums", { albumId: album.id });
+      }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{

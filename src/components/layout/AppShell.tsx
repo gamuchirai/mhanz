@@ -24,7 +24,7 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div
-      className={`relative w-screen h-screen overflow-hidden grid grid-rows-[1fr_96px] max-md:grid-rows-[1fr_84px] grid-cols-[232px_1fr] max-lg:grid-cols-[68px_1fr] bg-[#0b0706] text-[#f4ebe4] font-sans text-sm ${className}`}
+      className={`relative w-screen h-screen overflow-hidden grid grid-rows-[1fr_96px] max-md:grid-rows-[1fr_84px] grid-cols-[232px_1fr] max-lg:grid-cols-[68px_1fr] bg-midnight-bg text-midnight-text font-sans text-sm ${className}`}
     >
       {/* Navigation sidebar slot */}
       {sidebar}

@@ -13,7 +13,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | --- | ---------------------------------- | ---------- | ----------- |
 | 1   | Stack & architecture               | Foundation | done        |
 | 2   | Coding standards & tooling         | Foundation | done        |
-| 3   | Design system & navigation shell   | Foundation | in-progress |
+| 3   | Design system & navigation shell   | Foundation | done        |
 | 4   | Home & discovery screen            | Phase 1    | done        |
 | 5   | Search & explore screen            | Phase 1    | in-progress |
 | 6   | Your library & folder browser      | Phase 1    | in-progress |
@@ -55,7 +55,7 @@ spec [0003](../specs/0003-coding-standards-tooling/verify.md)
 - [x] Capture conventions and tooling choices: `/audit`
 - [x] Verify it: `/check verify coding standards & tooling`
 
-### 3. Design system & navigation shell · in-progress
+### 3. Design system & navigation shell · done
 
 Extract the Midnight styling tokens and build the application shell with sidebar navigation, view switching state, and player footer container.
 **Done when:** the sidebar items switch the active view container, navigation buttons update, and the dark Midnight theme variables render consistently across all views.

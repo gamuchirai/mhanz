@@ -673,5 +673,41 @@ describe("Design System and Navigation Shell", () => {
       expect(screen.getByRole("main", { name: "Home and discovery screen" })).toBeInTheDocument();
       expect(screen.getByTestId("nav-current-title")).toHaveTextContent("Home");
     });
+
+    it("synchronizes route parameters with active entity stores and restores detail state on history traversal (AC-1, AC-2, AC-3)", () => {
+      render(<App />);
+
+      // Navigate to Albums
+      act(() => {
+        useNavigationStore.getState().navigate("Albums");
+      });
+      expect(useAlbumStore.getState().activeAlbumId).toBeNull();
+
+      // Navigate to specific Album detail
+      act(() => {
+        useNavigationStore.getState().navigate("Albums", { albumId: "album-1" });
+      });
+      expect(useAlbumStore.getState().activeAlbumId).toBe("album-1");
+
+      // Navigate to Playlists overview
+      act(() => {
+        useNavigationStore.getState().navigate("Playlists");
+      });
+      expect(usePlaylistStore.getState().activePlaylistId).toBeNull();
+
+      // Go back: restores Albums view and album-1 active state
+      act(() => {
+        useNavigationStore.getState().goBack();
+      });
+      expect(useNavigationStore.getState().current.view).toBe("Albums");
+      expect(useAlbumStore.getState().activeAlbumId).toBe("album-1");
+
+      // Go back again: restores Albums overview with null activeAlbumId
+      act(() => {
+        useNavigationStore.getState().goBack();
+      });
+      expect(useNavigationStore.getState().current.view).toBe("Albums");
+      expect(useAlbumStore.getState().activeAlbumId).toBeNull();
+    });
   });
 });

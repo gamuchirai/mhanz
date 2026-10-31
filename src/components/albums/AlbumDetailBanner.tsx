@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Album } from "../../types/album";
 import { useAlbumStore, useAlbumTracks, useFavoriteAlbumIds } from "../../store/useAlbumStore";
+import { useNavigationStore } from "../../store/useNavigationStore";
 import { AlbumVinylPlaceholder } from "./AlbumVinylPlaceholder";
 
 interface AlbumDetailBannerProps {
@@ -59,7 +60,10 @@ export function AlbumDetailBanner({ album, onNavigateArtist, onNavigate }: Album
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <button
           type="button"
-          onClick={() => setActiveAlbumId(null)}
+          onClick={() => {
+            setActiveAlbumId(null);
+            useNavigationStore.getState().navigate("Albums");
+          }}
           aria-label="Back to all albums"
           style={{
             display: "flex",
