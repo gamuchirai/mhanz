@@ -104,6 +104,16 @@ impl DbState {
             .with_conn(|conn| catalog_repo::get_album_details(conn, id))
     }
 
+    /// Toggles or sets album favorite status and synchronizes like status across all tracks.
+    pub fn toggle_album_favorite(
+        &self,
+        id: &str,
+        target_favorite: Option<bool>,
+    ) -> Result<AlbumFavoriteResultDto, DatabaseError> {
+        self.0
+            .with_conn(|conn| catalog_repo::toggle_album_favorite(conn, id, target_favorite))
+    }
+
     /// Queries all artists.
     pub fn get_artists(&self) -> Result<Vec<ArtistDto>, DatabaseError> {
         self.0.with_conn(|conn| catalog_repo::get_artists(conn))
@@ -220,7 +230,7 @@ mod tests {
 
         let status = state.get_status().expect("Status should be readable");
         assert!(status.is_ready);
-        assert_eq!(status.schema_version, 3);
+        assert_eq!(status.schema_version, 4);
         assert_eq!(status.track_count, 0);
         // Default sample playlists are seeded automatically
         assert_eq!(status.playlist_count, 5);
@@ -397,5 +407,165 @@ mod tests {
             .expect("Setting write");
         let saved = state.get_setting("audio_volume").expect("Setting query");
         assert_eq!(saved.as_deref(), Some("0.75"));
+    }
+
+    #[test]
+    fn test_album_crud_and_favorite_persistence() {
+        let mgr = DatabaseManager::new_in_memory().expect("In memory database should open");
+        let state = DbState::new(mgr);
+
+        // 0. Create artist record (required by foreign key)
+        let artist = ArtistDto {
+            id: "art-1".to_string(),
+            name: "Test Artist".to_string(),
+            bio: None,
+            avatar_path: None,
+            track_count: 0,
+            album_count: 0,
+            created_at: 1700000000,
+            updated_at: 1700000000,
+        };
+        state
+            .0
+            .with_conn(|conn| catalog_repo::upsert_artist(conn, &artist))
+            .expect("Artist inserted");
+
+        // 1. Create album record
+        let album = AlbumDto {
+            id: "alb-test-1".to_string(),
+            title: "Test Album".to_string(),
+            artist_id: Some("art-1".to_string()),
+            artist_name: "Test Artist".to_string(),
+            year: Some(2025),
+            genre: Some("Electronic".to_string()),
+            cover_art_path: Some("/art/cover.jpg".to_string()),
+            total_discs: 1,
+            track_count: 0,
+            total_duration: 0.0,
+            is_favorite: false,
+            created_at: 1700000000,
+            updated_at: 1700000000,
+        };
+        state
+            .0
+            .with_conn(|conn| catalog_repo::upsert_album(conn, &album))
+            .expect("Album inserted");
+
+        // 2. Insert two tracks belonging to the album
+        let track1 = TrackDto {
+            id: "trk-a1".to_string(),
+            file_path: "/music/track1.flac".to_string(),
+            title: "Track One".to_string(),
+            artist_id: Some("art-1".to_string()),
+            artist_name: "Test Artist".to_string(),
+            album_id: Some("alb-test-1".to_string()),
+            album_name: Some("Test Album".to_string()),
+            album_artist: None,
+            duration: 120.5,
+            year: Some(2025),
+            genre: Some("Electronic".to_string()),
+            disc_number: 1,
+            track_number: Some(1),
+            bitrate: Some(1411),
+            format: "flac".to_string(),
+            cover_art_path: None,
+            is_favorite: false,
+            liked_at: None,
+            play_count: 0,
+            last_played_at: None,
+            file_modified_at: 1700000000,
+            file_size_bytes: 20000000,
+            folder_id: None,
+            created_at: 1700000000,
+            updated_at: 1700000000,
+        };
+        let track2 = TrackDto {
+            id: "trk-a2".to_string(),
+            file_path: "/music/track2.flac".to_string(),
+            title: "Track Two".to_string(),
+            artist_id: Some("art-1".to_string()),
+            artist_name: "Test Artist".to_string(),
+            album_id: Some("alb-test-1".to_string()),
+            album_name: Some("Test Album".to_string()),
+            album_artist: None,
+            duration: 180.5,
+            year: Some(2025),
+            genre: Some("Electronic".to_string()),
+            disc_number: 1,
+            track_number: Some(2),
+            bitrate: Some(1411),
+            format: "flac".to_string(),
+            cover_art_path: None,
+            is_favorite: false,
+            liked_at: None,
+            play_count: 0,
+            last_played_at: None,
+            file_modified_at: 1700000000,
+            file_size_bytes: 25000000,
+            folder_id: None,
+            created_at: 1700000000,
+            updated_at: 1700000000,
+        };
+        state
+            .0
+            .with_conn(|conn| {
+                track_repo::upsert_track(conn, &track1)?;
+                track_repo::upsert_track(conn, &track2)?;
+                Ok(())
+            })
+            .expect("Tracks inserted");
+
+        // 3. Query albums: verify aggregated track count and total duration
+        let albums = state.get_albums().expect("Albums retrieved");
+        assert_eq!(albums.len(), 1);
+        assert_eq!(albums[0].track_count, 2);
+        assert!((albums[0].total_duration - 301.0).abs() < 0.001);
+        assert!(!albums[0].is_favorite);
+
+        // 4. Query album details: verify sequential tracks
+        let details = state
+            .get_album_details("alb-test-1")
+            .expect("Details retrieved")
+            .expect("Album detail exists");
+        assert_eq!(details.tracks.len(), 2);
+        assert_eq!(details.tracks[0].title, "Track One");
+        assert_eq!(details.tracks[1].title, "Track Two");
+
+        // 5. Toggle album favorite: sets album and both tracks to favorite
+        let fav_res = state
+            .toggle_album_favorite("alb-test-1", Some(true))
+            .expect("Album favorite toggled");
+        assert!(fav_res.is_favorite);
+        assert_eq!(fav_res.affected_tracks.len(), 2);
+        assert!(fav_res.affected_tracks.iter().all(|t| t.is_favorite));
+
+        // Verify SQLite persisted state
+        let updated_details = state
+            .get_album_details("alb-test-1")
+            .expect("Details retrieved")
+            .expect("Album detail exists");
+        assert!(updated_details.album.is_favorite);
+        assert!(updated_details.tracks.iter().all(|t| t.is_favorite));
+
+        // 6. Toggle album favorite back to false: clears favorite on album and tracks
+        let unfav_res = state
+            .toggle_album_favorite("alb-test-1", None)
+            .expect("Album unfavorited");
+        assert!(!unfav_res.is_favorite);
+        assert_eq!(unfav_res.affected_tracks.len(), 2);
+        assert!(unfav_res.affected_tracks.iter().all(|t| !t.is_favorite));
+
+        // 7. Test derived 50% liked threshold:
+        // Like 1 of 2 tracks (50%) individually -> album query should evaluate is_favorite as true
+        state
+            .0
+            .with_conn(|conn| track_repo::toggle_track_favorite(conn, "trk-a1"))
+            .expect("Track 1 toggled");
+
+        let albums_derived = state.get_albums().expect("Albums retrieved");
+        assert!(
+            albums_derived[0].is_favorite,
+            "Album should be marked favorite when 50% or more tracks are liked"
+        );
     }
 }

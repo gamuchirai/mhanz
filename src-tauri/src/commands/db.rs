@@ -3,7 +3,7 @@
 use tauri::State;
 
 use crate::db::{
-    AlbumDetailDto, AlbumDto, ArtistDto, ArtistProfileDto, DatabaseError, DatabaseStatusDto,
+    AlbumDetailDto, AlbumDto, AlbumFavoriteResultDto, ArtistDto, ArtistProfileDto, DatabaseError, DatabaseStatusDto,
     DbState, FolderDto, PaginatedTracksDto, PlaylistDetailDto, PlaylistDto, PlaylistInputDto,
     SearchResultsDto, TrackDto, TrackFilterDto,
 };
@@ -89,6 +89,16 @@ pub async fn db_get_album_details(
     state: State<'_, DbState>,
 ) -> Result<Option<AlbumDetailDto>, DatabaseError> {
     state.get_album_details(&id)
+}
+
+/// Toggles or sets album favorite status and synchronizes like status across all tracks.
+#[tauri::command]
+pub async fn db_toggle_album_favorite(
+    id: String,
+    target_favorite: Option<bool>,
+    state: State<'_, DbState>,
+) -> Result<AlbumFavoriteResultDto, DatabaseError> {
+    state.toggle_album_favorite(&id, target_favorite)
 }
 
 /// Queries all recording artists.

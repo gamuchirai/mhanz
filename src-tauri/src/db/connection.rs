@@ -19,12 +19,16 @@ pub const MIGRATION_V002: &str = include_str!("../../migrations/V002__playlists_
 /// Embedded V003 search index and triggers migration script.
 pub const MIGRATION_V003: &str = include_str!("../../migrations/V003__search_index.sql");
 
+/// Embedded V004 album favorites and duration support migration script.
+pub const MIGRATION_V004: &str = include_str!("../../migrations/V004__album_favorites.sql");
+
 /// Construct the compiled migrations suite for Mutinhimira.
 pub fn create_migrations() -> Migrations<'static> {
     Migrations::new(vec![
         M::up(MIGRATION_V001),
         M::up(MIGRATION_V002),
         M::up(MIGRATION_V003),
+        M::up(MIGRATION_V004),
     ])
 }
 

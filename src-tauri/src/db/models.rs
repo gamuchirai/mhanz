@@ -126,7 +126,7 @@ pub struct PaginatedTracksDto {
 }
 
 /// Album catalog summary entity.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct AlbumDto {
     /// Unique album identifier.
     pub id: String,
@@ -146,6 +146,10 @@ pub struct AlbumDto {
     pub total_discs: i32,
     /// Aggregated count of tracks belonging to this album.
     pub track_count: u32,
+    /// Total duration of all tracks in seconds.
+    pub total_duration: f64,
+    /// User favorite status (persisted or derived from 50% liked tracks).
+    pub is_favorite: bool,
     /// Record creation timestamp.
     pub created_at: i64,
     /// Record update timestamp.
@@ -159,6 +163,17 @@ pub struct AlbumDetailDto {
     pub album: AlbumDto,
     /// Ordered tracklist sorted by disc and track number.
     pub tracks: Vec<TrackDto>,
+}
+
+/// Result payload for toggling an album favorite status.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct AlbumFavoriteResultDto {
+    /// Identifier of the toggled album.
+    pub album_id: String,
+    /// Resulting favorite state of the album.
+    pub is_favorite: bool,
+    /// All tracks belonging to the album updated to match the favorite state.
+    pub affected_tracks: Vec<TrackDto>,
 }
 
 /// Artist catalog summary entity.

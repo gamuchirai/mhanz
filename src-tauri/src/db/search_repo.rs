@@ -151,6 +151,12 @@ pub fn search_library(
                     a.id, a.title, a.artist_id, a.artist_name, a.year, a.genre,
                     a.cover_art_path, a.total_discs,
                     COUNT(t.id) as track_count,
+                    COALESCE(SUM(t.duration), 0.0) as total_duration,
+                    CASE
+                        WHEN a.is_favorite = 1 THEN 1
+                        WHEN COUNT(t.id) > 0 AND (COALESCE(SUM(CASE WHEN t.is_favorite = 1 THEN 1 ELSE 0 END), 0) * 2 >= COUNT(t.id)) THEN 1
+                        ELSE 0
+                    END as is_favorite,
                     a.created_at, a.updated_at
                 FROM fts
                 JOIN search_index_entries e ON e.rowid = fts.rowid AND e.entity_type = 'album'
@@ -174,6 +180,8 @@ pub fn search_library(
                 params![fts_query, trimmed_query, prefix_like, album_cap],
                 |row| {
                     let trk_cnt: i64 = row.get(8)?;
+                    let total_dur: f64 = row.get(9)?;
+                    let is_fav_int: i32 = row.get(10)?;
                     Ok(AlbumDto {
                         id: row.get(0)?,
                         title: row.get(1)?,
@@ -184,8 +192,10 @@ pub fn search_library(
                         cover_art_path: row.get(6)?,
                         total_discs: row.get(7)?,
                         track_count: trk_cnt as u32,
-                        created_at: row.get(9)?,
-                        updated_at: row.get(10)?,
+                        total_duration: total_dur,
+                        is_favorite: is_fav_int == 1,
+                        created_at: row.get(11)?,
+                        updated_at: row.get(12)?,
                     })
                 },
             )

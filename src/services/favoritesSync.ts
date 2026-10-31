@@ -8,6 +8,7 @@
 
 import { isTauri } from "@tauri-apps/api/core";
 import { dbToggleTrackFavorite } from "./db";
+import type { TrackDto } from "../types/database";
 
 export type FavoriteChangeCallback = (
   trackId: string,
@@ -15,8 +16,14 @@ export type FavoriteChangeCallback = (
   likedAt: number | null
 ) => void;
 
+export type BatchFavoriteChangeCallback = (
+  tracks: TrackDto[],
+  isFavorite: boolean
+) => void;
+
 export class FavoritesSyncCoordinator {
   private listeners: Set<FavoriteChangeCallback> = new Set();
+  private batchListeners: Set<BatchFavoriteChangeCallback> = new Set();
   /**
    * Queue of in flight database operations per track identifier.
    * Serializes rapid consecutive clicks on the same track to prevent race conditions.
@@ -35,6 +42,17 @@ export class FavoritesSyncCoordinator {
   }
 
   /**
+   * Subscribes a store or component to batch favorite change notifications.
+   * Returns an unsubscribe function.
+   */
+  subscribeBatch(callback: BatchFavoriteChangeCallback): () => void {
+    this.batchListeners.add(callback);
+    return () => {
+      this.batchListeners.delete(callback);
+    };
+  }
+
+  /**
    * Broadcasts a favorite change to all registered store subscribers.
    */
   broadcast(trackId: string, isFavorite: boolean, likedAt: number | null): void {
@@ -43,6 +61,31 @@ export class FavoritesSyncCoordinator {
         listener(trackId, isFavorite, likedAt);
       } catch (err) {
         console.error("Error in favoritesSync listener callback:", err);
+      }
+    }
+  }
+
+  /**
+   * Broadcasts a batch favorite change with full TrackDto payloads to subscribers.
+   * First invokes all batch listeners, then dispatches individual notifications to
+   * ensure backward compatibility with standard subscribers without notification storms.
+   */
+  broadcastBatch(tracks: TrackDto[], isFavorite: boolean): void {
+    for (const listener of this.batchListeners) {
+      try {
+        listener(tracks, isFavorite);
+      } catch (err) {
+        console.error("Error in favoritesSync batch listener callback:", err);
+      }
+    }
+
+    for (const track of tracks) {
+      for (const listener of this.listeners) {
+        try {
+          listener(track.id, isFavorite, track.liked_at);
+        } catch (err) {
+          console.error("Error in favoritesSync listener callback:", err);
+        }
       }
     }
   }

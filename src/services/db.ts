@@ -7,6 +7,7 @@ import { invoke } from "@tauri-apps/api/core";
 import type {
   AlbumDetailDto,
   AlbumDto,
+  AlbumFavoriteResultDto,
   ArtistDto,
   ArtistProfileDto,
   DatabaseStatusDto,
@@ -95,6 +96,19 @@ export async function dbGetAlbums(): Promise<AlbumDto[]> {
  */
 export async function dbGetAlbumDetails(id: string): Promise<AlbumDetailDto | null> {
   return invoke<AlbumDetailDto | null>("db_get_album_details", { id });
+}
+
+/**
+ * Toggles or sets album favorite status and synchronizes like status across all tracks.
+ */
+export async function dbToggleAlbumFavorite(
+  id: string,
+  targetFavorite?: boolean
+): Promise<AlbumFavoriteResultDto> {
+  return invoke<AlbumFavoriteResultDto>("db_toggle_album_favorite", {
+    id,
+    targetFavorite: targetFavorite ?? null,
+  });
 }
 
 /**

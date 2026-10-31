@@ -81,6 +81,8 @@ export interface AlbumDto {
   cover_art_path: string | null;
   total_discs: number;
   track_count: number;
+  total_duration: number;
+  is_favorite: boolean;
   created_at: number;
   updated_at: number;
 }
@@ -88,6 +90,12 @@ export interface AlbumDto {
 export interface AlbumDetailDto {
   album: AlbumDto;
   tracks: TrackDto[];
+}
+
+export interface AlbumFavoriteResultDto {
+  album_id: string;
+  is_favorite: boolean;
+  affected_tracks: TrackDto[];
 }
 
 export interface ArtistDto {
