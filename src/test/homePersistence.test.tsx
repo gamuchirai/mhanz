@@ -3,13 +3,24 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { Home } from "../pages/Home";
-import { usePlayerStore } from "../store/usePlayerStore";
+import { usePlayerStore, initPlayerAudioSync } from "../store/usePlayerStore";
 import type { PlayHistoryItemDto, TrackDto, DatabaseStatusDto } from "../types/database";
+
+const eventListeners: Record<string, (event: { payload: unknown }) => void> = {};
 
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: vi.fn(),
   isTauri: vi.fn(),
   convertFileSrc: (path: string) => `asset://localhost/${encodeURIComponent(path)}`,
+}));
+
+vi.mock("@tauri-apps/api/event", () => ({
+  listen: vi.fn(async (eventName: string, cb: (event: { payload: unknown }) => void) => {
+    eventListeners[eventName] = cb;
+    return () => {
+      delete eventListeners[eventName];
+    };
+  }),
 }));
 
 const mockTrackDto1: TrackDto = {
@@ -130,6 +141,8 @@ describe("Home Listening History and Popular Tracks Persistence", () => {
       }
       return null;
     });
+
+    initPlayerAudioSync();
 
     act(() => {
       usePlayerStore.setState({
@@ -274,5 +287,51 @@ describe("Home Listening History and Popular Tracks Persistence", () => {
     });
 
     expect(invoke).not.toHaveBeenCalled();
+  });
+
+  it("handles error during initializeHomeDiscovery gracefully without crashing UI (AC-10)", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(invoke).mockRejectedValueOnce(new Error("Database locked"));
+
+    render(<Home />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Recently played")).toBeInTheDocument();
+      expect(screen.getByText("Popular tracks")).toBeInTheDocument();
+    });
+
+    expect(usePlayerStore.getState().isHomeInitialized).toBe(true);
+    consoleSpy.mockRestore();
+  });
+
+  it("deduplicates recent history items and refreshes popular tracks on audio:history-recorded event (AC-3, AC-6, AC-11)", async () => {
+    render(<Home />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { level: 1, name: "Zuva Rimwe" })).toBeInTheDocument();
+    });
+
+    const historyRecordedHandler = eventListeners["audio:history-recorded"];
+    expect(historyRecordedHandler).toBeDefined();
+
+    await act(async () => {
+      historyRecordedHandler({
+        payload: {
+          id: "hist-new",
+          track_id: "trk-2",
+          played_at: 1700006000,
+          context_title: "Top Zimbabwe",
+          context_type: "playlist",
+          track: { ...mockTrackDto2, play_count: 16 },
+        },
+      });
+    });
+
+    await waitFor(() => {
+      const state = usePlayerStore.getState();
+      expect(state.recentPlays[0].trackId).toBe("trk-2");
+      expect(state.recentPlays.filter((p) => p.trackId === "trk-2").length).toBe(1);
+      expect(invoke).toHaveBeenCalledWith("db_get_popular_tracks", { limit: 10 });
+    });
   });
 });
