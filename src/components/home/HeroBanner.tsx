@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from "react";
+import { useState, useEffect, type MouseEvent } from "react";
 import { ShowcaseItem } from "../../types/discovery";
 import { usePlayerStore } from "../../store/usePlayerStore";
 
@@ -22,6 +22,12 @@ export function HeroBanner({ item }: HeroBannerProps) {
   const isCurrentlyPlaying = isCurrentHeroTrack && isPlaying;
   const isLiked = Boolean(likedTrackIds[trackId]);
 
+  const bannerImg = track?.artworkUrl || item.bannerImageUrl;
+
+  useEffect(() => {
+    setImageError(false);
+  }, [bannerImg]);
+
   const handlePlayClick = () => {
     if (isCurrentHeroTrack) {
       togglePlayPause();
@@ -34,8 +40,6 @@ export function HeroBanner({ item }: HeroBannerProps) {
     e.stopPropagation();
     toggleLike(trackId);
   };
-
-  const bannerImg = track?.artworkUrl || item.bannerImageUrl;
 
   return (
     <section
@@ -181,7 +185,11 @@ export function HeroBanner({ item }: HeroBannerProps) {
           >
             <use href="#heart" />
           </svg>
-          <span>{item.track?.playsCount ? `${item.track.playsCount} plays` : "4.8M"}</span>
+          <span>
+            {typeof item.track?.playsCount === "number"
+              ? `${item.track.playsCount} ${item.track.playsCount === 1 ? "play" : "plays"}`
+              : "4.8M"}
+          </span>
           <span aria-hidden="true">•</span>
           <span>{item.track?.album || "Featured"}</span>
         </div>

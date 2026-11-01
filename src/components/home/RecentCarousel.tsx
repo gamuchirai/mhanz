@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { isTauri } from "@tauri-apps/api/core";
 import { PlayHistoryItem } from "../../types/discovery";
-import { usePlayerStore } from "../../store/usePlayerStore";
+import { useIsHomeInitialized, usePlayerStore } from "../../store/usePlayerStore";
 import { MarqueeText } from "./MarqueeText";
 
 interface RecentCarouselProps {
@@ -14,6 +15,7 @@ export function RecentCarousel({
   libraryTrackCount = 0,
   onNavigate,
 }: RecentCarouselProps) {
+  const isHomeInitialized = useIsHomeInitialized();
   const playTrack = usePlayerStore((state) => state.playTrack);
   const loadSampleHistory = usePlayerStore((state) => state.loadSampleHistory);
   const clearRecentPlays = usePlayerStore((state) => state.clearRecentPlays);
@@ -21,6 +23,23 @@ export function RecentCarousel({
   const isPlaying = usePlayerStore((state) => state.isPlaying);
 
   if (items.length === 0) {
+    if (!isHomeInitialized && isTauri()) {
+      return (
+        <div style={{ minWidth: 0 }}>
+          <h2 style={{ margin: "0 0 14px", fontSize: "18px", fontWeight: 500, color: "var(--t)" }}>
+            Recently played
+          </h2>
+          <div
+            style={{
+              height: "180px",
+              borderRadius: "14px",
+              background: "rgba(24,17,15,0.4)",
+            }}
+          />
+        </div>
+      );
+    }
+
     const isLibraryEmpty = libraryTrackCount === 0;
 
     return (
