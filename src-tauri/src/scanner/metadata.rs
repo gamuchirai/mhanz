@@ -196,3 +196,41 @@ fn detect_image_extension_from_magic(data: &[u8]) -> &'static str {
         "jpg"
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mime_to_extension() {
+        assert_eq!(mime_to_extension("image/png"), "png");
+        assert_eq!(mime_to_extension("image/PNG"), "png");
+        assert_eq!(mime_to_extension("image/webp"), "webp");
+        assert_eq!(mime_to_extension("image/gif"), "gif");
+        assert_eq!(mime_to_extension("image/jpeg"), "jpg");
+        assert_eq!(mime_to_extension("image/jpg"), "jpg");
+        assert_eq!(mime_to_extension("application/octet-stream"), "jpg");
+    }
+
+    #[test]
+    fn test_detect_image_extension_from_magic() {
+        let png_bytes = b"\x89PNG\r\n\x1a\nExtraPayloadBytes";
+        assert_eq!(detect_image_extension_from_magic(png_bytes), "png");
+
+        let jpg_bytes = b"\xff\xd8\xff\xe0\x00\x10JFIF";
+        assert_eq!(detect_image_extension_from_magic(jpg_bytes), "jpg");
+
+        let webp_bytes = b"RIFF\x00\x00\x00\x00WEBPVP8 ";
+        assert_eq!(detect_image_extension_from_magic(webp_bytes), "webp");
+
+        let unknown_bytes = b"UNKNOWN_BINARY_DATA";
+        assert_eq!(detect_image_extension_from_magic(unknown_bytes), "jpg");
+    }
+
+    #[test]
+    fn test_constants_and_size_limits() {
+        assert_eq!(UNKNOWN_ARTIST, "Unknown Artist");
+        assert_eq!(UNKNOWN_ALBUM, "Unknown Album");
+        assert_eq!(MAX_COVER_ART_SIZE_BYTES, 15 * 1024 * 1024);
+    }
+}
