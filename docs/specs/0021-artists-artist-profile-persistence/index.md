@@ -1,7 +1,7 @@
 # 0021. Artists and artist profile persistence
 
 **Date**: 2026-10-31
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
