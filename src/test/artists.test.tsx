@@ -162,12 +162,12 @@ describe("Artists and Artist Profile Screen", () => {
     // Profile hero banner
     expect(screen.getByRole("region", { name: /amina v hero profile/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1, name: "Amina V" })).toBeInTheDocument();
-    expect(screen.getByText(/1,420,500 plays/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/1,420,500 plays/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/In Library/i)).toBeInTheDocument();
 
     // Action controls
     expect(screen.getByRole("button", { name: /play top tracks by amina v/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /favorited amina v/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /favorited amina v/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /more artist options/i })).toBeInTheDocument();
   });
 
@@ -318,40 +318,18 @@ describe("Artists and Artist Profile Screen", () => {
     expect(usePlayerStore.getState().likedTrackIds["amina-pop-2"]).toBe(true);
   });
 
-  it("clicking follow button toggles follow status and increments/decrements count (AC-10)", () => {
+  it("artist cards and hero banner render real local metrics and omit legacy follow buttons (AC-5)", () => {
     render(<Artists />);
 
     const tadiwaCard = screen.getByRole("article", { name: /artist tadiwa nyoni/i });
-    const followBtn = within(tadiwaCard).getByRole("button", { name: /favorite tadiwa nyoni/i });
+    expect(tadiwaCard).toBeInTheDocument();
 
-    expect(followBtn).toHaveTextContent("Favorite");
-    const initialFollowers =
-      useArtistStore.getState().getArtistById("artist-tadiwa-nyoni")?.followerCount ?? 0;
+    // Local library metrics (album count, track count, total plays)
+    expect(within(tadiwaCard).getByText(/1 album/i)).toBeInTheDocument();
+    expect(within(tadiwaCard).getByText(/6 tracks • 890,300 plays/i)).toBeInTheDocument();
 
-    // Follow Tadiwa
-    act(() => {
-      fireEvent.click(followBtn);
-    });
-
-    expect(
-      within(tadiwaCard).getByRole("button", { name: /favorited tadiwa nyoni/i })
-    ).toHaveTextContent("Favorited");
-    const updatedFollowers =
-      useArtistStore.getState().getArtistById("artist-tadiwa-nyoni")?.followerCount ?? 0;
-    expect(updatedFollowers).toBe(initialFollowers + 1);
-
-    // Unfollow Tadiwa
-    const unfollowBtn = within(tadiwaCard).getByRole("button", { name: /favorited tadiwa nyoni/i });
-    act(() => {
-      fireEvent.click(unfollowBtn);
-    });
-
-    expect(
-      within(tadiwaCard).getByRole("button", { name: /favorite tadiwa nyoni/i })
-    ).toHaveTextContent("Favorite");
-    expect(useArtistStore.getState().getArtistById("artist-tadiwa-nyoni")?.followerCount).toBe(
-      initialFollowers
-    );
+    // Verify legacy follow buttons are retired (AC-5)
+    expect(within(tadiwaCard).queryByRole("button", { name: /favorite/i })).not.toBeInTheDocument();
   });
 
   it("renders procedural gradient avatar fallback when avatar is missing or fails (AC-11)", () => {

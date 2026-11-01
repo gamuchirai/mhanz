@@ -162,6 +162,7 @@ pub fn get_artists(conn: &Connection) -> Result<Vec<ArtistDto>, DatabaseError> {
                 ar.id, ar.name, ar.bio, ar.avatar_path,
                 COUNT(DISTINCT t.id) as track_count,
                 COUNT(DISTINCT al.id) as album_count,
+                COALESCE((SELECT SUM(play_count) FROM tracks WHERE artist_id = ar.id), 0) as total_plays,
                 ar.created_at, ar.updated_at
             FROM artists ar
             LEFT JOIN tracks t ON t.artist_id = ar.id
@@ -176,6 +177,7 @@ pub fn get_artists(conn: &Connection) -> Result<Vec<ArtistDto>, DatabaseError> {
         .query_map([], |row| {
             let trk_cnt: i64 = row.get(4)?;
             let alb_cnt: i64 = row.get(5)?;
+            let total_pl: i64 = row.get(6)?;
             Ok(ArtistDto {
                 id: row.get(0)?,
                 name: row.get(1)?,
@@ -183,8 +185,9 @@ pub fn get_artists(conn: &Connection) -> Result<Vec<ArtistDto>, DatabaseError> {
                 avatar_path: row.get(3)?,
                 track_count: trk_cnt as u32,
                 album_count: alb_cnt as u32,
-                created_at: row.get(6)?,
-                updated_at: row.get(7)?,
+                total_plays: total_pl as u64,
+                created_at: row.get(7)?,
+                updated_at: row.get(8)?,
             })
         })
         .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
@@ -208,6 +211,7 @@ pub fn get_artist_profile(
                 ar.id, ar.name, ar.bio, ar.avatar_path,
                 COUNT(DISTINCT t.id) as track_count,
                 COUNT(DISTINCT al.id) as album_count,
+                COALESCE((SELECT SUM(play_count) FROM tracks WHERE artist_id = ar.id), 0) as total_plays,
                 ar.created_at, ar.updated_at
             FROM artists ar
             LEFT JOIN tracks t ON t.artist_id = ar.id
@@ -222,6 +226,7 @@ pub fn get_artist_profile(
         .query_map(params![id], |row| {
             let trk_cnt: i64 = row.get(4)?;
             let alb_cnt: i64 = row.get(5)?;
+            let total_pl: i64 = row.get(6)?;
             Ok(ArtistDto {
                 id: row.get(0)?,
                 name: row.get(1)?,
@@ -229,8 +234,9 @@ pub fn get_artist_profile(
                 avatar_path: row.get(3)?,
                 track_count: trk_cnt as u32,
                 album_count: alb_cnt as u32,
-                created_at: row.get(6)?,
-                updated_at: row.get(7)?,
+                total_plays: total_pl as u64,
+                created_at: row.get(7)?,
+                updated_at: row.get(8)?,
             })
         })
         .map_err(|err| DatabaseError::query_failed(err.to_string()))?;

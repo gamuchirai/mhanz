@@ -8,15 +8,20 @@ export interface Artist {
   name: string;
   avatarUrl: string;
   heroBannerUrl?: string;
-  monthlyListeners: number;
-  followerCount: number;
-  isFollowed: boolean;
-  verified: boolean;
-  bio: string;
+  bio?: string;
+  trackCount: number;
+  albumCount: number;
+  totalPlays: number;
   genres: string[];
-  popularTrackIds: string[];
-  albumIds: string[];
   createdAt?: string;
+
+  // Backward-compatible facade properties for tests and preview fixtures
+  monthlyListeners?: number;
+  followerCount?: number;
+  isFollowed?: boolean;
+  verified?: boolean;
+  popularTrackIds?: string[];
+  albumIds?: string[];
 }
 
 export interface ArtistPopularTrack {
@@ -54,19 +59,25 @@ export interface ArtistState {
   sortBy: ArtistSortOption;
   sortDirection: SortDirection;
   discographyFilter: DiscographyFilter;
-  followedArtistIds: string[];
+  followedArtistIds?: string[];
   isPopularExpanded: boolean;
   isLoading: boolean;
+  isLoaded: boolean;
+  isLoadingProfile: boolean;
   error: string | null;
 
   // Actions
+  initializeArtists: () => Promise<void>;
+  loadArtistProfile: (id: string, force?: boolean) => Promise<void>;
   setActiveArtistId: (id: string | null) => void;
   setSearchQuery: (query: string) => void;
-  setSortBy: (sortBy: ArtistSortOption) => void;
+  setSortBy: (sortBy: ArtistSortOption, direction?: SortDirection) => void;
   toggleSortDirection: () => void;
   setDiscographyFilter: (filter: DiscographyFilter) => void;
   togglePopularExpanded: () => void;
-  toggleFollowArtist: (artistId: string) => void;
+  toggleFollowArtist?: (artistId: string) => void;
   playArtistTopTracks: (artistId: string, startIndex?: number) => void;
+  playPopularTrack: (track: ArtistPopularTrack) => void;
   resetFilters: () => void;
+  getArtistById: (id: string) => Artist | undefined;
 }

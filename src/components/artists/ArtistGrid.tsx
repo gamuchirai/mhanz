@@ -2,11 +2,15 @@ import { useArtists } from "../../store/useArtistStore";
 import { ArtistCard } from "./ArtistCard";
 import { ArtistEmptyState } from "./ArtistEmptyState";
 
-export function ArtistGrid() {
+interface ArtistGridProps {
+  onNavigate?: (nav: string) => void;
+}
+
+export function ArtistGrid({ onNavigate }: ArtistGridProps = {}) {
   const artists = useArtists();
 
   if (artists.length === 0) {
-    return <ArtistEmptyState />;
+    return <ArtistEmptyState onNavigate={onNavigate} />;
   }
 
   return (

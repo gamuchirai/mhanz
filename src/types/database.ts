@@ -105,6 +105,7 @@ export interface ArtistDto {
   avatar_path: string | null;
   track_count: number;
   album_count: number;
+  total_plays: number;
   created_at: number;
   updated_at: number;
 }

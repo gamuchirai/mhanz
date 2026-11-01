@@ -31,7 +31,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 18  | Desktop UI responsiveness          | Foundation | done        |
 | 19  | App branding & logo integration    | Foundation | done        |
 | 20  | Albums and album detail persistence | Phase 2    | done |
-| 21  | Artists and artist profile persistence | Phase 2    | in-progress |
+| 21  | Artists and artist profile persistence | Phase 2    | done        |
 | 22  | Local file lyrics parser and metadata extraction | Phase 2    | in-progress |
 
 ## Foundations
@@ -354,7 +354,7 @@ spec [0020](../specs/0020-albums-album-detail-persistence/index.md)
 - [x] Verify it: `/check verify albums and album detail persistence`
 - [x] Test it: `/test albums and album detail persistence`
 
-### 21. Artists and artist profile persistence · in-progress
+### 21. Artists and artist profile persistence · done
 
 Hydrate artists catalog and artist profile views from SQLite, persist real local library metrics across restarts, and coordinate discography releases with scanned library albums.
 **Done when:** navigating to Artists loads scanned musical artists from SQLite with total play counts, opening an artist profile displays real popular tracks and discography releases from the database with smooth loading states, and discography releases deep link into albums.
@@ -362,14 +362,15 @@ Hydrate artists catalog and artist profile views from SQLite, persist real local
 spec [0021](../specs/0021-artists-artist-profile-persistence/index.md)
 
 - [x] Design it (spec): /architect artists and artist profile persistence
-- [ ] Build it: /develop artists and artist profile persistence
-  - [ ] Rust catalog repository total plays aggregation and DTO contract updates (AC-1, AC-4)
-  - [ ] TypeScript domain models and client IPC integration with asset formatting (AC-1, AC-2, AC-5, AC-6)
-  - [ ] Zustand store SQLite hydration, on demand profile fetching, and scanner auto refresh (AC-1, AC-4, AC-6, AC-11)
-  - [ ] UI components local metrics rendering, biography fallback, and scroll preservation (AC-3, AC-5, AC-7, AC-10, AC-12)
-  - [ ] Top tracks audio playback queueing and cross view album navigation (AC-8, AC-9)
-- [ ] Verify it: /check verify artists and artist profile persistence
-- [ ] Test it: /test artists and artist profile persistence
+- [x] Build it: /develop artists and artist profile persistence
+  - [x] Rust catalog repository total plays aggregation and DTO contract updates (AC-1, AC-4)
+  - [x] TypeScript domain models and client IPC integration with asset formatting (AC-1, AC-2, AC-5, AC-6)
+  - [x] Zustand store SQLite hydration, on demand profile fetching, and scanner auto refresh (AC-1, AC-4, AC-6, AC-11)
+  - [x] UI components local metrics rendering, biography fallback, and scroll preservation (AC-3, AC-5, AC-7, AC-10, AC-12)
+  - [x] Top tracks audio playback queueing and cross view album navigation (AC-8, AC-9)
+  code in src/store/useArtistStore.ts, src-tauri/src/db/catalog_repo.rs, src/pages/Artists.tsx
+- [x] Verify it: /check verify artists and artist profile persistence
+- [x] Test it: /test artists and artist profile persistence
 
 ### 22. Local file lyrics parser and metadata extraction · in-progress
 

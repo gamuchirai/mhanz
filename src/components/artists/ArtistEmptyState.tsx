@@ -1,6 +1,10 @@
 import { useArtistStore } from "../../store/useArtistStore";
 
-export function ArtistEmptyState() {
+interface ArtistEmptyStateProps {
+  onNavigate?: (nav: string) => void;
+}
+
+export function ArtistEmptyState({ onNavigate }: ArtistEmptyStateProps = {}) {
   const searchQuery = useArtistStore((state) => state.searchQuery);
   const setSearchQuery = useArtistStore((state) => state.setSearchQuery);
 
@@ -40,16 +44,16 @@ export function ArtistEmptyState() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
         <h3 style={{ margin: 0, fontSize: "18px", color: "var(--t)", fontWeight: 600 }}>
-          {searchQuery ? `No artists matching "${searchQuery}"` : "No artists found"}
+          {searchQuery ? `No artists matching "${searchQuery}"` : "No artists in library"}
         </h3>
-        <p style={{ margin: 0, fontSize: "14px", color: "var(--m)", maxWidth: "400px" }}>
+        <p style={{ margin: 0, fontSize: "14px", color: "var(--m)", maxWidth: "440px" }}>
           {searchQuery
             ? "Check for typos or try searching with a different name or genre."
-            : "Artists in your library and music collection will appear here."}
+            : "Artists from your scanned music folders will appear here. Add a music directory in Your Library to populate your collection."}
         </p>
       </div>
 
-      {searchQuery && (
+      {searchQuery ? (
         <button
           type="button"
           onClick={() => setSearchQuery("")}
@@ -67,7 +71,25 @@ export function ArtistEmptyState() {
         >
           Clear search
         </button>
-      )}
+      ) : onNavigate ? (
+        <button
+          type="button"
+          onClick={() => onNavigate("Library")}
+          style={{
+            padding: "8px 20px",
+            borderRadius: "20px",
+            background: "var(--accent)",
+            color: "#18110f",
+            border: "none",
+            fontWeight: 600,
+            fontSize: "13px",
+            cursor: "pointer",
+            transition: "opacity 0.15s ease",
+          }}
+        >
+          Go to Your Library
+        </button>
+      ) : null}
     </div>
   );
 }

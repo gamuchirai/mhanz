@@ -13,7 +13,42 @@ export function ArtistPopularTracks({ artistId }: ArtistPopularTracksProps) {
   const playArtistTopTracks = useArtistStore((state) => state.playArtistTopTracks);
 
   if (tracks.length === 0) {
-    return null;
+    return (
+      <section
+        aria-label="Popular tracks"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "14px",
+          width: "100%",
+        }}
+      >
+        <h2
+          style={{
+            margin: 0,
+            fontSize: "20px",
+            fontWeight: 700,
+            color: "var(--t)",
+            letterSpacing: "-0.01em",
+          }}
+        >
+          Popular
+        </h2>
+        <div
+          style={{
+            padding: "24px",
+            borderRadius: "12px",
+            background: "rgba(255, 255, 255, 0.02)",
+            border: "1px dashed rgba(255, 255, 255, 0.06)",
+            color: "var(--m)",
+            fontSize: "14px",
+            textAlign: "center",
+          }}
+        >
+          No tracks found for this artist in your library.
+        </div>
+      </section>
+    );
   }
 
   // Display top 5 or up to 10 tracks
