@@ -404,7 +404,7 @@ spec [0022](../specs/0022-home-listening-history-popular-tracks-persistence/inde
   - [x] TypeScript database client service and DTO adapters with artwork formatting (AC-8, AC-9)
   - [x] Zustand usePlayerStore SQLite hydration, event listener, and scanner sync (AC-10, AC-11, AC-14)
   - [x] Home UI components wiring with dynamic showcase, deduplicated carousel, and contextual empty states (AC-12, AC-13)
-- [ ] Verify it: `/check verify home listening history and popular tracks persistence`
+- [x] Verify it: `/check verify home listening history and popular tracks persistence`
 - [ ] Test it: `/test home listening history and popular tracks persistence`
 
 ## Deferred

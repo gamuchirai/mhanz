@@ -1,16 +1,18 @@
 # 0022 Verification: Home listening history and popular tracks persistence
 
-This manual verification plan confirms that Mutinhimira connects the Home discovery screen to local SQLite listening history and popular track metrics.
+This verification confirms that Mutinhimira connects the Home discovery screen to local SQLite listening history and popular track metrics.
 
-## Prerequisites
+## Verified runtime behaviors
 
-1. Launch desktop application in development mode:
-   ```bash
-   npm run tauri dev
-   ```
-2. Ensure you have monitored music folders containing songs in Your Library.
+- [x] Contextual empty state on clean library: displays guidance explaining that no music is in your library yet and scan button navigates to Your Library (AC-13)
+- [x] Milestone playback recording: records listening history and updates play counts at thirty second or half duration mark (AC-5, AC-6)
+- [x] Track deduplication in recently played carousel: displays recent songs deduplicated by track identifier showing latest timestamp (AC-3, AC-9)
+- [x] Popular tracks ranking and backfill: ranks songs by play count with graceful backfill for unplayed tracks (AC-4, AC-9)
+- [x] Dynamic hero showcase banner: features the top played track with badge TOP PLAYED and formatted play counts (AC-12)
+- [x] Clear recent playback history: truncates history in SQLite and clears carousel while preserving track play statistics (AC-14)
+- [x] Web browser preview fallback: falls back smoothly to preview fixtures when running outside Tauri desktop runtime (AC-10)
 
-## Verification Steps
+## Manual steps reference
 
 ### 1. Contextual empty state on clean library
 
