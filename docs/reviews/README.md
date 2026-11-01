@@ -25,6 +25,7 @@ This directory contains code reviews, audit records, and process analysis report
 
 ## Review and Audit Documents Index
 
+- [Review: Home Listening History and Popular Tracks Persistence](2026-11-01-feat-home-listening-history-popular-tracks-persistence.md) (2026-11-01)
 - [Review: Artists and Artist Profile Persistence](2026-11-01-feat-artists-artist-profile-persistence.md) (2026-11-01)
 - [Review: Albums and Album Detail Persistence](2026-11-01-feat-albums-album-detail-persistence.md) (2026-11-01)
 - [Review: Design System and Navigation Shell](2026-10-31-feat-design-system-navigation-shell.md) (2026-10-31)
