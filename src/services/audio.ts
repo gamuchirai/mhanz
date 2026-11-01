@@ -12,21 +12,25 @@ import type {
   AudioPositionDto,
   AudioTrackEndedDto,
 } from "../types/audio";
+import type { PlayHistoryItemDto } from "../types/database";
 
 // Internal listeners for mock mode or broadcast
 type PositionListener = (pos: AudioPositionDto) => void;
 type StateChangedListener = (state: AudioPlaybackStateDto) => void;
 type TrackEndedListener = (event: AudioTrackEndedDto) => void;
 type ErrorListener = (error: AudioErrorDto) => void;
+type HistoryListener = (item: PlayHistoryItemDto) => void;
 
 interface MockEngineState {
   state: AudioPlaybackStateDto;
   timerHandle: ReturnType<typeof setInterval> | null;
   forceMock: boolean;
+  milestoneRecorded: boolean;
   positionListeners: Set<PositionListener>;
   stateChangedListeners: Set<StateChangedListener>;
   trackEndedListeners: Set<TrackEndedListener>;
   errorListeners: Set<ErrorListener>;
+  historyListeners: Set<HistoryListener>;
 }
 
 const mockEngine: MockEngineState = {
@@ -38,13 +42,17 @@ const mockEngine: MockEngineState = {
     duration_seconds: 0,
     volume: 0.8,
     is_muted: false,
+    context_title: null,
+    context_type: null,
   },
   timerHandle: null,
   forceMock: false,
+  milestoneRecorded: false,
   positionListeners: new Set(),
   stateChangedListeners: new Set(),
   trackEndedListeners: new Set(),
   errorListeners: new Set(),
+  historyListeners: new Set(),
 };
 
 /**
@@ -91,6 +99,46 @@ function startMockTimer(): void {
     const nextPos = mockEngine.state.position_seconds + 0.1;
     const dur = mockEngine.state.duration_seconds;
 
+    // Check 30s or half duration milestone latch
+    if (!mockEngine.milestoneRecorded && (nextPos >= 30.0 || (dur > 0 && nextPos >= dur / 2.0))) {
+      mockEngine.milestoneRecorded = true;
+      const historyItem: PlayHistoryItemDto = {
+        id: `mock-hist-${Date.now()}`,
+        track_id: mockEngine.state.track_id,
+        played_at: Math.floor(Date.now() / 1000),
+        context_title: mockEngine.state.context_title ?? null,
+        context_type: mockEngine.state.context_type ?? null,
+        track: {
+          id: mockEngine.state.track_id,
+          file_path: mockEngine.state.file_path ?? "",
+          title: "Mock Track",
+          artist_id: null,
+          artist_name: "Unknown Artist",
+          album_id: null,
+          album_name: null,
+          album_artist: null,
+          duration: dur,
+          year: null,
+          genre: null,
+          disc_number: 1,
+          track_number: null,
+          bitrate: null,
+          format: "mp3",
+          cover_art_path: null,
+          is_favorite: false,
+          liked_at: null,
+          play_count: 1,
+          last_played_at: Math.floor(Date.now() / 1000),
+          file_modified_at: Math.floor(Date.now() / 1000),
+          file_size_bytes: 0,
+          folder_id: null,
+          created_at: Math.floor(Date.now() / 1000),
+          updated_at: Math.floor(Date.now() / 1000),
+        },
+      };
+      notifyHistoryRecorded(historyItem);
+    }
+
     if (dur > 0 && nextPos >= dur) {
       // Track ended
       mockEngine.state.status = "stopped";
@@ -129,6 +177,10 @@ function notifyError(payload: AudioErrorDto): void {
   mockEngine.errorListeners.forEach((fn) => fn(payload));
 }
 
+function notifyHistoryRecorded(payload: PlayHistoryItemDto): void {
+  mockEngine.historyListeners.forEach((fn) => fn(payload));
+}
+
 /**
  * Plays a local audio file by track identifier and canonical file path.
  */
@@ -136,7 +188,9 @@ export async function audioPlayTrack(
   trackId: string,
   filePath: string,
   startPosition?: number,
-  durationHint?: number
+  durationHint?: number,
+  contextTitle?: string,
+  contextType?: string
 ): Promise<AudioPlaybackStateDto> {
   if (isAudioMockActive()) {
     if (!filePath || filePath.trim().length === 0) {
@@ -152,6 +206,7 @@ export async function audioPlayTrack(
     const startPos = Math.max(0, startPosition ?? 0);
     const duration = Math.max(0, durationHint ?? 180.0);
 
+    mockEngine.milestoneRecorded = false;
     mockEngine.state = {
       ...mockEngine.state,
       track_id: trackId,
@@ -159,6 +214,8 @@ export async function audioPlayTrack(
       status: "playing",
       position_seconds: startPos,
       duration_seconds: duration,
+      context_title: contextTitle ?? null,
+      context_type: contextType ?? null,
     };
 
     notifyStateChanged({ ...mockEngine.state });
@@ -166,11 +223,19 @@ export async function audioPlayTrack(
     return { ...mockEngine.state };
   }
 
-  return invoke<AudioPlaybackStateDto>("audio_play_track", {
+  const invokeArgs: Record<string, unknown> = {
     trackId,
     filePath,
     startPosition: startPosition ?? null,
-  });
+  };
+  if (contextTitle !== undefined) {
+    invokeArgs.contextTitle = contextTitle;
+  }
+  if (contextType !== undefined) {
+    invokeArgs.contextType = contextType;
+  }
+
+  return invoke<AudioPlaybackStateDto>("audio_play_track", invokeArgs);
 }
 
 /**
@@ -368,6 +433,24 @@ export async function listenAudioError(
 }
 
 /**
+ * Subscribes to listening history milestone recordings.
+ */
+export async function listenAudioHistoryRecorded(
+  callback: (item: PlayHistoryItemDto) => void
+): Promise<UnlistenFn> {
+  if (isAudioMockActive()) {
+    mockEngine.historyListeners.add(callback);
+    return () => {
+      mockEngine.historyListeners.delete(callback);
+    };
+  }
+
+  return listen<PlayHistoryItemDto>("audio:history-recorded", (event) => {
+    callback(event.payload);
+  });
+}
+
+/**
  * Helper to reset mock state for clean test assertions.
  */
 export function resetAudioMock(): void {
@@ -380,9 +463,13 @@ export function resetAudioMock(): void {
     duration_seconds: 0,
     volume: 0.8,
     is_muted: false,
+    context_title: null,
+    context_type: null,
   };
+  mockEngine.milestoneRecorded = false;
   mockEngine.positionListeners.clear();
   mockEngine.stateChangedListeners.clear();
   mockEngine.trackEndedListeners.clear();
   mockEngine.errorListeners.clear();
+  mockEngine.historyListeners.clear();
 }

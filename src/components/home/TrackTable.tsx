@@ -2,7 +2,6 @@ import { useState, type MouseEvent } from "react";
 import { Track } from "../../types/discovery";
 import { usePlayerStore } from "../../store/usePlayerStore";
 import { MarqueeText } from "./MarqueeText";
-
 import { formatDuration } from "../../utils/format";
 
 interface TrackTableProps {
@@ -25,6 +24,31 @@ export function TrackTable({ tracks, title = "Popular tracks" }: TrackTableProps
       playTrack(track, tracks);
     }
   };
+
+  if (tracks.length === 0) {
+    return (
+      <div style={{ minWidth: 0 }}>
+        <h2 style={{ margin: "0 0 14px", fontSize: "16px", fontWeight: 500, color: "var(--t)" }}>
+          {title}
+        </h2>
+        <div
+          role="region"
+          aria-label="Empty popular tracks section"
+          style={{
+            padding: "28px 16px",
+            borderRadius: "10px",
+            background: "rgba(24,17,15,0.7)",
+            border: "1px dashed var(--l)",
+            textAlign: "center",
+            color: "var(--m)",
+            fontSize: "13px",
+          }}
+        >
+          No popular tracks available yet
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minWidth: 0 }}>
@@ -227,6 +251,11 @@ function TrackRow({
           }}
         >
           {track.artist}
+          {typeof track.playsCount === "number" && track.playsCount > 0 ? (
+            <span style={{ marginLeft: "6px", opacity: 0.8 }}>
+              • {track.playsCount} {track.playsCount === 1 ? "play" : "plays"}
+            </span>
+          ) : null}
         </div>
       </div>
 

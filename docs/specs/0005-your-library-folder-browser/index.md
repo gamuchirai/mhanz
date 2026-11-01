@@ -1,7 +1,7 @@
 # 0005. Your library and folder browser
 
 **Date**: 2026-10-23
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

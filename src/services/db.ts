@@ -20,8 +20,10 @@ import type {
   SearchResultsDto,
   TrackDto,
   TrackFilterDto,
+  PlayHistoryItemDto,
 } from "../types/database";
-import type { Track } from "../types/discovery";
+import type { Track, PlayHistoryItem } from "../types/discovery";
+import { formatCoverArtUrl } from "./scanner";
 import type { AlbumCard, ArtistCard, GenreCard, PlaylistCard, SearchResults } from "../types/search";
 
 /**
@@ -246,7 +248,7 @@ export function mapTrackDtoToUi(dto: TrackDto): Track {
     artist: dto.artist_name,
     album: dto.album_name || "Unknown Album",
     durationSeconds: Math.round(dto.duration),
-    artworkUrl: dto.cover_art_path || "/assets/images/defaults/album-art.webp",
+    artworkUrl: formatCoverArtUrl(dto.cover_art_path) || "/assets/images/defaults/album-art.webp",
     isLiked: dto.is_favorite,
     playsCount: dto.play_count,
     filePath: dto.file_path,
@@ -329,4 +331,40 @@ export function mapSearchResultsDtoToUi(dto: SearchResultsDto): SearchResults {
     totalMatches: dto.total_matches,
     executionTimeMs: dto.execution_time_ms,
   };
+}
+
+/**
+ * Adapts database PlayHistoryItemDto to UI PlayHistoryItem model.
+ */
+export function mapPlayHistoryDtoToUi(dto: PlayHistoryItemDto): PlayHistoryItem {
+  return {
+    id: dto.id,
+    trackId: dto.track_id,
+    track: mapTrackDtoToUi(dto.track),
+    playedAtTimestamp: dto.played_at * 1000,
+    contextTitle: dto.context_title || dto.track.album_name || "Now Playing",
+  };
+}
+
+/**
+ * Queries distinct recent playback history deduplicated by track.
+ */
+export async function dbGetRecentPlays(limit?: number): Promise<PlayHistoryItem[]> {
+  const dtos = await invoke<PlayHistoryItemDto[]>("db_get_recent_plays", { limit: limit ?? null });
+  return dtos.map(mapPlayHistoryDtoToUi);
+}
+
+/**
+ * Queries popular tracks ranked by play count with graceful backfill.
+ */
+export async function dbGetPopularTracks(limit?: number): Promise<Track[]> {
+  const dtos = await invoke<TrackDto[]>("db_get_popular_tracks", { limit: limit ?? null });
+  return dtos.map(mapTrackDtoToUi);
+}
+
+/**
+ * Clears all entries in the listening history table, preserving play counts.
+ */
+export async function dbClearPlaybackHistory(): Promise<void> {
+  return invoke<void>("db_clear_playback_history");
 }

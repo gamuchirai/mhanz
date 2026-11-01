@@ -1,7 +1,7 @@
 # 0004. Search and explore screen
 
 **Date**: 2026-10-23
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

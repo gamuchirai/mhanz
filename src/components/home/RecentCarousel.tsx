@@ -5,15 +5,24 @@ import { MarqueeText } from "./MarqueeText";
 
 interface RecentCarouselProps {
   items: PlayHistoryItem[];
+  libraryTrackCount?: number;
+  onNavigate?: (nav: string) => void;
 }
 
-export function RecentCarousel({ items }: RecentCarouselProps) {
+export function RecentCarousel({
+  items,
+  libraryTrackCount = 0,
+  onNavigate,
+}: RecentCarouselProps) {
   const playTrack = usePlayerStore((state) => state.playTrack);
   const loadSampleHistory = usePlayerStore((state) => state.loadSampleHistory);
+  const clearRecentPlays = usePlayerStore((state) => state.clearRecentPlays);
   const currentTrack = usePlayerStore((state) => state.currentTrack);
   const isPlaying = usePlayerStore((state) => state.isPlaying);
 
   if (items.length === 0) {
+    const isLibraryEmpty = libraryTrackCount === 0;
+
     return (
       <div style={{ minWidth: 0 }}>
         <h2 style={{ margin: "0 0 14px", fontSize: "18px", fontWeight: 500, color: "var(--t)" }}>
@@ -52,47 +61,50 @@ export function RecentCarousel({ items }: RecentCarouselProps) {
           </div>
           <div>
             <div style={{ fontWeight: 500, fontSize: "15px", color: "var(--t)" }}>
-              No recent listening history yet
+              {isLibraryEmpty ? "No music in your library yet" : "No recent listening history yet"}
             </div>
             <div
               style={{ fontSize: "13px", color: "var(--m)", marginTop: "4px", maxWidth: "340px" }}
             >
-              Listen to songs from your library or explore curated tracks to build your listening
-              history.
+              {isLibraryEmpty
+                ? "Scan your local music folders in Your Library to discover and play songs."
+                : "Listen to songs from your library or explore popular tracks to build your listening history."}
             </div>
           </div>
           <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
+            {isLibraryEmpty ? (
+              <button
+                onClick={() => onNavigate?.("library")}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "20px",
+                  background: "var(--accent)",
+                  color: "#1c0f09",
+                  border: 0,
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "opacity 0.15s ease",
+                }}
+              >
+                Scan music folder
+              </button>
+            ) : null}
             <button
               onClick={loadSampleHistory}
               style={{
                 padding: "8px 16px",
                 borderRadius: "20px",
-                background: "var(--accent)",
-                color: "#1c0f09",
-                border: 0,
+                background: isLibraryEmpty ? "transparent" : "var(--accent)",
+                color: isLibraryEmpty ? "var(--t)" : "#1c0f09",
+                border: isLibraryEmpty ? "1px solid var(--l)" : 0,
                 fontSize: "13px",
-                fontWeight: 600,
+                fontWeight: isLibraryEmpty ? 400 : 600,
                 cursor: "pointer",
                 transition: "opacity 0.15s ease",
               }}
             >
               Load sample tracks
-            </button>
-            <button
-              onClick={() => {
-                // Future Tauri folder scanner trigger
-              }}
-              style={{
-                padding: "8px 16px",
-                borderRadius: "20px",
-                background: "transparent",
-                color: "var(--t)",
-                border: "1px solid var(--l)",
-                fontSize: "13px",
-                cursor: "pointer",
-              }}
-            >
-              Scan music folder
             </button>
           </div>
         </div>
@@ -113,6 +125,23 @@ export function RecentCarousel({ items }: RecentCarouselProps) {
         <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 500, color: "var(--t)" }}>
           Recently played
         </h2>
+        <button
+          onClick={clearRecentPlays}
+          aria-label="Clear recent plays"
+          style={{
+            background: "none",
+            border: 0,
+            padding: 0,
+            color: "var(--m)",
+            fontSize: "12px",
+            cursor: "pointer",
+            transition: "color 0.15s ease",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--m)")}
+        >
+          Clear
+        </button>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "16px" }}>
         {items.slice(0, 5).map((history) => {

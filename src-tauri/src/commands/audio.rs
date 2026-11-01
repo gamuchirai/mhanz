@@ -10,9 +10,11 @@ pub async fn audio_play_track(
     track_id: String,
     file_path: String,
     start_position: Option<f64>,
+    context_title: Option<String>,
+    context_type: Option<String>,
     state: State<'_, AudioState>,
 ) -> Result<AudioPlaybackStateDto, AudioError> {
-    state.0.play_track(track_id, file_path, start_position)
+    state.0.play_track(track_id, file_path, start_position, context_title, context_type)
 }
 
 /// Pauses the active audio playback stream.

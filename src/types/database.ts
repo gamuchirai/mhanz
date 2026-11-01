@@ -166,3 +166,12 @@ export interface SearchResultsDto {
   total_matches: number;
   execution_time_ms: number;
 }
+
+export interface PlayHistoryItemDto {
+  id: string;
+  track_id: string;
+  played_at: number;
+  context_title: string | null;
+  context_type: string | null;
+  track: TrackDto;
+}

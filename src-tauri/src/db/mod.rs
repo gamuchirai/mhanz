@@ -4,6 +4,7 @@ pub mod catalog_repo;
 pub mod connection;
 pub mod error;
 pub mod folder_repo;
+pub mod history_repo;
 pub mod models;
 pub mod playlist_repo;
 pub mod search_repo;
@@ -91,6 +92,32 @@ impl DbState {
     pub fn increment_play_count(&self, id: &str) -> Result<u32, DatabaseError> {
         self.0
             .with_conn(|conn| track_repo::increment_play_count(conn, id))
+    }
+
+    /// Queries recent playback history deduplicated by track.
+    pub fn get_recent_plays(&self, limit: Option<u32>) -> Result<Vec<PlayHistoryItemDto>, DatabaseError> {
+        self.0.with_conn(|conn| history_repo::get_recent_plays(conn, limit))
+    }
+
+    /// Queries popular tracks ordered by play_count descending with backfill.
+    pub fn get_popular_tracks(&self, limit: Option<u32>) -> Result<Vec<TrackDto>, DatabaseError> {
+        self.0.with_conn(|conn| history_repo::get_popular_tracks(conn, limit))
+    }
+
+    /// Clears all playback history entries.
+    pub fn clear_playback_history(&self) -> Result<(), DatabaseError> {
+        self.0.with_conn(|conn| history_repo::clear_history(conn))
+    }
+
+    /// Records playback session and updates track play count.
+    pub fn record_playback(
+        &self,
+        track_id: &str,
+        context_title: Option<&str>,
+        context_type: Option<&str>,
+    ) -> Result<PlayHistoryItemDto, DatabaseError> {
+        self.0
+            .with_conn(|conn| history_repo::record_playback(conn, track_id, context_title, context_type))
     }
 
     /// Queries all albums.
@@ -230,7 +257,7 @@ mod tests {
 
         let status = state.get_status().expect("Status should be readable");
         assert!(status.is_ready);
-        assert_eq!(status.schema_version, 4);
+        assert_eq!(status.schema_version, 5);
         assert_eq!(status.track_count, 0);
         // Default sample playlists are seeded automatically
         assert_eq!(status.playlist_count, 5);

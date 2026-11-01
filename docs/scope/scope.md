@@ -15,15 +15,15 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 2   | Coding standards & tooling         | Foundation | done        |
 | 3   | Design system & navigation shell   | Foundation | done        |
 | 4   | Home & discovery screen            | Phase 1    | done        |
-| 5   | Search & explore screen            | Phase 1    | in-progress |
-| 6   | Your library & folder browser      | Phase 1    | in-progress |
-| 7   | Liked songs screen                 | Phase 1    | in-progress |
-| 8   | Playlists & playlist detail        | Phase 1    | in-progress |
-| 9   | Albums & album detail              | Phase 1    | in-progress |
+| 5   | Search & explore screen            | Phase 1    | done        |
+| 6   | Your library & folder browser      | Phase 1    | done        |
+| 7   | Liked songs screen                 | Phase 1    | done        |
+| 8   | Playlists & playlist detail        | Phase 1    | done        |
+| 9   | Albums & album detail              | Phase 1    | done        |
 | 10  | Artists & artist profile           | Phase 1    | done        |
-| 11  | Queue, lyrics & settings overlays  | Phase 1    | in-progress |
-| 12  | Now playing fullscreen view        | Phase 1    | in-progress |
-| 13  | Data model & SQLite storage        | Phase 2    | in-progress |
+| 11  | Queue, lyrics & settings overlays  | Phase 1    | done        |
+| 12  | Now playing fullscreen view        | Phase 1    | done        |
+| 13  | Data model & SQLite storage        | Phase 2    | done        |
 | 14  | Core audio playback engine         | Phase 2    | done        |
 | 15  | Local library scanner & metadata   | Phase 2    | done        |
 | 16  | Playlists & favorites persistence  | Phase 2    | done        |
@@ -33,6 +33,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 20  | Albums and album detail persistence | Phase 2    | done |
 | 21  | Artists and artist profile persistence | Phase 2    | done        |
 | 22  | Local file lyrics parser and metadata extraction | Phase 2    | in-progress |
+| 23  | Home listening history and popular tracks persistence | Phase 2    | in-progress |
 
 ## Foundations
 
@@ -122,7 +123,7 @@ spec [0002](../specs/0002-home-discovery-screen/index.md)
         code in `src/pages/Home.tsx`, `src/components/home/`, `src/store/usePlayerStore.ts`
 - [x] Verify it: `/check verify home & discovery screen`
 
-### 5. Search & explore screen · in-progress
+### 5. Search & explore screen · done
 
 Create the search interface with instant query input, filter category pills, and categorized result cards for tracks, albums, and artists.
 **Done when:** selecting Search opens the search screen, typing filters mock music items by title, artist, or genre, and category chips update visible cards.
@@ -138,7 +139,7 @@ spec [0004](../specs/0004-search-explore-screen/index.md)
         code in `src/pages/Search.tsx`, `src/components/search/`, `src/store/useSearchStore.ts`
 - [x] Verify it: `/check verify search & explore screen`
 
-### 6. Your library & folder browser · in-progress
+### 6. Your library & folder browser · done
 
 Construct the local library overview screen displaying indexed songs table, folder paths list, and folder picker action button.
 **Done when:** selecting Your Library presents the song table with sortable columns, total track count, and a clickable add music folder action card.
@@ -154,9 +155,9 @@ spec [0005](../specs/0005-your-library-folder-browser/index.md)
   - [x] Native system folder picker dialog integration and review finding F-1 resolution (Finding F-1)
         code in `src/pages/Library.tsx`, `src/components/library/`, `src/store/useLibraryStore.ts`, `src-tauri/Cargo.toml`, `src/test/libraryFolderPicker.test.tsx`
 - [x] Verify it: `/check verify your library & folder browser`
-- [x] Review it: `/check review your library & folder browser`, findings in `docs/reviews/2026-10-30-feat-your-library-folder-browser.md`, verdict: Changes requested
+- [x] Review it: `/check review your library & folder browser`, findings in `docs/reviews/2026-10-30-feat-your-library-folder-browser.md`, verdict: Approved (REV-1 and REV-2 resolved)
 
-### 7. Liked songs screen · in-progress
+### 7. Liked songs screen · done
 
 Assemble the liked tracks collection view with decorative header banner, track statistics, play all action, and favorited songs list.
 **Done when:** navigating to Liked Songs shows the heart hero banner, total count and duration, with interactive heart buttons that toggle track like states.
@@ -172,7 +173,7 @@ spec [0006](../specs/0006-liked-songs-screen/index.md)
         code in `src/pages/LikedSongs.tsx`, `src/components/liked/`, `src/store/useLikedSongsStore.ts`
 - [x] Verify it: `/check verify liked songs screen`
 
-### 8. Playlists & playlist detail · in-progress
+### 8. Playlists & playlist detail · done
 
 Display user playlist cards grid, new playlist creation trigger, and dedicated playlist detail view with custom cover, tracklist, and action buttons.
 **Done when:** clicking Playlists renders the playlist collection, clicking a playlist opens its detail view with track list, and new playlist opens a creation prompt.
@@ -188,7 +189,7 @@ spec [0007](../specs/0007-playlists-playlist-detail/index.md)
         code in `src/pages/Playlists.tsx`, `src/components/playlists/`, `src/store/usePlaylistStore.ts`
 - [x] Verify it: `/check verify playlists & playlist detail`
 
-### 9. Albums & album detail · in-progress
+### 9. Albums & album detail · done
 
 Build the album collection grid with cover art, release year, and detailed album view featuring header metadata, artist link, and numbered tracklist.
 **Done when:** selecting Albums displays the album grid, clicking an album navigates to the album detail layout showing all tracks, durations, and release year.
@@ -220,7 +221,7 @@ spec [0009](../specs/0009-artists-artist-profile/index.md)
         code in `src/pages/Artists.tsx`, `src/components/artists/`, `src/store/useArtistStore.ts`
 - [x] Verify it: `/check verify artists & artist profile`
 
-### 11. Queue, lyrics & settings overlays · in-progress
+### 11. Queue, lyrics & settings overlays · done
 
 Build the slide out now playing queue drawer, timed lyrics overlay modal, and audio preferences settings panel.
 **Done when:** clicking queue or lyrics in the player bar toggles their respective drawers or modals, and settings allows selecting mock audio devices and visualizer styles.
@@ -237,7 +238,7 @@ spec [0010](../specs/0010-queue-lyrics-settings-overlays/index.md)
         code in `src/components/queue/`, `src/components/lyrics/`, `src/components/settings/`, `src/store/useOverlayStore.ts`, `src/store/useSettingsStore.ts`
 - [x] Verify it: `/check verify queue, lyrics & settings overlays`
 
-### 12. Now playing fullscreen view · in-progress
+### 12. Now playing fullscreen view · done
 
 Fullscreen immersion view for the active track with enlarged album artwork, full width timeline scrub bar, dedicated playback transport controls, and return navigation to the prior screen.
 **Done when:** clicking the track thumbnail or song title in PlayerFooter opens the fullscreen now playing view without sidebar or bottom player bar, and clicking the return button restores the previous screen.
@@ -256,7 +257,7 @@ spec [0011](../specs/0011-now-playing-fullscreen-view/index.md)
 
 ## Phase 2: Backend wiring & persistence
 
-### 13. Data model & SQLite storage · in-progress
+### 13. Data model & SQLite storage · done
 
 Define core Rust and TypeScript entities for Track, Album, Artist, Playlist, and PlaybackState, with SQLite schema migrations and connection pool.
 **Done when:** database migrations create tables with indices for fast search, and Rust models serialize to TypeScript types cleanly.
@@ -388,6 +389,23 @@ spec [0020](../specs/0020-local-file-lyrics-parser-metadata-extraction/index.md)
   - [ ] LyricsModal and FullscreenLyricsView integration with seeking arithmetic and offset controls (AC-8, AC-9, AC-10)
 - [ ] Verify it: `/check verify local file lyrics parser and metadata extraction`
 - [ ] Test it: `/test local file lyrics parser and metadata extraction`
+
+### 23. Home listening history and popular tracks persistence · in-progress
+
+Connect the Home discovery screen to local SQLite listening history and popular track play counts, replacing static mock fixtures with real playback analytics and live event updates.
+**Done when:** playing songs records listening history on audio milestones, the Home carousel displays deduplicated recent tracks from SQLite, popular tracks rank local music by play count with backfill, and clear history removes events while keeping track stats.
+
+spec [0022](../specs/0022-home-listening-history-popular-tracks-persistence/index.md)
+
+- [x] Design it (spec): `/architect home & discovery screen: wire listening history and popular tracks to SQLite`
+- [x] Build it: `/develop home listening history and popular tracks persistence`
+  - [x] Migration V005 schema and Rust backend history repository with batch pruning (AC-1, AC-2, AC-3, AC-4)
+  - [x] Native audio engine context passing, milestone latch, and Tauri event emission (AC-5, AC-6, AC-7)
+  - [x] TypeScript database client service and DTO adapters with artwork formatting (AC-8, AC-9)
+  - [x] Zustand usePlayerStore SQLite hydration, event listener, and scanner sync (AC-10, AC-11, AC-14)
+  - [x] Home UI components wiring with dynamic showcase, deduplicated carousel, and contextual empty states (AC-12, AC-13)
+- [ ] Verify it: `/check verify home listening history and popular tracks persistence`
+- [ ] Test it: `/test home listening history and popular tracks persistence`
 
 ## Deferred
 

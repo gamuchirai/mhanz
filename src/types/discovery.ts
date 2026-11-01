@@ -30,6 +30,7 @@ export interface ShowcaseItem {
   bannerImageUrl: string;
   actionType: "play_track" | "play_playlist" | "navigate";
   targetId: string;
+  description?: string;
   track?: Track;
 }
 

@@ -25,6 +25,8 @@ pub struct AudioPlaybackState {
     pub is_muted: bool,
     pub session_id: u64,
     pub play_count_recorded: bool,
+    pub context_title: Option<String>,
+    pub context_type: Option<String>,
 }
 
 impl Default for AudioPlaybackState {
@@ -39,6 +41,8 @@ impl Default for AudioPlaybackState {
             is_muted: false,
             session_id: 0,
             play_count_recorded: false,
+            context_title: None,
+            context_type: None,
         }
     }
 }

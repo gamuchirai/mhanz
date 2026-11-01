@@ -305,3 +305,20 @@ pub struct SearchResultsDto {
     /// Measured query execution duration in milliseconds.
     pub execution_time_ms: f64,
 }
+
+/// Playback history entry linking a recorded listening session to a full track entity.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct PlayHistoryItemDto {
+    /// Unique identifier for the playback event.
+    pub id: String,
+    /// Associated track identifier.
+    pub track_id: String,
+    /// Epoch timestamp in seconds when the playback milestone was reached.
+    pub played_at: i64,
+    /// Optional title of the playback context (e.g. album or playlist title).
+    pub context_title: Option<String>,
+    /// Optional type of the playback context (e.g. album, playlist, artist, liked, library).
+    pub context_type: Option<String>,
+    /// Full joined track entity.
+    pub track: TrackDto,
+}
