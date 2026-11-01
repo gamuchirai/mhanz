@@ -79,6 +79,10 @@ export function App() {
       .getState()
       .initializeAlbums()
       .catch(() => {});
+    useArtistStore
+      .getState()
+      .initializeArtists()
+      .catch(() => {});
 
     async function testBackend() {
       try {

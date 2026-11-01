@@ -20,19 +20,10 @@ export function ArtistDiscography({ artistId, onNavigate }: ArtistDiscographyPro
   ];
 
   const handleReleaseClick = (release: ArtistRelease) => {
-    // If the release corresponds to an album, activate it and deep-link to Albums screen (AC-6)
-    const storeAlbums = useAlbumStore.getState().albums;
-    const matchedAlbum = storeAlbums.find((a) => a.id === release.id);
-
-    if (matchedAlbum || release.type === "album") {
-      useAlbumStore.getState().setActiveAlbumId(release.id);
-      onNavigate?.("Albums");
-    }
+    // Activate album and navigate to Albums view (AC-9)
+    useAlbumStore.getState().setActiveAlbumId(release.id);
+    onNavigate?.("Albums");
   };
-
-  if (releases.length === 0 && filter === "all") {
-    return null;
-  }
 
   return (
     <section
@@ -118,7 +109,9 @@ export function ArtistDiscography({ artistId, onNavigate }: ArtistDiscographyPro
             border: "1px dashed rgba(255, 255, 255, 0.06)",
           }}
         >
-          No releases found for this category.
+          {filter === "all"
+            ? "No discography releases found for this artist."
+            : "No releases found for this category."}
         </div>
       ) : (
         <div

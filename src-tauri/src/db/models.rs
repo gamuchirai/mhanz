@@ -191,6 +191,8 @@ pub struct ArtistDto {
     pub track_count: u32,
     /// Total count of albums by this artist in the local library.
     pub album_count: u32,
+    /// Total aggregated plays of all tracks by this artist.
+    pub total_plays: u64,
     /// Record creation timestamp.
     pub created_at: i64,
     /// Record update timestamp.

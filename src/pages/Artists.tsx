@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useActiveArtist, useActiveArtistId, useArtistStore } from "../store/useArtistStore";
 import { ArtistHeader } from "../components/artists/ArtistHeader";
 import { ArtistGrid } from "../components/artists/ArtistGrid";
@@ -14,6 +15,15 @@ export function Artists({ onNavigate }: ArtistsPageProps = {}) {
   const activeArtistId = useActiveArtistId();
   const activeArtist = useActiveArtist();
   const setActiveArtistId = useArtistStore((state) => state.setActiveArtistId);
+  const isLoadingProfile = useArtistStore((state) => state.isLoadingProfile);
+  const isLoaded = useArtistStore((state) => state.isLoaded);
+  const initializeArtists = useArtistStore((state) => state.initializeArtists);
+
+  useEffect(() => {
+    if (!isLoaded) {
+      initializeArtists().catch(() => {});
+    }
+  }, [isLoaded, initializeArtists]);
 
   return (
     <main
@@ -21,53 +31,93 @@ export function Artists({ onNavigate }: ArtistsPageProps = {}) {
       aria-label="Artists screen"
       className="min-w-0 h-full overflow-y-auto overflow-x-hidden p-6 max-lg:p-4 max-sm:p-3 flex flex-col gap-7 max-sm:gap-5 bg-[radial-gradient(1000px_480px_at_70%_0,rgba(214,122,84,0.12),transparent_70%)] bg-[#110c0a]"
     >
-      {!activeArtistId ? (
-        <>
-          <ArtistHeader />
-          <ArtistGrid />
-        </>
-      ) : !activeArtist ? (
-        /* Invalid or unknown artist ID fallback */
-        <div
-          role="status"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "64px 24px",
-            textAlign: "center",
-            gap: "16px",
-          }}
-        >
-          <h2 style={{ color: "var(--t)", margin: 0, fontSize: "20px" }}>Artist Not Found</h2>
-          <p style={{ color: "var(--m)", margin: 0, fontSize: "14px" }}>
-            The requested artist profile could not be located in your library.
-          </p>
-          <button
-            type="button"
-            onClick={() => setActiveArtistId(null)}
+      {/* Overview Grid Container preserved in document tree for scroll position preservation (AC-12) */}
+      <div
+        style={{
+          display: activeArtistId ? "none" : "flex",
+          flexDirection: "column",
+          gap: "1.75rem",
+          width: "100%",
+        }}
+      >
+        <ArtistHeader />
+        <ArtistGrid onNavigate={onNavigate} />
+      </div>
+
+      {/* Active Artist Profile View */}
+      {activeArtistId && (
+        isLoadingProfile ? (
+          /* Profile Loading Skeleton / Feedback (AC-6) */
+          <div
+            role="status"
+            aria-label="Loading artist profile"
             style={{
-              padding: "8px 20px",
-              borderRadius: "20px",
-              background: "var(--accent)",
-              color: "#18110f",
-              border: "none",
-              fontWeight: 600,
-              fontSize: "13px",
-              cursor: "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "64px 24px",
+              textAlign: "center",
+              gap: "16px",
             }}
           >
-            Return to Artists Grid
-          </button>
-        </div>
-      ) : (
-        <>
-          <ArtistProfileBanner artist={activeArtist} />
-          <ArtistPopularTracks artistId={activeArtist.id} />
-          <ArtistDiscography artistId={activeArtist.id} onNavigate={onNavigate} />
-          <ArtistBioCard artist={activeArtist} />
-        </>
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "50%",
+                border: "3px solid rgba(240, 169, 130, 0.2)",
+                borderTopColor: "var(--accent)",
+                animation: "spin 1s linear infinite",
+              }}
+            />
+            <p style={{ color: "var(--m)", fontSize: "14px", margin: 0 }}>
+              Loading artist profile...
+            </p>
+          </div>
+        ) : !activeArtist ? (
+          /* Invalid or unknown artist ID fallback */
+          <div
+            role="status"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "64px 24px",
+              textAlign: "center",
+              gap: "16px",
+            }}
+          >
+            <h2 style={{ color: "var(--t)", margin: 0, fontSize: "20px" }}>Artist Not Found</h2>
+            <p style={{ color: "var(--m)", margin: 0, fontSize: "14px" }}>
+              The requested artist profile could not be located in your library.
+            </p>
+            <button
+              type="button"
+              onClick={() => setActiveArtistId(null)}
+              style={{
+                padding: "8px 20px",
+                borderRadius: "20px",
+                background: "var(--accent)",
+                color: "#18110f",
+                border: "none",
+                fontWeight: 600,
+                fontSize: "13px",
+                cursor: "pointer",
+              }}
+            >
+              Return to Artists Grid
+            </button>
+          </div>
+        ) : (
+          <>
+            <ArtistProfileBanner artist={activeArtist} />
+            <ArtistPopularTracks artistId={activeArtist.id} />
+            <ArtistDiscography artistId={activeArtist.id} onNavigate={onNavigate} />
+            <ArtistBioCard artist={activeArtist} />
+          </>
+        )
       )}
     </main>
   );

@@ -422,6 +422,7 @@ mod tests {
             avatar_path: None,
             track_count: 0,
             album_count: 0,
+            total_plays: 0,
             created_at: 1700000000,
             updated_at: 1700000000,
         };
@@ -567,5 +568,141 @@ mod tests {
             albums_derived[0].is_favorite,
             "Album should be marked favorite when 50% or more tracks are liked"
         );
+    }
+
+    #[test]
+    fn test_artist_crud_play_count_and_profile_persistence() {
+        let mgr = DatabaseManager::new_in_memory().expect("In memory database should open");
+        let state = DbState::new(mgr);
+
+        let artist = ArtistDto {
+            id: "art-amina".to_string(),
+            name: "Amina V".to_string(),
+            bio: Some("Afro house producer and composer".to_string()),
+            avatar_path: Some("/art/amina.jpg".to_string()),
+            track_count: 0,
+            album_count: 0,
+            total_plays: 0,
+            created_at: 1700000000,
+            updated_at: 1700000000,
+        };
+        state
+            .0
+            .with_conn(|conn| catalog_repo::upsert_artist(conn, &artist))
+            .expect("Artist inserted");
+
+        let album = AlbumDto {
+            id: "alb-amina-1".to_string(),
+            title: "Timeless Vibrations".to_string(),
+            artist_id: Some("art-amina".to_string()),
+            artist_name: "Amina V".to_string(),
+            year: Some(2024),
+            genre: Some("Afro House".to_string()),
+            cover_art_path: Some("/art/timeless.jpg".to_string()),
+            total_discs: 1,
+            track_count: 0,
+            total_duration: 0.0,
+            is_favorite: false,
+            created_at: 1700000000,
+            updated_at: 1700000000,
+        };
+        state
+            .0
+            .with_conn(|conn| catalog_repo::upsert_album(conn, &album))
+            .expect("Album inserted");
+
+        let track1 = TrackDto {
+            id: "trk-am1".to_string(),
+            file_path: "/music/solitary.flac".to_string(),
+            title: "Solitary Horizon".to_string(),
+            artist_id: Some("art-amina".to_string()),
+            artist_name: "Amina V".to_string(),
+            album_id: Some("alb-amina-1".to_string()),
+            album_name: Some("Timeless Vibrations".to_string()),
+            album_artist: None,
+            duration: 210.0,
+            year: Some(2024),
+            genre: Some("Afro House".to_string()),
+            disc_number: 1,
+            track_number: Some(1),
+            bitrate: Some(1411),
+            format: "flac".to_string(),
+            cover_art_path: None,
+            is_favorite: true,
+            liked_at: Some(1700000000),
+            play_count: 42,
+            last_played_at: Some(1700000500),
+            file_modified_at: 1700000000,
+            file_size_bytes: 35000000,
+            folder_id: None,
+            created_at: 1700000000,
+            updated_at: 1700000000,
+        };
+
+        let track2 = TrackDto {
+            id: "trk-am2".to_string(),
+            file_path: "/music/dusk.flac".to_string(),
+            title: "Dusk Whispers".to_string(),
+            artist_id: Some("art-amina".to_string()),
+            artist_name: "Amina V".to_string(),
+            album_id: Some("alb-amina-1".to_string()),
+            album_name: Some("Timeless Vibrations".to_string()),
+            album_artist: None,
+            duration: 195.0,
+            year: Some(2024),
+            genre: Some("Afro House".to_string()),
+            disc_number: 1,
+            track_number: Some(2),
+            bitrate: Some(1411),
+            format: "flac".to_string(),
+            cover_art_path: None,
+            is_favorite: false,
+            liked_at: None,
+            play_count: 15,
+            last_played_at: Some(1700000200),
+            file_modified_at: 1700000000,
+            file_size_bytes: 31000000,
+            folder_id: None,
+            created_at: 1700000000,
+            updated_at: 1700000000,
+        };
+
+        state
+            .0
+            .with_conn(|conn| {
+                track_repo::upsert_track(conn, &track1)?;
+                track_repo::upsert_track(conn, &track2)?;
+                Ok(())
+            })
+            .expect("Tracks inserted");
+
+        // Verify get_artists aggregates total_plays, track_count, album_count
+        let artists = state.get_artists().expect("Artists retrieved");
+        assert_eq!(artists.len(), 1);
+        assert_eq!(artists[0].name, "Amina V");
+        assert_eq!(artists[0].track_count, 2);
+        assert_eq!(artists[0].album_count, 1);
+        assert_eq!(artists[0].total_plays, 57);
+
+        // Verify get_artist_profile returns detailed artist with top tracks ranked by play_count
+        let profile = state
+            .get_artist_profile("art-amina")
+            .expect("Profile retrieved")
+            .expect("Profile found");
+        assert_eq!(profile.artist.name, "Amina V");
+        assert_eq!(profile.artist.total_plays, 57);
+        assert_eq!(profile.top_tracks.len(), 2);
+        assert_eq!(profile.top_tracks[0].title, "Solitary Horizon");
+        assert_eq!(profile.top_tracks[0].play_count, 42);
+        assert_eq!(profile.top_tracks[1].title, "Dusk Whispers");
+        assert_eq!(profile.top_tracks[1].play_count, 15);
+        assert_eq!(profile.albums.len(), 1);
+        assert_eq!(profile.albums[0].title, "Timeless Vibrations");
+
+        // Verify nonexistent artist returns None
+        let missing = state
+            .get_artist_profile("nonexistent")
+            .expect("Query succeeds");
+        assert!(missing.is_none());
     }
 }

@@ -12,12 +12,15 @@ export function ArtistProfileBanner({ artist }: ArtistProfileBannerProps) {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 
   const setActiveArtistId = useArtistStore((state) => state.setActiveArtistId);
-  const toggleFollowArtist = useArtistStore((state) => state.toggleFollowArtist);
   const playArtistTopTracks = useArtistStore((state) => state.playArtistTopTracks);
 
   const hasImage = Boolean(artist.avatarUrl) && !imageError;
   const avatarScheme = getArtistGradient(artist.id || artist.name);
   const initials = getArtistInitials(artist.name);
+
+  const albumCount = artist.albumCount ?? artist.albumIds?.length ?? 0;
+  const trackCount = artist.trackCount ?? artist.popularTrackIds?.length ?? 0;
+  const totalPlays = artist.totalPlays ?? artist.monthlyListeners ?? 0;
 
   return (
     <div
@@ -195,20 +198,21 @@ export function ArtistProfileBanner({ artist }: ArtistProfileBannerProps) {
               </span>
             )}
 
-            {artist.genres.map((genre) => (
-              <span
-                key={genre}
-                style={{
-                  fontSize: "11px",
-                  color: "var(--m)",
-                  background: "rgba(255, 255, 255, 0.05)",
-                  padding: "3px 8px",
-                  borderRadius: "10px",
-                }}
-              >
-                {genre}
-              </span>
-            ))}
+            {artist.genres &&
+              artist.genres.map((genre) => (
+                <span
+                  key={genre}
+                  style={{
+                    fontSize: "11px",
+                    color: "var(--m)",
+                    background: "rgba(255, 255, 255, 0.05)",
+                    padding: "3px 8px",
+                    borderRadius: "10px",
+                  }}
+                >
+                  {genre}
+                </span>
+              ))}
           </div>
 
           {/* Artist Name Header */}
@@ -225,7 +229,7 @@ export function ArtistProfileBanner({ artist }: ArtistProfileBannerProps) {
             {artist.name}
           </h1>
 
-          {/* Library & Play Statistics */}
+          {/* Library & Play Statistics (AC-5, AC-7) */}
           <div
             style={{
               display: "flex",
@@ -237,12 +241,14 @@ export function ArtistProfileBanner({ artist }: ArtistProfileBannerProps) {
             }}
           >
             <span style={{ color: "var(--t)", fontWeight: 500 }}>
-              {artist.albumIds.length} {artist.albumIds.length === 1 ? "album" : "albums"}
+              {albumCount} {albumCount === 1 ? "album" : "albums"}
             </span>
             <span>•</span>
-            <span>{artist.popularTrackIds.length} tracks</span>
+            <span>
+              {trackCount} {trackCount === 1 ? "track" : "tracks"}
+            </span>
             <span>•</span>
-            <span>{formatWithCommas(artist.monthlyListeners)} plays</span>
+            <span>{formatWithCommas(totalPlays)} plays</span>
           </div>
 
           {/* Action Controls Row */}
@@ -282,49 +288,6 @@ export function ArtistProfileBanner({ artist }: ArtistProfileBannerProps) {
                 <use href="#play" />
               </svg>
               <span>Play</span>
-            </button>
-
-            {/* Favorite Toggle Button (AC-10) */}
-            <button
-              type="button"
-              onClick={() => toggleFollowArtist(artist.id)}
-              aria-label={
-                artist.isFollowed ? `Favorited ${artist.name}` : `Favorite ${artist.name}`
-              }
-              aria-pressed={artist.isFollowed}
-              style={{
-                padding: "9px 20px",
-                borderRadius: "24px",
-                border: artist.isFollowed
-                  ? "1px solid rgba(240, 169, 130, 0.4)"
-                  : "1px solid rgba(255, 255, 255, 0.2)",
-                background: artist.isFollowed
-                  ? "rgba(240, 169, 130, 0.14)"
-                  : "rgba(255, 255, 255, 0.05)",
-                color: artist.isFollowed ? "var(--accent)" : "var(--t)",
-                fontWeight: 600,
-                fontSize: "13px",
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-              }}
-              onMouseEnter={(e) => {
-                if (artist.isFollowed) {
-                  e.currentTarget.style.background = "rgba(240, 169, 130, 0.22)";
-                } else {
-                  e.currentTarget.style.borderColor = "var(--accent)";
-                  e.currentTarget.style.color = "var(--accent)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (artist.isFollowed) {
-                  e.currentTarget.style.background = "rgba(240, 169, 130, 0.14)";
-                } else {
-                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
-                  e.currentTarget.style.color = "var(--t)";
-                }
-              }}
-            >
-              {artist.isFollowed ? "Favorited" : "Favorite"}
             </button>
 
             {/* Options Menu Button */}
@@ -424,7 +387,7 @@ export function ArtistProfileBanner({ artist }: ArtistProfileBannerProps) {
                     }
                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                   >
-                    Copy Artist Link
+                    Copy Artist Name
                   </button>
                 </div>
               )}

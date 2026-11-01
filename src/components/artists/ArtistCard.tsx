@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Artist } from "../../types/artists";
 import { useArtistStore } from "../../store/useArtistStore";
-import { getArtistGradient, getArtistInitials } from "../../utils/avatarUtils";
+import { getArtistGradient, getArtistInitials, formatWithCommas } from "../../utils/avatarUtils";
 
 interface ArtistCardProps {
   artist: Artist;
@@ -12,20 +12,18 @@ export function ArtistCard({ artist }: ArtistCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   const setActiveArtistId = useArtistStore((state) => state.setActiveArtistId);
-  const toggleFollowArtist = useArtistStore((state) => state.toggleFollowArtist);
   const playArtistTopTracks = useArtistStore((state) => state.playArtistTopTracks);
 
   const hasImage = Boolean(artist.avatarUrl) && !imageError;
   const avatarScheme = getArtistGradient(artist.id || artist.name);
   const initials = getArtistInitials(artist.name);
 
+  const albumCount = artist.albumCount ?? artist.albumIds?.length ?? 0;
+  const trackCount = artist.trackCount ?? artist.popularTrackIds?.length ?? 0;
+  const totalPlays = artist.totalPlays ?? artist.monthlyListeners ?? 0;
+
   const handleCardClick = () => {
     setActiveArtistId(artist.id);
-  };
-
-  const handleFollowClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggleFollowArtist(artist.id);
   };
 
   const handleQuickPlay = (e: React.MouseEvent) => {
@@ -168,7 +166,7 @@ export function ArtistCard({ artist }: ArtistCardProps) {
         )}
       </div>
 
-      {/* Artist Information */}
+      {/* Artist Information with local library metrics (AC-5) */}
       <div
         style={{
           display: "flex",
@@ -230,49 +228,19 @@ export function ArtistCard({ artist }: ArtistCardProps) {
             fontWeight: 400,
           }}
         >
-          {artist.albumIds.length} {artist.albumIds.length === 1 ? "album" : "albums"}
+          {albumCount} {albumCount === 1 ? "album" : "albums"}
+        </span>
+        <span
+          style={{
+            fontSize: "11px",
+            color: "var(--m)",
+            fontWeight: 400,
+            opacity: 0.85,
+          }}
+        >
+          {trackCount} {trackCount === 1 ? "track" : "tracks"} • {formatWithCommas(totalPlays)} plays
         </span>
       </div>
-
-      {/* Favorite Button (AC-1, AC-10) */}
-      <button
-        type="button"
-        onClick={handleFollowClick}
-        aria-label={artist.isFollowed ? `Favorited ${artist.name}` : `Favorite ${artist.name}`}
-        aria-pressed={artist.isFollowed}
-        style={{
-          marginTop: "2px",
-          padding: "6px 16px",
-          borderRadius: "16px",
-          border: artist.isFollowed
-            ? "1px solid rgba(240, 169, 130, 0.35)"
-            : "1px solid rgba(255, 255, 255, 0.12)",
-          background: artist.isFollowed ? "rgba(240, 169, 130, 0.12)" : "rgba(255, 255, 255, 0.04)",
-          color: artist.isFollowed ? "var(--accent)" : "var(--t)",
-          fontSize: "12px",
-          fontWeight: 600,
-          cursor: "pointer",
-          transition: "all 0.15s ease",
-        }}
-        onMouseEnter={(e) => {
-          if (artist.isFollowed) {
-            e.currentTarget.style.background = "rgba(240, 169, 130, 0.2)";
-          } else {
-            e.currentTarget.style.borderColor = "var(--accent)";
-            e.currentTarget.style.color = "var(--accent)";
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (artist.isFollowed) {
-            e.currentTarget.style.background = "rgba(240, 169, 130, 0.12)";
-          } else {
-            e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.12)";
-            e.currentTarget.style.color = "var(--t)";
-          }
-        }}
-      >
-        {artist.isFollowed ? "Favorited" : "Favorite"}
-      </button>
     </article>
   );
 }

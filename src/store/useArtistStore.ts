@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { isTauri } from "@tauri-apps/api/core";
 import { create } from "zustand";
 import type {
   Artist,
@@ -9,12 +10,83 @@ import type {
   SortDirection,
 } from "../types/artists";
 import type { Track } from "../types/discovery";
+import type { AlbumDto, ArtistDto, TrackDto } from "../types/database";
 import {
   initialArtists,
   initialArtistPopularTracks,
   initialArtistReleases,
 } from "../data/artistFixtures";
+import { dbGetArtists, dbGetArtistProfile } from "../services/db";
+import { formatCoverArtUrl, onScanCompleted } from "../services/scanner";
 import { usePlayerStore } from "./usePlayerStore";
+
+/**
+ * Maps SQLite ArtistDto to frontend Artist domain model.
+ */
+export function mapArtistDtoToArtist(dto: ArtistDto): Artist {
+  return {
+    id: dto.id,
+    name: dto.name,
+    avatarUrl: dto.avatar_path ? formatCoverArtUrl(dto.avatar_path) : "",
+    heroBannerUrl: "",
+    bio: dto.bio || undefined,
+    trackCount: dto.track_count,
+    albumCount: dto.album_count,
+    totalPlays: dto.total_plays,
+    genres: [],
+    createdAt: new Date(dto.created_at * 1000).toISOString(),
+    // Backward-compatible fields
+    monthlyListeners: dto.total_plays,
+    followerCount: 0,
+    isFollowed: false,
+    verified: true,
+    popularTrackIds: [],
+    albumIds: [],
+  };
+}
+
+/**
+ * Maps SQLite TrackDto to frontend ArtistPopularTrack model.
+ */
+export function mapTrackDtoToArtistPopularTrack(t: TrackDto): ArtistPopularTrack {
+  return {
+    id: t.id,
+    artistId: t.artist_id || "",
+    artistName: t.artist_name,
+    title: t.title,
+    albumId: t.album_id || "",
+    albumTitle: t.album_name || "Unknown Album",
+    coverUrl: t.cover_art_path ? formatCoverArtUrl(t.cover_art_path) : "",
+    playCount: t.play_count,
+    duration: Math.round(t.duration),
+    isLiked: t.is_favorite,
+    audioUrl: t.file_path,
+  };
+}
+
+/**
+ * Maps SQLite AlbumDto to frontend ArtistRelease model categorized by track count (AC-10).
+ */
+export function mapAlbumDtoToArtistRelease(a: AlbumDto): ArtistRelease {
+  let releaseType: "album" | "single" | "ep";
+  if (a.track_count === 1) {
+    releaseType = "single";
+  } else if (a.track_count >= 2 && a.track_count <= 3) {
+    releaseType = "ep";
+  } else {
+    releaseType = "album";
+  }
+
+  return {
+    id: a.id,
+    artistId: a.artist_id || "",
+    title: a.title,
+    coverUrl: a.cover_art_path ? formatCoverArtUrl(a.cover_art_path) : "",
+    releaseYear: a.year || 0,
+    type: releaseType,
+    trackCount: a.track_count,
+  };
+}
 
 export interface ArtistStoreState {
   artists: Artist[];
@@ -28,9 +100,13 @@ export interface ArtistStoreState {
   followedArtistIds: string[];
   isPopularExpanded: boolean;
   isLoading: boolean;
+  isLoaded: boolean;
+  isLoadingProfile: boolean;
   error: string | null;
 
   // Actions
+  initializeArtists: () => Promise<void>;
+  loadArtistProfile: (id: string, force?: boolean) => Promise<void>;
   setActiveArtistId: (id: string | null) => void;
   setSearchQuery: (query: string) => void;
   setSortBy: (sortBy: ArtistSortOption, direction?: SortDirection) => void;
@@ -58,10 +134,125 @@ export const useArtistStore = create<ArtistStoreState>()((set, get) => ({
   followedArtistIds: initialFollowedIds,
   isPopularExpanded: false,
   isLoading: false,
+  isLoaded: false,
+  isLoadingProfile: false,
   error: null,
 
+  initializeArtists: async () => {
+    if (!isTauri()) {
+      // Browser preview and fallback (AC-2)
+      set({
+        artists: initialArtists,
+        artistPopularTracks: initialArtistPopularTracks,
+        artistReleases: initialArtistReleases,
+        isLoading: false,
+        isLoaded: true,
+      });
+      return;
+    }
+
+    set({ isLoading: true, error: null });
+    try {
+      const dtos = await dbGetArtists();
+      const artists = dtos.map(mapArtistDtoToArtist);
+      set({
+        artists,
+        isLoading: false,
+        isLoaded: true,
+      });
+    } catch (err) {
+      console.error("Failed to initialize artists from SQLite:", err);
+      set({
+        error: err instanceof Error ? err.message : String(err),
+        isLoading: false,
+        isLoaded: true,
+      });
+    }
+  },
+
+  loadArtistProfile: async (id: string, force = false): Promise<void> => {
+    const existingTracks = get().artistPopularTracks[id];
+    if (!force && existingTracks && existingTracks.length > 0) {
+      return;
+    }
+
+    if (!isTauri()) {
+      // In web browser fallback, use fixtures if available
+      set({ isLoadingProfile: false });
+      return;
+    }
+
+    set({ isLoadingProfile: true, error: null });
+    try {
+      const profileDto = await dbGetArtistProfile(id);
+      if (!profileDto) {
+        set({ isLoadingProfile: false });
+        return;
+      }
+
+      const topTracks = profileDto.top_tracks.map(mapTrackDtoToArtistPopularTrack);
+      const releases = profileDto.albums.map(mapAlbumDtoToArtistRelease);
+
+      // Keep the artist item in the artists list in sync with fresh database stats
+      const currentArtists = get().artists;
+      const foundIdx = currentArtists.findIndex((a) => a.id === id);
+      let updatedArtists = currentArtists;
+
+      if (foundIdx >= 0) {
+        const existing = currentArtists[foundIdx];
+        const updatedArtist: Artist = {
+          ...existing,
+          totalPlays: profileDto.artist.total_plays,
+          trackCount: profileDto.artist.track_count,
+          albumCount: profileDto.artist.album_count,
+          bio: profileDto.artist.bio || existing.bio,
+          avatarUrl: profileDto.artist.avatar_path
+            ? formatCoverArtUrl(profileDto.artist.avatar_path)
+            : existing.avatarUrl,
+        };
+        updatedArtists = [
+          ...currentArtists.slice(0, foundIdx),
+          updatedArtist,
+          ...currentArtists.slice(foundIdx + 1),
+        ];
+      }
+
+      set((state) => ({
+        artists: updatedArtists,
+        artistPopularTracks: {
+          ...state.artistPopularTracks,
+          [id]: topTracks,
+        },
+        artistReleases: {
+          ...state.artistReleases,
+          [id]: releases,
+        },
+        isLoadingProfile: false,
+      }));
+    } catch (err) {
+      console.error(`Failed to load artist profile for ${id}:`, err);
+      set({
+        error: err instanceof Error ? err.message : String(err),
+        isLoadingProfile: false,
+      });
+    }
+  },
+
   setActiveArtistId: (id: string | null) => {
-    set({ activeArtistId: id, isPopularExpanded: false, discographyFilter: "all" });
+    set({
+      activeArtistId: id,
+      isPopularExpanded: false,
+      discographyFilter: "all",
+      isLoadingProfile: Boolean(id && isTauri() && !get().artistPopularTracks[id]),
+    });
+
+    if (id) {
+      get()
+        .loadArtistProfile(id)
+        .catch((err) => {
+          console.error(`Error loading profile for artist ${id}:`, err);
+        });
+    }
   },
 
   setSearchQuery: (query: string) => {
@@ -77,7 +268,6 @@ export const useArtistStore = create<ArtistStoreState>()((set, get) => ({
       if (currentSort === sortBy) {
         nextDirection = currentDirection === "asc" ? "desc" : "asc";
       } else {
-        // Popularity and albumCount default to desc; name defaults to asc
         nextDirection = sortBy === "name" ? "asc" : "desc";
       }
     }
@@ -100,31 +290,14 @@ export const useArtistStore = create<ArtistStoreState>()((set, get) => ({
   },
 
   toggleFollowArtist: (artistId: string) => {
-    const { followedArtistIds, artists } = get();
+    const { followedArtistIds } = get();
     const isCurrentlyFollowed = followedArtistIds.includes(artistId);
 
     const nextFollowedIds = isCurrentlyFollowed
       ? followedArtistIds.filter((id) => id !== artistId)
       : [...followedArtistIds, artistId];
 
-    const updatedArtists = artists.map((artist) => {
-      if (artist.id === artistId) {
-        const nextCount = isCurrentlyFollowed
-          ? Math.max(0, artist.followerCount - 1)
-          : artist.followerCount + 1;
-        return {
-          ...artist,
-          isFollowed: !isCurrentlyFollowed,
-          followerCount: nextCount,
-        };
-      }
-      return artist;
-    });
-
-    set({
-      followedArtistIds: nextFollowedIds,
-      artists: updatedArtists,
-    });
+    set({ followedArtistIds: nextFollowedIds });
   },
 
   playArtistTopTracks: (artistId: string, startIndex = 0) => {
@@ -142,7 +315,7 @@ export const useArtistStore = create<ArtistStoreState>()((set, get) => ({
       playsCount: t.playCount,
       isLiked: !!t.isLiked,
       filePath: t.audioUrl,
-      genre: artist?.genres[0] ?? "Afro",
+      genre: artist?.genres?.[0] ?? "Afro",
     }));
 
     const safeStartIndex = Math.max(0, Math.min(startIndex, playerTracks.length - 1));
@@ -170,6 +343,26 @@ export const useArtistStore = create<ArtistStoreState>()((set, get) => ({
   },
 }));
 
+// Automatic scanner completion synchronization (AC-11)
+if (typeof window !== "undefined") {
+  onScanCompleted(async () => {
+    if (isTauri()) {
+      try {
+        const dtos = await dbGetArtists();
+        const artists = dtos.map(mapArtistDtoToArtist);
+        useArtistStore.setState({ artists });
+
+        const activeId = useArtistStore.getState().activeArtistId;
+        if (activeId) {
+          await useArtistStore.getState().loadArtistProfile(activeId, true);
+        }
+      } catch (err) {
+        console.error("Failed to refresh artists on scan completion:", err);
+      }
+    }
+  }).catch(() => {});
+}
+
 // Granular selector hooks
 export function useArtists(): Artist[] {
   const artists = useArtistStore((state) => state.artists);
@@ -183,18 +376,22 @@ export function useArtists(): Artist[] {
       ? artists.filter(
           (a) =>
             a.name.toLowerCase().includes(query) ||
-            a.genres.some((g) => g.toLowerCase().includes(query))
+            (a.genres && a.genres.some((g) => g.toLowerCase().includes(query)))
         )
       : artists;
 
     return [...filtered].sort((a, b) => {
       let comparison = 0;
       if (sortBy === "popularity") {
-        comparison = a.monthlyListeners - b.monthlyListeners;
+        comparison =
+          (a.totalPlays ?? a.monthlyListeners ?? 0) -
+          (b.totalPlays ?? b.monthlyListeners ?? 0);
       } else if (sortBy === "name") {
         comparison = a.name.localeCompare(b.name);
       } else if (sortBy === "albumCount") {
-        comparison = a.albumIds.length - b.albumIds.length;
+        comparison =
+          (a.albumCount ?? a.albumIds?.length ?? 0) -
+          (b.albumCount ?? b.albumIds?.length ?? 0);
       }
 
       return sortDirection === "asc" ? comparison : -comparison;
@@ -222,8 +419,12 @@ export function useArtistPopularTracks(artistId: string | null): ArtistPopularTr
 
   return useMemo(() => {
     if (!rawTracks) return [];
-    // Always sort by playCount descending
-    return [...rawTracks].sort((a, b) => b.playCount - a.playCount);
+    // Primary order: playCount descending; secondary: title ascending (Invariants)
+    return [...rawTracks].sort((a, b) => {
+      const diff = b.playCount - a.playCount;
+      if (diff !== 0) return diff;
+      return a.title.localeCompare(b.title);
+    });
   }, [rawTracks]);
 }
 

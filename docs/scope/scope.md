@@ -362,12 +362,13 @@ Hydrate artists catalog and artist profile views from SQLite, persist real local
 spec [0021](../specs/0021-artists-artist-profile-persistence/index.md)
 
 - [x] Design it (spec): /architect artists and artist profile persistence
-- [ ] Build it: /develop artists and artist profile persistence
-  - [ ] Rust catalog repository total plays aggregation and DTO contract updates (AC-1, AC-4)
-  - [ ] TypeScript domain models and client IPC integration with asset formatting (AC-1, AC-2, AC-5, AC-6)
-  - [ ] Zustand store SQLite hydration, on demand profile fetching, and scanner auto refresh (AC-1, AC-4, AC-6, AC-11)
-  - [ ] UI components local metrics rendering, biography fallback, and scroll preservation (AC-3, AC-5, AC-7, AC-10, AC-12)
-  - [ ] Top tracks audio playback queueing and cross view album navigation (AC-8, AC-9)
+- [x] Build it: /develop artists and artist profile persistence
+  - [x] Rust catalog repository total plays aggregation and DTO contract updates (AC-1, AC-4)
+  - [x] TypeScript domain models and client IPC integration with asset formatting (AC-1, AC-2, AC-5, AC-6)
+  - [x] Zustand store SQLite hydration, on demand profile fetching, and scanner auto refresh (AC-1, AC-4, AC-6, AC-11)
+  - [x] UI components local metrics rendering, biography fallback, and scroll preservation (AC-3, AC-5, AC-7, AC-10, AC-12)
+  - [x] Top tracks audio playback queueing and cross view album navigation (AC-8, AC-9)
+  code in src/store/useArtistStore.ts, src-tauri/src/db/catalog_repo.rs, src/pages/Artists.tsx
 - [ ] Verify it: /check verify artists and artist profile persistence
 - [ ] Test it: /test artists and artist profile persistence
 
