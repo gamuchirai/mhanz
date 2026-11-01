@@ -1,7 +1,7 @@
 # 0020. Albums and album detail persistence
 
 **Date**: 2026-10-31
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

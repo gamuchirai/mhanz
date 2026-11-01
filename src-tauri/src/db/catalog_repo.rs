@@ -3,7 +3,9 @@
 use rusqlite::{params, Connection};
 
 use super::error::DatabaseError;
-use super::models::{AlbumDetailDto, AlbumDto, AlbumFavoriteResultDto, ArtistDto, ArtistProfileDto, TrackDto};
+use super::models::{
+    AlbumDetailDto, AlbumDto, AlbumFavoriteResultDto, ArtistDto, ArtistProfileDto, TrackDto,
+};
 use super::track_repo::{map_track_row, TRACK_SELECT_FIELDS};
 
 /// Returns total count of albums.
@@ -411,11 +413,7 @@ pub fn toggle_album_favorite(
         None => current_fav != 1,
     };
 
-    let (fav_int, favorited_at) = if next_fav {
-        (1, Some(now))
-    } else {
-        (0, None)
-    };
+    let (fav_int, favorited_at) = if next_fav { (1, Some(now)) } else { (0, None) };
 
     // Update album record
     tx.execute(

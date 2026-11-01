@@ -372,7 +372,8 @@ pub fn search_library(
         }
     }
 
-    let total_matches = (tracks.len() + albums.len() + artists.len() + playlists.len() + genres.len()) as u32;
+    let total_matches =
+        (tracks.len() + albums.len() + artists.len() + playlists.len() + genres.len()) as u32;
     let execution_time_ms = start_time.elapsed().as_secs_f64() * 1000.0;
 
     Ok(SearchResultsDto {
@@ -482,7 +483,8 @@ mod tests {
         conn.execute(
             "UPDATE tracks SET title = 'One More Time (2026 Remaster)' WHERE id = 'trk1'",
             [],
-        ).unwrap();
+        )
+        .unwrap();
 
         let updated_res = search_library(&conn, "Remaster", Some("songs"), None).unwrap();
         assert_eq!(updated_res.tracks.len(), 1);
@@ -493,14 +495,16 @@ mod tests {
         conn.execute(
             "UPDATE tracks SET play_count = 100, is_favorite = 1 WHERE id = 'trk1'",
             [],
-        ).unwrap();
+        )
+        .unwrap();
         let after_play_res = search_library(&conn, "Remaster", Some("songs"), None).unwrap();
         assert_eq!(after_play_res.tracks.len(), 1);
         assert_eq!(after_play_res.tracks[0].play_count, 100);
         assert!(after_play_res.tracks[0].is_favorite);
 
         // 6. Delete track trigger test
-        conn.execute("DELETE FROM tracks WHERE id = 'trk2'", []).unwrap();
+        conn.execute("DELETE FROM tracks WHERE id = 'trk2'", [])
+            .unwrap();
         let deleted_res = search_library(&conn, "Aerodynamic", Some("songs"), None).unwrap();
         assert_eq!(deleted_res.tracks.len(), 0);
     }

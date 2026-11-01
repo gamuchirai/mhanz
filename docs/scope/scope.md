@@ -30,7 +30,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 17  | Fast local library search indexing | Phase 2    | done        |
 | 18  | Desktop UI responsiveness          | Foundation | done        |
 | 19  | App branding & logo integration    | Foundation | done        |
-| 20  | Albums and album detail persistence | Phase 2    | in-progress |
+| 20  | Albums and album detail persistence | Phase 2    | done |
 | 21  | Artists and artist profile persistence | Phase 2    | in-progress |
 | 22  | Local file lyrics parser and metadata extraction | Phase 2    | in-progress |
 
@@ -336,7 +336,7 @@ spec [0014](../specs/0014-fast-local-library-search-indexing/index.md)
   - [x] Search UI playlist filter pill and playlist card grid integration with queue playback (AC-14, AC-15)
 - [x] Verify it: `/check verify fast local library search indexing`
 
-### 20. Albums and album detail persistence · in-progress
+### 20. Albums and album detail persistence · done
 
 Hydrate albums catalog and album detail views from SQLite, persist favorite album toggles across restarts, and synchronize with local library scanner updates.
 **Done when:** navigating to Albums loads scanned music albums from the database, opening an album shows its real tracklist and metadata from SQLite, and favorite states persist across restarts.
@@ -351,8 +351,8 @@ spec [0020](../specs/0020-albums-album-detail-persistence/index.md)
   - [x] Optimistic favorite toggling, derived 50 percent liked sync, and scanner refresh (AC-8, AC-9, AC-10)
   - [x] Playback queueing integration and persistence test suite (AC-11, AC-12)
         code in `src-tauri/migrations/V004__album_favorites.sql`, `src-tauri/src/db/`, `src-tauri/src/commands/db.rs`, `src/services/db.ts`, `src/services/favoritesSync.ts`, `src/store/useAlbumStore.ts`, `src/store/useLikedSongsStore.ts`, `src/test/albumsPersistence.test.tsx`
-- [ ] Verify it: `/check verify albums and album detail persistence`
-- [ ] Test it: `/test albums and album detail persistence`
+- [x] Verify it: `/check verify albums and album detail persistence`
+- [x] Test it: `/test albums and album detail persistence`
 
 ### 21. Artists and artist profile persistence · in-progress
 

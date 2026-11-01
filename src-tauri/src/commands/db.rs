@@ -3,9 +3,9 @@
 use tauri::State;
 
 use crate::db::{
-    AlbumDetailDto, AlbumDto, AlbumFavoriteResultDto, ArtistDto, ArtistProfileDto, DatabaseError, DatabaseStatusDto,
-    DbState, FolderDto, PaginatedTracksDto, PlaylistDetailDto, PlaylistDto, PlaylistInputDto,
-    SearchResultsDto, TrackDto, TrackFilterDto,
+    AlbumDetailDto, AlbumDto, AlbumFavoriteResultDto, ArtistDto, ArtistProfileDto, DatabaseError,
+    DatabaseStatusDto, DbState, FolderDto, PaginatedTracksDto, PlaylistDetailDto, PlaylistDto,
+    PlaylistInputDto, SearchResultsDto, TrackDto, TrackFilterDto,
 };
 
 /// Queries database health, migration schema version, and record statistics.
