@@ -1,4 +1,5 @@
-# Verify: albums & album detail persistence · spec 0020
+# Verify: Albums and album detail persistence · spec 0020 · updated 2026-10-31
+_Steps derived from spec 0020 acceptance criteria. `/check verify` runs these; `/test` locks the durable ones._
 
 ## UI / manual
 - [ ] Boot application and observe scanned local albums in Albums overview grid loaded from SQLite → AC-2, AC-3, AC-6
