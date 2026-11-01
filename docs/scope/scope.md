@@ -33,7 +33,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 20  | Albums and album detail persistence | Phase 2    | done |
 | 21  | Artists and artist profile persistence | Phase 2    | done        |
 | 22  | Local file lyrics parser and metadata extraction | Phase 2    | in-progress |
-| 23  | Home listening history and popular tracks persistence | Phase 2    | in-progress |
+| 23  | Home listening history and popular tracks persistence | Phase 2    | done |
 
 ## Foundations
 
@@ -390,7 +390,7 @@ spec [0020](../specs/0020-local-file-lyrics-parser-metadata-extraction/index.md)
 - [ ] Verify it: `/check verify local file lyrics parser and metadata extraction`
 - [ ] Test it: `/test local file lyrics parser and metadata extraction`
 
-### 23. Home listening history and popular tracks persistence · in-progress
+### 23. Home listening history and popular tracks persistence · done
 
 Connect the Home discovery screen to local SQLite listening history and popular track play counts, replacing static mock fixtures with real playback analytics and live event updates.
 **Done when:** playing songs records listening history on audio milestones, the Home carousel displays deduplicated recent tracks from SQLite, popular tracks rank local music by play count with backfill, and clear history removes events while keeping track stats.
