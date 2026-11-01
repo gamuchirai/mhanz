@@ -4,7 +4,7 @@ use tauri::State;
 
 use crate::db::{
     AlbumDetailDto, AlbumDto, AlbumFavoriteResultDto, ArtistDto, ArtistProfileDto, DatabaseError,
-    DatabaseStatusDto, DbState, FolderDto, PaginatedTracksDto, PlaylistDetailDto, PlaylistDto,
+    DatabaseStatusDto, DbState, FolderDto, PaginatedTracksDto, PlayHistoryItemDto, PlaylistDetailDto, PlaylistDto,
     PlaylistInputDto, SearchResultsDto, TrackDto, TrackFilterDto,
 };
 
@@ -219,4 +219,30 @@ pub async fn db_search_library(
     state: State<'_, DbState>,
 ) -> Result<SearchResultsDto, DatabaseError> {
     state.search_library(&query, category.as_deref(), limit)
+}
+
+/// Queries recent playback history deduplicated by track.
+#[tauri::command]
+pub async fn db_get_recent_plays(
+    limit: Option<u32>,
+    state: State<'_, DbState>,
+) -> Result<Vec<PlayHistoryItemDto>, DatabaseError> {
+    state.get_recent_plays(limit)
+}
+
+/// Queries popular tracks ordered by play_count descending with backfill.
+#[tauri::command]
+pub async fn db_get_popular_tracks(
+    limit: Option<u32>,
+    state: State<'_, DbState>,
+) -> Result<Vec<TrackDto>, DatabaseError> {
+    state.get_popular_tracks(limit)
+}
+
+/// Clears all playback history entries.
+#[tauri::command]
+pub async fn db_clear_playback_history(
+    state: State<'_, DbState>,
+) -> Result<(), DatabaseError> {
+    state.clear_playback_history()
 }

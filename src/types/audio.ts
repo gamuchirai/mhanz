@@ -13,6 +13,8 @@ export interface AudioPlaybackStateDto {
   duration_seconds: number;
   volume: number;
   is_muted: boolean;
+  context_title?: string | null;
+  context_type?: string | null;
 }
 
 export interface AudioPositionDto {

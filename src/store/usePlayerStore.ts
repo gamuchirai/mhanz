@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { useShallow } from "zustand/react/shallow";
+import { isTauri } from "@tauri-apps/api/core";
 import type { CuratedCard, PlayHistoryItem, Track } from "../types/discovery";
 import type { QueueItem } from "../types/overlays";
 import {
@@ -17,11 +18,20 @@ import {
   audioSetMuted,
   audioSetVolume,
   audioStop,
+  listenAudioHistoryRecorded,
   listenAudioPosition,
   listenAudioStateChanged,
   listenAudioTrackEnded,
 } from "../services/audio";
+import {
+  dbClearPlaybackHistory,
+  dbGetPopularTracks,
+  dbGetRecentPlays,
+  dbGetStatus,
+  mapPlayHistoryDtoToUi,
+} from "../services/db";
 import { favoritesSync } from "../services/favoritesSync";
+import { onScanCompleted } from "../services/scanner";
 
 let queueIdCounter = 0;
 function createUniqueQueueId(prefix = "queue"): string {
@@ -54,7 +64,10 @@ interface PlayerState {
   recentPlays: PlayHistoryItem[];
   curatedCollections: CuratedCard[];
   popularTracks: Track[];
+  libraryTrackCount: number;
+  isHomeInitialized: boolean;
 
+  initializeHomeDiscovery: () => Promise<void>;
   playTrack: (track: Track, customQueue?: Track[]) => void;
   togglePlayPause: () => void;
   nextTrack: () => void;
@@ -137,10 +150,37 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
   isShuffle: false,
   repeatMode: "off",
   likedTrackIds: initialLikes,
-  recentPlays: initialRecentPlays,
+  recentPlays: isTauri() ? [] : initialRecentPlays,
   curatedCollections: curatedPlaylists,
-  popularTracks: popularTracksList,
+  popularTracks: isTauri() ? [] : popularTracksList,
+  libraryTrackCount: isTauri() ? 0 : sampleTracks.length,
+  isHomeInitialized: !isTauri(),
   playbackContext: null,
+
+  initializeHomeDiscovery: async () => {
+    if (!isTauri()) {
+      set({ isHomeInitialized: true });
+      return;
+    }
+
+    try {
+      const [status, recents, popular] = await Promise.all([
+        dbGetStatus(),
+        dbGetRecentPlays(20),
+        dbGetPopularTracks(10),
+      ]);
+
+      set({
+        libraryTrackCount: status.track_count,
+        recentPlays: recents,
+        popularTracks: popular,
+        isHomeInitialized: true,
+      });
+    } catch (err) {
+      console.error("Failed to initialize home discovery from SQLite:", err);
+      set({ isHomeInitialized: true });
+    }
+  },
 
   setPlaybackContext: (context) => {
     set({ playbackContext: context });
@@ -164,34 +204,33 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       index = 0;
     }
 
-    const newHistoryItem: PlayHistoryItem = {
-      id: `history-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      trackId: track.id,
-      track,
-      playedAtTimestamp: Date.now(),
-      contextTitle: track.album || "Now Playing",
-    };
-
     const newQueueItems = convertTracksToQueueItems(updatedQueue);
 
-    set((state) => ({
+    set({
       currentTrack: track,
       queue: updatedQueue,
       queueItems: newQueueItems,
       currentIndex: index,
       isPlaying: true,
       currentTime: 0,
-      recentPlays: [newHistoryItem, ...state.recentPlays.filter((p) => p.trackId !== track.id)],
-    }));
+    });
 
     startPlaybackTimer(get);
 
     const filePath = track.filePath || `mock://${track.id}.mp3`;
-    audioPlayTrack(track.id, filePath, 0, track.durationSeconds).catch(() => {});
+    const context = get().playbackContext;
+    audioPlayTrack(
+      track.id,
+      filePath,
+      0,
+      track.durationSeconds,
+      context?.title,
+      context?.type
+    ).catch(() => {});
   },
 
   togglePlayPause: () => {
-    const { isPlaying, currentTrack, queue, currentTime } = get();
+    const { isPlaying, currentTrack, queue, currentTime, playbackContext } = get();
     if (!currentTrack && queue.length > 0) {
       get().playTrack(queue[0]);
       return;
@@ -208,7 +247,9 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
             currentTrack.id,
             filePath,
             currentTime,
-            currentTrack.durationSeconds
+            currentTrack.durationSeconds,
+            playbackContext?.title,
+            playbackContext?.type
           ).catch(() => {});
         });
       }
@@ -219,7 +260,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
   },
 
   nextTrack: () => {
-    const { queue, currentIndex, repeatMode, isShuffle } = get();
+    const { queue, currentIndex, repeatMode, isShuffle, playbackContext } = get();
     if (queue.length === 0) return;
 
     if (repeatMode === "one") {
@@ -256,11 +297,18 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     startPlaybackTimer(get);
 
     const filePath = nextTrackItem.filePath || `mock://${nextTrackItem.id}.mp3`;
-    audioPlayTrack(nextTrackItem.id, filePath, 0, nextTrackItem.durationSeconds).catch(() => {});
+    audioPlayTrack(
+      nextTrackItem.id,
+      filePath,
+      0,
+      nextTrackItem.durationSeconds,
+      playbackContext?.title,
+      playbackContext?.type
+    ).catch(() => {});
   },
 
   previousTrack: () => {
-    const { queue, currentIndex, currentTime } = get();
+    const { queue, currentIndex, currentTime, playbackContext } = get();
     if (queue.length === 0) return;
 
     if (currentTime > 3) {
@@ -280,7 +328,14 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     startPlaybackTimer(get);
 
     const filePath = prevTrackItem.filePath || `mock://${prevTrackItem.id}.mp3`;
-    audioPlayTrack(prevTrackItem.id, filePath, 0, prevTrackItem.durationSeconds).catch(() => {});
+    audioPlayTrack(
+      prevTrackItem.id,
+      filePath,
+      0,
+      prevTrackItem.durationSeconds,
+      playbackContext?.title,
+      playbackContext?.type
+    ).catch(() => {});
   },
 
   seekTo: (seconds: number) => {
@@ -331,6 +386,11 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
 
   clearRecentPlays: () => {
     set({ recentPlays: [] });
+    if (isTauri()) {
+      dbClearPlaybackHistory().catch((err) => {
+        console.error("Failed to clear playback history in SQLite:", err);
+      });
+    }
   },
 
   loadSampleHistory: () => {
@@ -479,36 +539,29 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
   },
 
   playQueueItem: (queueId: string) => {
-    const { queueItems } = get();
+    const { queueItems, playbackContext } = get();
     const index = queueItems.findIndex((item) => item.id === queueId);
     if (index === -1) return;
     const targetItem = queueItems[index];
 
-    const newHistoryItem: PlayHistoryItem = {
-      id: `history-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      trackId: targetItem.track.id,
-      track: targetItem.track,
-      playedAtTimestamp: Date.now(),
-      contextTitle: targetItem.track.album || "Queue Jump",
-    };
-
-    set((state) => ({
+    set({
       currentTrack: targetItem.track,
       currentIndex: index,
       isPlaying: true,
       currentTime: 0,
-      recentPlays: [
-        newHistoryItem,
-        ...state.recentPlays.filter((p) => p.trackId !== targetItem.track.id),
-      ],
-    }));
+    });
 
     startPlaybackTimer(get);
 
     const filePath = targetItem.track.filePath || `mock://${targetItem.track.id}.mp3`;
-    audioPlayTrack(targetItem.track.id, filePath, 0, targetItem.track.durationSeconds).catch(
-      () => {}
-    );
+    audioPlayTrack(
+      targetItem.track.id,
+      filePath,
+      0,
+      targetItem.track.durationSeconds,
+      playbackContext?.title,
+      playbackContext?.type
+    ).catch(() => {});
   },
 
   seekToLyricLine: (timeSeconds: number) => {
@@ -523,7 +576,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
 let audioUnlisteners: Array<() => void> = [];
 
 /**
- * Initializes listeners bridging native audio engine events to usePlayerStore.
+ * Initializes listeners bridging native audio engine events and scanner events to usePlayerStore.
  */
 export function initPlayerAudioSync(): () => void {
   cleanupPlayerAudioSync();
@@ -553,7 +606,25 @@ export function initPlayerAudioSync(): () => void {
     }
   });
 
-  Promise.all([p1, p2, p3]).then((unlisteners) => {
+  const p4 = listenAudioHistoryRecorded((dto) => {
+    const item = mapPlayHistoryDtoToUi(dto);
+    usePlayerStore.setState((state) => ({
+      recentPlays: [item, ...state.recentPlays.filter((p) => p.trackId !== item.trackId)],
+    }));
+    if (isTauri()) {
+      dbGetPopularTracks(10)
+        .then((popular) => {
+          usePlayerStore.setState({ popularTracks: popular });
+        })
+        .catch(() => {});
+    }
+  });
+
+  const p5 = onScanCompleted(() => {
+    usePlayerStore.getState().initializeHomeDiscovery().catch(() => {});
+  });
+
+  Promise.all([p1, p2, p3, p4, p5]).then((unlisteners) => {
     audioUnlisteners = unlisteners;
   });
 
@@ -622,3 +693,5 @@ export const useCuratedCollections = () => usePlayerStore((state) => state.curat
 export const useLikedTracks = () => usePlayerStore((state) => state.likedTrackIds);
 export const useIsLiked = (trackId: string) =>
   usePlayerStore((state) => Boolean(state.likedTrackIds[trackId]));
+export const useLibraryTrackCount = () => usePlayerStore((state) => state.libraryTrackCount);
+export const useIsHomeInitialized = () => usePlayerStore((state) => state.isHomeInitialized);

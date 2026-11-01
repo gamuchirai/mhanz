@@ -1,7 +1,7 @@
 # 0007. Playlists and playlist detail
 
 **Date**: 2026-10-23
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

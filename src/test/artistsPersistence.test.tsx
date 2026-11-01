@@ -18,8 +18,6 @@ import { ArtistProfileBanner } from "../components/artists/ArtistProfileBanner";
 import { ArtistDiscography } from "../components/artists/ArtistDiscography";
 import { ArtistPopularTracks } from "../components/artists/ArtistPopularTracks";
 import { ArtistEmptyState } from "../components/artists/ArtistEmptyState";
-import * as scannerService from "../services/scanner";
-import * as tauriEvent from "@tauri-apps/api/event";
 import type { ArtistDto, ArtistProfileDto, AlbumDto, TrackDto } from "../types/database";
 
 vi.mock("@tauri-apps/api/core", () => ({

@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from "react";
+import { useState, useEffect, type MouseEvent } from "react";
 import { ShowcaseItem } from "../../types/discovery";
 import { usePlayerStore } from "../../store/usePlayerStore";
 
@@ -21,6 +21,12 @@ export function HeroBanner({ item }: HeroBannerProps) {
   const isCurrentHeroTrack = currentTrack?.id === trackId;
   const isCurrentlyPlaying = isCurrentHeroTrack && isPlaying;
   const isLiked = Boolean(likedTrackIds[trackId]);
+
+  const bannerImg = track?.artworkUrl || item.bannerImageUrl;
+
+  useEffect(() => {
+    setImageError(false);
+  }, [bannerImg]);
 
   const handlePlayClick = () => {
     if (isCurrentHeroTrack) {
@@ -76,9 +82,9 @@ export function HeroBanner({ item }: HeroBannerProps) {
           boxShadow: "0 24px 60px rgba(0,0,0,.55)",
         }}
       >
-        {!imageError && item.bannerImageUrl ? (
+        {!imageError && bannerImg ? (
           <img
-            src={item.bannerImageUrl}
+            src={bannerImg}
             alt={item.headline}
             onError={() => setImageError(true)}
             style={{
@@ -179,15 +185,21 @@ export function HeroBanner({ item }: HeroBannerProps) {
           >
             <use href="#heart" />
           </svg>
-          4.8M<span aria-hidden="true">•</span>Indie Pop
+          <span>
+            {typeof item.track?.playsCount === "number"
+              ? `${item.track.playsCount} ${item.track.playsCount === 1 ? "play" : "plays"}`
+              : "4.8M"}
+          </span>
+          <span aria-hidden="true">•</span>
+          <span>{item.track?.album || "Featured"}</span>
         </div>
         <p style={{ margin: "4px 0 16px", color: "#c9bbb0", fontSize: "14px" }}>
-          Every moment with you feels like the perfect song.
+          {item.description || "Every moment with you feels like the perfect song."}
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
           <button
             onClick={handlePlayClick}
-            aria-label={isCurrentlyPlaying ? "Pause Perfect" : "Play Perfect"}
+            aria-label={isCurrentlyPlaying ? `Pause ${item.headline}` : `Play ${item.headline}`}
             style={{
               height: "46px",
               padding: "0 32px",
@@ -212,7 +224,7 @@ export function HeroBanner({ item }: HeroBannerProps) {
           </button>
           <button
             onClick={handleLikeClick}
-            aria-label={isLiked ? "Unlike Perfect" : "Like Perfect"}
+            aria-label={isLiked ? `Unlike ${item.headline}` : `Like ${item.headline}`}
             style={{
               width: "46px",
               height: "46px",

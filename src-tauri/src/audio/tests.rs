@@ -21,6 +21,8 @@ fn test_audio_models_serialization() {
         is_muted: false,
         session_id: 1,
         play_count_recorded: false,
+        context_title: None,
+        context_type: None,
     };
 
     let dto = AudioPlaybackStateDto::from(&state);

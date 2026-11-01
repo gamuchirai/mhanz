@@ -193,6 +193,8 @@ impl AudioEngine {
         track_id: String,
         file_path: String,
         start_position: Option<f64>,
+        context_title: Option<String>,
+        context_type: Option<String>,
     ) -> Result<AudioPlaybackStateDto, AudioError> {
         let canonical_path = match Self::validate_file_path(&file_path) {
             Ok(p) => p,
@@ -276,6 +278,8 @@ impl AudioEngine {
         inner.state.position_seconds = start_pos;
         inner.state.duration_seconds = duration;
         inner.state.play_count_recorded = false;
+        inner.state.context_title = context_title;
+        inner.state.context_type = context_type;
         inner.sink = Some(new_sink);
 
         let dto = AudioPlaybackStateDto::from(&inner.state);
@@ -533,17 +537,16 @@ impl AudioEngine {
                         && (current_pos >= 30.0
                             || (duration > 0.0 && current_pos >= duration / 2.0));
 
+                    let mut history_to_record: Option<(String, Option<String>, Option<String>)> = None;
+
                     if should_record_play {
                         inner.state.play_count_recorded = true;
                         if let Some(ref tid) = track_id_opt {
-                            if let Ok(db_lock) = db_manager_clone.lock() {
-                                if let Some(ref db) = *db_lock {
-                                    let tid_str = tid.clone();
-                                    let _ = db.with_conn(|conn| {
-                                        crate::db::track_repo::increment_play_count(conn, &tid_str)
-                                    });
-                                }
-                            }
+                            history_to_record = Some((
+                                tid.clone(),
+                                inner.state.context_title.clone(),
+                                inner.state.context_type.clone(),
+                            ));
                         }
                     }
 
@@ -555,6 +558,36 @@ impl AudioEngine {
                     };
 
                     drop(inner);
+
+                    if let Some((tid_str, ctx_title, ctx_type)) = history_to_record {
+                        if let Ok(db_lock) = db_manager_clone.lock() {
+                            if let Some(ref db) = *db_lock {
+                                let db_arc = db.clone();
+                                let app_handle_opt = if let Ok(app_lock) = app_handle_clone.lock() {
+                                    app_lock.clone()
+                                } else {
+                                    None
+                                };
+
+                                tauri::async_runtime::spawn_blocking(move || {
+                                    let record_res = db_arc.with_conn(|conn| {
+                                        crate::db::history_repo::record_playback(
+                                            conn,
+                                            &tid_str,
+                                            ctx_title.as_deref(),
+                                            ctx_type.as_deref(),
+                                        )
+                                    });
+
+                                    if let Ok(history_dto) = record_res {
+                                        if let Some(app) = app_handle_opt {
+                                            let _ = app.emit("audio:history-recorded", &history_dto);
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
 
                     if let Ok(app_lock) = app_handle_clone.lock() {
                         if let Some(ref app) = *app_lock {
