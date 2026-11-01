@@ -52,6 +52,7 @@ pub fn run() {
             commands::db::db_increment_play_count,
             commands::db::db_get_albums,
             commands::db::db_get_album_details,
+            commands::db::db_toggle_album_favorite,
             commands::db::db_get_artists,
             commands::db::db_get_artist_profile,
             commands::db::db_get_playlists,

@@ -14,8 +14,11 @@ mod tests {
     use crate::scanner::service::ScannerManager;
 
     fn create_test_temp_dir(suffix: &str) -> PathBuf {
-        let temp_dir =
-            std::env::temp_dir().join(format!("mutinhimira_test_{}_{}", suffix, uuid::Uuid::new_v4()));
+        let temp_dir = std::env::temp_dir().join(format!(
+            "mutinhimira_test_{}_{}",
+            suffix,
+            uuid::Uuid::new_v4()
+        ));
         fs::create_dir_all(&temp_dir).expect("Failed to create test temp dir");
         temp_dir
     }

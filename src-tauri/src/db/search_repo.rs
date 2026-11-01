@@ -151,6 +151,12 @@ pub fn search_library(
                     a.id, a.title, a.artist_id, a.artist_name, a.year, a.genre,
                     a.cover_art_path, a.total_discs,
                     COUNT(t.id) as track_count,
+                    COALESCE(SUM(t.duration), 0.0) as total_duration,
+                    CASE
+                        WHEN a.is_favorite = 1 THEN 1
+                        WHEN COUNT(t.id) > 0 AND (COALESCE(SUM(CASE WHEN t.is_favorite = 1 THEN 1 ELSE 0 END), 0) * 2 >= COUNT(t.id)) THEN 1
+                        ELSE 0
+                    END as is_favorite,
                     a.created_at, a.updated_at
                 FROM fts
                 JOIN search_index_entries e ON e.rowid = fts.rowid AND e.entity_type = 'album'
@@ -174,6 +180,8 @@ pub fn search_library(
                 params![fts_query, trimmed_query, prefix_like, album_cap],
                 |row| {
                     let trk_cnt: i64 = row.get(8)?;
+                    let total_dur: f64 = row.get(9)?;
+                    let is_fav_int: i32 = row.get(10)?;
                     Ok(AlbumDto {
                         id: row.get(0)?,
                         title: row.get(1)?,
@@ -184,8 +192,10 @@ pub fn search_library(
                         cover_art_path: row.get(6)?,
                         total_discs: row.get(7)?,
                         track_count: trk_cnt as u32,
-                        created_at: row.get(9)?,
-                        updated_at: row.get(10)?,
+                        total_duration: total_dur,
+                        is_favorite: is_fav_int == 1,
+                        created_at: row.get(11)?,
+                        updated_at: row.get(12)?,
                     })
                 },
             )
@@ -362,7 +372,8 @@ pub fn search_library(
         }
     }
 
-    let total_matches = (tracks.len() + albums.len() + artists.len() + playlists.len() + genres.len()) as u32;
+    let total_matches =
+        (tracks.len() + albums.len() + artists.len() + playlists.len() + genres.len()) as u32;
     let execution_time_ms = start_time.elapsed().as_secs_f64() * 1000.0;
 
     Ok(SearchResultsDto {
@@ -472,7 +483,8 @@ mod tests {
         conn.execute(
             "UPDATE tracks SET title = 'One More Time (2026 Remaster)' WHERE id = 'trk1'",
             [],
-        ).unwrap();
+        )
+        .unwrap();
 
         let updated_res = search_library(&conn, "Remaster", Some("songs"), None).unwrap();
         assert_eq!(updated_res.tracks.len(), 1);
@@ -483,14 +495,16 @@ mod tests {
         conn.execute(
             "UPDATE tracks SET play_count = 100, is_favorite = 1 WHERE id = 'trk1'",
             [],
-        ).unwrap();
+        )
+        .unwrap();
         let after_play_res = search_library(&conn, "Remaster", Some("songs"), None).unwrap();
         assert_eq!(after_play_res.tracks.len(), 1);
         assert_eq!(after_play_res.tracks[0].play_count, 100);
         assert!(after_play_res.tracks[0].is_favorite);
 
         // 6. Delete track trigger test
-        conn.execute("DELETE FROM tracks WHERE id = 'trk2'", []).unwrap();
+        conn.execute("DELETE FROM tracks WHERE id = 'trk2'", [])
+            .unwrap();
         let deleted_res = search_library(&conn, "Aerodynamic", Some("songs"), None).unwrap();
         assert_eq!(deleted_res.tracks.len(), 0);
     }

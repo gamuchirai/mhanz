@@ -30,9 +30,9 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 17  | Fast local library search indexing | Phase 2    | done        |
 | 18  | Desktop UI responsiveness          | Foundation | done        |
 | 19  | App branding & logo integration    | Foundation | done        |
-| 20  | Albums and album detail persistence | Phase 2    | planned     |
-| 21  | Artists and artist profile persistence | Phase 2    | planned     |
-| 22  | Local file lyrics parser and metadata extraction | Phase 2    | planned     |
+| 20  | Albums and album detail persistence | Phase 2    | done |
+| 21  | Artists and artist profile persistence | Phase 2    | in-progress |
+| 22  | Local file lyrics parser and metadata extraction | Phase 2    | in-progress |
 
 ## Foundations
 
@@ -136,7 +136,7 @@ spec [0004](../specs/0004-search-explore-screen/index.md)
   - [x] Search page assembly and App shell navigation wiring (AC-1, AC-3, AC-7)
   - [x] Unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-7, AC-8, AC-9)
         code in `src/pages/Search.tsx`, `src/components/search/`, `src/store/useSearchStore.ts`
-- [ ] Verify it: `/check verify search & explore screen`
+- [x] Verify it: `/check verify search & explore screen`
 
 ### 6. Your library & folder browser · in-progress
 
@@ -170,7 +170,7 @@ spec [0006](../specs/0006-liked-songs-screen/index.md)
   - [x] Page assembly in LikedSongs.tsx and App navigation shell wiring (AC-1, AC-11, AC-12)
   - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
         code in `src/pages/LikedSongs.tsx`, `src/components/liked/`, `src/store/useLikedSongsStore.ts`
-- [ ] Verify it: `/check verify liked songs screen`
+- [x] Verify it: `/check verify liked songs screen`
 
 ### 8. Playlists & playlist detail · in-progress
 
@@ -186,7 +186,7 @@ spec [0007](../specs/0007-playlists-playlist-detail/index.md)
   - [x] Page assembly in Playlists.tsx, App navigation shell wiring, and sidebar reactive playlists synchronization (AC-1, AC-3, AC-4, AC-5, AC-11, AC-12)
   - [x] Unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
         code in `src/pages/Playlists.tsx`, `src/components/playlists/`, `src/store/usePlaylistStore.ts`
-- [ ] Verify it: `/check verify playlists & playlist detail`
+- [x] Verify it: `/check verify playlists & playlist detail`
 
 ### 9. Albums & album detail · in-progress
 
@@ -202,7 +202,7 @@ spec [0008](../specs/0008-albums-album-detail/index.md)
   - [x] Page container Albums.tsx, App navigation shell wiring, and cross screen deep linking (AC-1, AC-4, AC-5, AC-6, AC-12)
   - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
         code in `src/pages/Albums.tsx`, `src/components/albums/`, `src/store/useAlbumStore.ts`
-- [ ] Verify it: `/check verify albums & album detail`
+- [x] Verify it: `/check verify albums & album detail`
 
 ### 10. Artists & artist profile · done
 
@@ -235,7 +235,7 @@ spec [0010](../specs/0010-queue-lyrics-settings-overlays/index.md)
   - [x] PlayerFooter triggers, App sidebar gear trigger, escape key listener, and backdrop dismissal (AC-1, AC-2, AC-8, AC-12, AC-13)
   - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-4, AC-5, AC-6, AC-7, AC-9, AC-10, AC-12, AC-13)
         code in `src/components/queue/`, `src/components/lyrics/`, `src/components/settings/`, `src/store/useOverlayStore.ts`, `src/store/useSettingsStore.ts`
-- [ ] Verify it: `/check verify queue, lyrics & settings overlays`
+- [x] Verify it: `/check verify queue, lyrics & settings overlays`
 
 ### 12. Now playing fullscreen view · in-progress
 
@@ -252,7 +252,7 @@ spec [0011](../specs/0011-now-playing-fullscreen-view/index.md)
   - [x] PlayerFooter entry triggers and root App integration (AC-1, AC-2, AC-13)
   - [x] Comprehensive unit and component test suite (AC-1, AC-2, AC-4, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12, AC-13, AC-14, AC-15)
         code in `src/components/fullscreen/`, `src/store/useOverlayStore.ts`, `src/types/discovery.ts`, `src/types/overlays.ts`
-- [ ] Verify it: `/check verify now playing fullscreen view`
+- [x] Verify it: `/check verify now playing fullscreen view`
 
 ## Phase 2: Backend wiring & persistence
 
@@ -270,7 +270,7 @@ spec [0012](../specs/0012-data-model-sqlite-storage/index.md)
   - [x] Tauri IPC command handlers, capabilities permissions, and app setup lifecycle (AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
   - [x] Frontend TypeScript database service and integration test suite (AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12)
         code in `src-tauri/src/db/`, `src-tauri/src/commands/db.rs`, `src/services/db.ts`, `src/types/database.ts`
-- [ ] Verify it: `/check verify data model & SQLite storage`
+- [x] Verify it: `/check verify data model & SQLite storage`
 
 ### 14. Core audio playback engine · done
 
@@ -336,26 +336,57 @@ spec [0014](../specs/0014-fast-local-library-search-indexing/index.md)
   - [x] Search UI playlist filter pill and playlist card grid integration with queue playback (AC-14, AC-15)
 - [x] Verify it: `/check verify fast local library search indexing`
 
-### 20. Albums and album detail persistence · needs a decision
+### 20. Albums and album detail persistence · done
 
 Hydrate albums catalog and album detail views from SQLite, persist favorite album toggles across restarts, and synchronize with local library scanner updates.
 **Done when:** navigating to Albums loads scanned music albums from the database, opening an album shows its real tracklist and metadata from SQLite, and favorite states persist across restarts.
 
-- [ ] Design it (spec): `/architect albums and album detail persistence`
+spec [0020](../specs/0020-albums-album-detail-persistence/index.md)
 
-### 21. Artists and artist profile persistence · needs a decision
+- [x] Design it (spec): `/architect albums and album detail persistence`
+- [x] Build it: `/develop albums and album detail persistence`
+  - [x] Migration V004 for album favorites and repository duration aggregation (AC-1, AC-2, AC-3)
+  - [x] Tauri IPC command db_toggle_album_favorite and batch favorites synchronization (AC-4, AC-5)
+  - [x] Asynchronous useAlbumStore SQLite hydration and lazy tracklist loading (AC-6, AC-7, AC-11)
+  - [x] Optimistic favorite toggling, derived 50 percent liked sync, and scanner refresh (AC-8, AC-9, AC-10)
+  - [x] Playback queueing integration and persistence test suite (AC-11, AC-12)
+        code in `src-tauri/migrations/V004__album_favorites.sql`, `src-tauri/src/db/`, `src-tauri/src/commands/db.rs`, `src/services/db.ts`, `src/services/favoritesSync.ts`, `src/store/useAlbumStore.ts`, `src/store/useLikedSongsStore.ts`, `src/test/albumsPersistence.test.tsx`
+- [x] Verify it: `/check verify albums and album detail persistence`
+- [x] Test it: `/test albums and album detail persistence`
 
-Hydrate artists catalog and artist profile views from SQLite, persist followed artist states across restarts, and coordinate discography releases with scanned library albums.
-**Done when:** navigating to Artists loads scanned musical artists from SQLite, opening an artist profile displays real popular tracks and discography releases from the database, and following or unfollowing artists persists across restarts.
+### 21. Artists and artist profile persistence · in-progress
 
-- [ ] Design it (spec): `/architect artists and artist profile persistence`
+Hydrate artists catalog and artist profile views from SQLite, persist real local library metrics across restarts, and coordinate discography releases with scanned library albums.
+**Done when:** navigating to Artists loads scanned musical artists from SQLite with total play counts, opening an artist profile displays real popular tracks and discography releases from the database with smooth loading states, and discography releases deep link into albums.
 
-### 22. Local file lyrics parser and metadata extraction · needs a decision
+spec [0021](../specs/0021-artists-artist-profile-persistence/index.md)
+
+- [x] Design it (spec): /architect artists and artist profile persistence
+- [ ] Build it: /develop artists and artist profile persistence
+  - [ ] Rust catalog repository total plays aggregation and DTO contract updates (AC-1, AC-4)
+  - [ ] TypeScript domain models and client IPC integration with asset formatting (AC-1, AC-2, AC-5, AC-6)
+  - [ ] Zustand store SQLite hydration, on demand profile fetching, and scanner auto refresh (AC-1, AC-4, AC-6, AC-11)
+  - [ ] UI components local metrics rendering, biography fallback, and scroll preservation (AC-3, AC-5, AC-7, AC-10, AC-12)
+  - [ ] Top tracks audio playback queueing and cross view album navigation (AC-8, AC-9)
+- [ ] Verify it: /check verify artists and artist profile persistence
+- [ ] Test it: /test artists and artist profile persistence
+
+### 22. Local file lyrics parser and metadata extraction · in-progress
 
 Parse embedded lyrics tags and local companion lrc sidecar files from scanned music tracks, save or cache synchronized lines in SQLite, and deliver real lyrics to the player overlays via Tauri IPC.
 **Done when:** playing a local audio track with embedded tags or an adjacent lrc file displays synchronized or plain text lyrics in the lyrics modal and fullscreen view without mock data fallbacks.
 
-- [ ] Design it (spec): `/architect local file lyrics parser and metadata extraction`
+spec [0020](../specs/0020-local-file-lyrics-parser-metadata-extraction/index.md)
+
+- [x] Design it (spec): `/architect local file lyrics parser and metadata extraction`
+- [ ] Build it: `/develop local file lyrics parser and metadata extraction`
+  - [ ] Migration V004 track_lyrics schema and repository methods with offset preservation upsert (AC-4, AC-5)
+  - [ ] Native Rust lyrics parser module with companion lrc, header offset, and lofty tag extraction (AC-1, AC-2, AC-3, AC-10)
+  - [ ] Tauri IPC commands and DTO contracts for retrieval, offset persistence, and rescanning (AC-6)
+  - [ ] TypeScript lyrics client service and reactive Zustand useLyricsStore with local active line tracking (AC-7, AC-9)
+  - [ ] LyricsModal and FullscreenLyricsView integration with seeking arithmetic and offset controls (AC-8, AC-9, AC-10)
+- [ ] Verify it: `/check verify local file lyrics parser and metadata extraction`
+- [ ] Test it: `/test local file lyrics parser and metadata extraction`
 
 ## Deferred
 

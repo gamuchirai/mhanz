@@ -3,7 +3,9 @@
 use rusqlite::{params, Connection};
 
 use super::error::DatabaseError;
-use super::models::{AlbumDetailDto, AlbumDto, ArtistDto, ArtistProfileDto, TrackDto};
+use super::models::{
+    AlbumDetailDto, AlbumDto, AlbumFavoriteResultDto, ArtistDto, ArtistProfileDto, TrackDto,
+};
 use super::track_repo::{map_track_row, TRACK_SELECT_FIELDS};
 
 /// Returns total count of albums.
@@ -31,6 +33,12 @@ pub fn get_albums(conn: &Connection) -> Result<Vec<AlbumDto>, DatabaseError> {
                 a.id, a.title, a.artist_id, a.artist_name, a.year, a.genre,
                 a.cover_art_path, a.total_discs,
                 COUNT(t.id) as track_count,
+                COALESCE(SUM(t.duration), 0.0) as total_duration,
+                CASE
+                    WHEN a.is_favorite = 1 THEN 1
+                    WHEN COUNT(t.id) > 0 AND (COALESCE(SUM(CASE WHEN t.is_favorite = 1 THEN 1 ELSE 0 END), 0) * 2 >= COUNT(t.id)) THEN 1
+                    ELSE 0
+                END as is_favorite,
                 a.created_at, a.updated_at
             FROM albums a
             LEFT JOIN tracks t ON t.album_id = a.id
@@ -43,6 +51,8 @@ pub fn get_albums(conn: &Connection) -> Result<Vec<AlbumDto>, DatabaseError> {
     let iter = stmt
         .query_map([], |row| {
             let trk_cnt: i64 = row.get(8)?;
+            let total_dur: f64 = row.get(9)?;
+            let is_fav_int: i32 = row.get(10)?;
             Ok(AlbumDto {
                 id: row.get(0)?,
                 title: row.get(1)?,
@@ -53,8 +63,10 @@ pub fn get_albums(conn: &Connection) -> Result<Vec<AlbumDto>, DatabaseError> {
                 cover_art_path: row.get(6)?,
                 total_discs: row.get(7)?,
                 track_count: trk_cnt as u32,
-                created_at: row.get(9)?,
-                updated_at: row.get(10)?,
+                total_duration: total_dur,
+                is_favorite: is_fav_int == 1,
+                created_at: row.get(11)?,
+                updated_at: row.get(12)?,
             })
         })
         .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
@@ -78,6 +90,12 @@ pub fn get_album_details(
                 a.id, a.title, a.artist_id, a.artist_name, a.year, a.genre,
                 a.cover_art_path, a.total_discs,
                 COUNT(t.id) as track_count,
+                COALESCE(SUM(t.duration), 0.0) as total_duration,
+                CASE
+                    WHEN a.is_favorite = 1 THEN 1
+                    WHEN COUNT(t.id) > 0 AND (COALESCE(SUM(CASE WHEN t.is_favorite = 1 THEN 1 ELSE 0 END), 0) * 2 >= COUNT(t.id)) THEN 1
+                    ELSE 0
+                END as is_favorite,
                 a.created_at, a.updated_at
             FROM albums a
             LEFT JOIN tracks t ON t.album_id = a.id
@@ -90,6 +108,8 @@ pub fn get_album_details(
     let mut album_iter = album_stmt
         .query_map(params![id], |row| {
             let trk_cnt: i64 = row.get(8)?;
+            let total_dur: f64 = row.get(9)?;
+            let is_fav_int: i32 = row.get(10)?;
             Ok(AlbumDto {
                 id: row.get(0)?,
                 title: row.get(1)?,
@@ -100,8 +120,10 @@ pub fn get_album_details(
                 cover_art_path: row.get(6)?,
                 total_discs: row.get(7)?,
                 track_count: trk_cnt as u32,
-                created_at: row.get(9)?,
-                updated_at: row.get(10)?,
+                total_duration: total_dur,
+                is_favorite: is_fav_int == 1,
+                created_at: row.get(11)?,
+                updated_at: row.get(12)?,
             })
         })
         .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
@@ -244,6 +266,12 @@ pub fn get_artist_profile(
                 a.id, a.title, a.artist_id, a.artist_name, a.year, a.genre,
                 a.cover_art_path, a.total_discs,
                 COUNT(t.id) as track_count,
+                COALESCE(SUM(t.duration), 0.0) as total_duration,
+                CASE
+                    WHEN a.is_favorite = 1 THEN 1
+                    WHEN COUNT(t.id) > 0 AND (COALESCE(SUM(CASE WHEN t.is_favorite = 1 THEN 1 ELSE 0 END), 0) * 2 >= COUNT(t.id)) THEN 1
+                    ELSE 0
+                END as is_favorite,
                 a.created_at, a.updated_at
             FROM albums a
             LEFT JOIN tracks t ON t.album_id = a.id
@@ -257,6 +285,8 @@ pub fn get_artist_profile(
     let alb_iter = alb_stmt
         .query_map(params![id], |row| {
             let trk_cnt: i64 = row.get(8)?;
+            let total_dur: f64 = row.get(9)?;
+            let is_fav_int: i32 = row.get(10)?;
             Ok(AlbumDto {
                 id: row.get(0)?,
                 title: row.get(1)?,
@@ -267,8 +297,10 @@ pub fn get_artist_profile(
                 cover_art_path: row.get(6)?,
                 total_discs: row.get(7)?,
                 track_count: trk_cnt as u32,
-                created_at: row.get(9)?,
-                updated_at: row.get(10)?,
+                total_duration: total_dur,
+                is_favorite: is_fav_int == 1,
+                created_at: row.get(11)?,
+                updated_at: row.get(12)?,
             })
         })
         .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
@@ -315,8 +347,8 @@ pub fn upsert_album(conn: &mut Connection, album: &AlbumDto) -> Result<(), Datab
         r#"
         INSERT INTO albums (
             id, title, artist_id, artist_name, year, genre,
-            cover_art_path, total_discs, created_at, updated_at
-        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+            cover_art_path, total_discs, is_favorite, created_at, updated_at
+        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
         ON CONFLICT(id) DO UPDATE SET
             title = excluded.title,
             artist_id = excluded.artist_id,
@@ -336,10 +368,92 @@ pub fn upsert_album(conn: &mut Connection, album: &AlbumDto) -> Result<(), Datab
             album.genre,
             album.cover_art_path,
             album.total_discs,
+            if album.is_favorite { 1 } else { 0 },
             album.created_at,
             album.updated_at
         ],
     )
     .map_err(|err| DatabaseError::write_failed(err.to_string()))?;
     Ok(())
+}
+
+/// Toggles or sets album favorite status and synchronizes like status across all tracks atomically.
+pub fn toggle_album_favorite(
+    conn: &mut Connection,
+    id: &str,
+    target_favorite: Option<bool>,
+) -> Result<AlbumFavoriteResultDto, DatabaseError> {
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0);
+
+    let tx = conn
+        .transaction()
+        .map_err(|err| DatabaseError::write_failed(err.to_string()))?;
+
+    // Check if album exists and retrieve its current favorite status
+    let current_fav: i32 = tx
+        .query_row(
+            "SELECT is_favorite FROM albums WHERE id = ?1",
+            params![id],
+            |row| row.get(0),
+        )
+        .map_err(|err| match err {
+            rusqlite::Error::QueryReturnedNoRows => {
+                DatabaseError::album_not_found(format!("Album with id {} not found", id))
+            }
+            _ => DatabaseError::query_failed(err.to_string()),
+        })?;
+
+    let next_fav = match target_favorite {
+        Some(target) => target,
+        None => current_fav != 1,
+    };
+
+    let (fav_int, favorited_at) = if next_fav { (1, Some(now)) } else { (0, None) };
+
+    // Update album record
+    tx.execute(
+        "UPDATE albums SET is_favorite = ?1, favorited_at = ?2, updated_at = ?3 WHERE id = ?4",
+        params![fav_int, favorited_at, now, id],
+    )
+    .map_err(|err| DatabaseError::write_failed(err.to_string()))?;
+
+    // Synchronize all tracks in this album
+    tx.execute(
+        "UPDATE tracks SET is_favorite = ?1, liked_at = ?2, updated_at = ?3 WHERE album_id = ?4",
+        params![fav_int, favorited_at, now, id],
+    )
+    .map_err(|err| DatabaseError::write_failed(err.to_string()))?;
+
+    // Fetch all updated tracks in album sequence
+    let track_query = format!(
+        "SELECT {} FROM tracks WHERE album_id = ?1 ORDER BY disc_number ASC, track_number ASC, title ASC",
+        TRACK_SELECT_FIELDS
+    );
+    let mut track_stmt = tx
+        .prepare(&track_query)
+        .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
+
+    let track_iter = track_stmt
+        .query_map(params![id], map_track_row)
+        .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
+
+    let mut affected_tracks = Vec::new();
+    for trk_res in track_iter {
+        affected_tracks.push(trk_res?);
+    }
+    drop(track_stmt);
+
+    tx.commit()
+        .map_err(|err| DatabaseError::write_failed(err.to_string()))?;
+
+    Ok(AlbumFavoriteResultDto {
+        album_id: id.to_string(),
+        is_favorite: next_fav,
+        affected_tracks,
+    })
 }

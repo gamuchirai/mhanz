@@ -75,6 +75,10 @@ export function App() {
       .getState()
       .initializeLikedSongs()
       .catch(() => {});
+    useAlbumStore
+      .getState()
+      .initializeAlbums()
+      .catch(() => {});
 
     async function testBackend() {
       try {

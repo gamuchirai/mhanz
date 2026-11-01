@@ -63,6 +63,11 @@ impl DatabaseError {
         Self::new("TRACK_NOT_FOUND", msg)
     }
 
+    /// Album identifier not found.
+    pub fn album_not_found(msg: impl Into<String>) -> Self {
+        Self::new("ALBUM_NOT_FOUND", msg)
+    }
+
     /// Playlist identifier not found.
     pub fn playlist_not_found(msg: impl Into<String>) -> Self {
         Self::new("PLAYLIST_NOT_FOUND", msg)

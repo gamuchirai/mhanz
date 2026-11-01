@@ -250,6 +250,67 @@ export const useLikedSongsStore = create<LikedSongsState>()((set, get) => ({
   },
 }));
 
+// Synchronize state whenever a batch favorite event occurs (e.g. from an album favorite toggle)
+favoritesSync.subscribeBatch((tracks: TrackDto[], isFavorite: boolean) => {
+  useLikedSongsStore.setState((state) => {
+    if (isFavorite) {
+      const incomingIds = new Set(tracks.map((t) => t.id));
+      const updatedPending = state.unlikedPendingIds.filter((id) => !incomingIds.has(id));
+      const existingTrackMap = new Map(state.tracks.map((t) => [t.id, t]));
+
+      const updatedTracks = [...state.tracks];
+      const newlyAddedTracks: LikedTrack[] = [];
+
+      for (const track of tracks) {
+        const dateLiked = track.liked_at
+          ? new Date(track.liked_at * 1000).toISOString()
+          : new Date().toISOString();
+
+        if (existingTrackMap.has(track.id)) {
+          const idx = updatedTracks.findIndex((t) => t.id === track.id);
+          if (idx !== -1) {
+            updatedTracks[idx] = {
+              ...updatedTracks[idx],
+              isLiked: true,
+              dateLiked,
+            };
+          }
+        } else {
+          newlyAddedTracks.push({
+            id: track.id,
+            title: track.title,
+            artist: track.artist_name,
+            album: track.album_name || "Unknown Album",
+            durationSeconds: Math.round(track.duration),
+            artworkUrl: track.cover_art_path ? formatCoverArtUrl(track.cover_art_path) : "",
+            playsCount: track.play_count,
+            isLiked: true,
+            filePath: track.file_path,
+            folderId: track.folder_id ?? undefined,
+            dateAdded: new Date(track.created_at * 1000).toISOString(),
+            dateLiked,
+          });
+        }
+      }
+
+      return {
+        tracks: [...newlyAddedTracks, ...updatedTracks],
+        unlikedPendingIds: updatedPending,
+      };
+    } else {
+      const incomingIds = new Set(tracks.map((t) => t.id));
+      const updatedPending = Array.from(new Set([...state.unlikedPendingIds, ...incomingIds]));
+      const updatedTracks = state.tracks.map((t) =>
+        incomingIds.has(t.id) ? { ...t, isLiked: false } : t
+      );
+      return {
+        tracks: updatedTracks,
+        unlikedPendingIds: updatedPending,
+      };
+    }
+  });
+});
+
 // Synchronize state whenever a favorite event occurs across any screen or store
 favoritesSync.subscribe((trackId: string, isLiked: boolean, likedAt: number | null) => {
   useLikedSongsStore.setState((state) => {
