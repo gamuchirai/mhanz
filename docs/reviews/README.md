@@ -25,6 +25,7 @@ This directory contains code reviews, audit records, and process analysis report
 
 ## Review and Audit Documents Index
 
+- [Review: Universal Album and Artist Navigation Links](2026-11-02-feat-universal-album-artist-navigation-links.md) (2026-11-02)
 - [Review: Home Listening History and Popular Tracks Persistence](2026-11-01-feat-home-listening-history-popular-tracks-persistence.md) (2026-11-01)
 - [Review: Artists and Artist Profile Persistence](2026-11-01-feat-artists-artist-profile-persistence.md) (2026-11-01)
 - [Review: Albums and Album Detail Persistence](2026-11-01-feat-albums-album-detail-persistence.md) (2026-11-01)
