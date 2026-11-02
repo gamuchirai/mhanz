@@ -389,7 +389,7 @@ spec [0020](../specs/0020-local-file-lyrics-parser-metadata-extraction/index.md)
   - [ ] Tauri IPC commands and DTO contracts for retrieval, offset persistence, and rescanning (AC-6)
   - [ ] TypeScript lyrics client service and reactive Zustand useLyricsStore with local active line tracking (AC-7, AC-9)
   - [ ] LyricsModal and FullscreenLyricsView integration with seeking arithmetic and offset controls (AC-8, AC-9, AC-10)
-- [ ] Verify it: `/check verify local file lyrics parser and metadata extraction`
+- [x] Verify it: `/check verify local file lyrics parser and metadata extraction`
 - [ ] Test it: `/test local file lyrics parser and metadata extraction`
 
 ### 23. Home listening history and popular tracks persistence · done
