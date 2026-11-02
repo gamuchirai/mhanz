@@ -281,4 +281,105 @@ describe("Lyrics Service, Store, and Overlay Integration", () => {
     fireEvent.click(screen.getByText("Fullscreen line two"));
     expect(mockSeek).toHaveBeenCalledWith(10.0);
   });
+
+  it("handles plain text lyrics fallback and preserves unsynced formatting (AC-1, AC-2, AC-8)", () => {
+    const plainTrack: Track = {
+      ...sampleTrack,
+      id: "track-plain",
+      title: "Poetic Piece",
+    };
+
+    act(() => {
+      usePlayerStore.setState({
+        currentTrack: plainTrack,
+      });
+
+      useLyricsStore.setState({
+        currentLyrics: {
+          trackId: "track-plain",
+          hasLyrics: true,
+          isSynced: false,
+          lines: [],
+          plainText: "Line one of poem\nLine two of poem",
+          sourceType: "embedded",
+          userOffsetMs: 0,
+        },
+        lyricsCache: {
+          "track-plain": {
+            trackId: "track-plain",
+            hasLyrics: true,
+            isSynced: false,
+            lines: [],
+            plainText: "Line one of poem\nLine two of poem",
+            sourceType: "embedded",
+            userOffsetMs: 0,
+          },
+        },
+      });
+    });
+
+    render(<LyricsModal />);
+
+    expect(screen.getByText("Unsynchronised Lyrics")).toBeInTheDocument();
+    expect(screen.getByText(/Line one of poem/)).toBeInTheDocument();
+    expect(screen.getByText(/Line two of poem/)).toBeInTheDocument();
+    // Timing offset controls should not render for unsynced plain text
+    expect(screen.queryByTestId("lyrics-offset-value")).not.toBeInTheDocument();
+  });
+
+  it("supports rescanLyrics to bust cache and fetch fresh disk lyrics (AC-5, AC-6)", async () => {
+    vi.mocked(tauriCore.isTauri).mockReturnValue(true);
+    vi.mocked(tauriCore.invoke).mockResolvedValueOnce({
+      trackId: "track-1",
+      hasLyrics: true,
+      isSynced: true,
+      lines: [{ id: "rescan-1", timeSeconds: 1.0, text: "Updated after rescan" }],
+      plainText: null,
+      sourceType: "lrc",
+      userOffsetMs: 50,
+    });
+
+    await act(async () => {
+      await useLyricsStore.getState().rescanLyrics("track-1");
+    });
+
+    expect(tauriCore.invoke).toHaveBeenCalledWith("lyrics_rescan_for_track", { trackId: "track-1" });
+    expect(useLyricsStore.getState().currentLyrics?.lines[0].text).toBe("Updated after rescan");
+    expect(useLyricsStore.getState().currentLyrics?.userOffsetMs).toBe(50);
+
+    vi.mocked(tauriCore.isTauri).mockReturnValue(false);
+  });
+
+  it("verifies accessible names and font size cycling on lyrics modal controls (AC-8, AC-9)", async () => {
+    await act(async () => {
+      await useLyricsStore.getState().fetchLyrics("track-1");
+    });
+
+    render(<LyricsModal />);
+
+    // Close button accessible name
+    expect(screen.getByLabelText("Close lyrics overlay")).toBeInTheDocument();
+
+    // Font size cycle button
+    const fontBtn = screen.getByLabelText(/Current font size medium\. Click to change\./i);
+    expect(fontBtn).toBeInTheDocument();
+
+    act(() => {
+      fireEvent.click(fontBtn);
+    });
+
+    expect(useSettingsStore.getState().settings.lyricsFontSize).toBe("large");
+  });
+
+  it("returns fallback empty lyrics payload when IPC fails (AC-10)", async () => {
+    vi.mocked(tauriCore.isTauri).mockReturnValue(true);
+    vi.mocked(tauriCore.invoke).mockRejectedValueOnce(new Error("File not found"));
+
+    const result = await lyricsGetForTrack("error-track");
+    expect(result.hasLyrics).toBe(false);
+    expect(result.lines).toHaveLength(0);
+    expect(result.sourceType).toBe("none");
+
+    vi.mocked(tauriCore.isTauri).mockReturnValue(false);
+  });
 });
