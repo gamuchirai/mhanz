@@ -5,6 +5,7 @@ import type { Track } from "../../types/discovery";
 import type { AlbumCard, ArtistCard, GenreCard, PlaylistCard } from "../../types/search";
 import { useAlbumStore } from "../../store/useAlbumStore";
 import { useArtistStore } from "../../store/useArtistStore";
+import { ArtistLink, AlbumLink } from "../common";
 
 function formatDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -161,7 +162,8 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                         {topTrack.title}
                       </h4>
                       <p style={{ margin: 0, fontSize: "14px", color: "var(--m)" }}>
-                        {topTrack.artist} &bull; {topTrack.album}
+                        <ArtistLink name={topTrack.artist} artistId={topTrack.artistId} /> &bull;{" "}
+                        <AlbumLink title={topTrack.album} albumId={topTrack.albumId} artistName={topTrack.artist} />
                       </p>
                     </div>
 
@@ -304,7 +306,7 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                               textOverflow: "ellipsis",
                             }}
                           >
-                            {track.artist}
+                            <ArtistLink name={track.artist} artistId={track.artistId} />
                           </div>
                         </div>
 
@@ -591,7 +593,7 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                           textOverflow: "ellipsis",
                         }}
                       >
-                        {track.artist}
+                        <ArtistLink name={track.artist} artistId={track.artistId} />
                       </div>
                     </div>
                   </div>
@@ -605,7 +607,7 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                       textOverflow: "ellipsis",
                     }}
                   >
-                    {track.album}
+                    <AlbumLink title={track.album} albumId={track.albumId} artistName={track.artist} />
                   </span>
 
                   <div>
@@ -877,7 +879,7 @@ function AlbumCardItem({
           {album.title}
         </div>
         <div style={{ fontSize: "12px", color: "var(--m)" }}>
-          {album.artist} &bull; {album.releaseYear}
+          <ArtistLink name={album.artist} artistId={album.artistId} /> &bull; {album.releaseYear}
         </div>
       </div>
     </div>

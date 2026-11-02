@@ -1,9 +1,11 @@
+import { useEffect } from "react";
 import { SearchBar } from "../components/search/SearchBar";
 import { FilterPills } from "../components/search/FilterPills";
 import { ExploreGenresGrid } from "../components/search/ExploreGenresGrid";
 import { CategorizedResults } from "../components/search/CategorizedResults";
 import { EmptySearchState } from "../components/search/EmptySearchState";
 import { useSearchStore } from "../store/useSearchStore";
+import { useNavigationStore } from "../store/useNavigationStore";
 
 interface SearchProps {
   onNavigate?: (nav: string) => void;
@@ -13,6 +15,16 @@ export function Search({ onNavigate }: SearchProps = {}) {
   const query = useSearchStore((state) => state.query);
   const results = useSearchStore((state) => state.results);
   const isSearching = useSearchStore((state) => state.isSearching);
+  const currentNav = useNavigationStore((state) => state.current);
+
+  useEffect(() => {
+    if (currentNav.view === "Search" && typeof currentNav.params?.searchQuery === "string") {
+      const param = currentNav.params.searchQuery;
+      if (useSearchStore.getState().query !== param) {
+        useSearchStore.getState().setQuery(param, true);
+      }
+    }
+  }, [currentNav]);
 
   const hasQuery = query.trim().length > 0;
   const hasNoResults = hasQuery && !isSearching && results.totalMatches === 0;

@@ -18,6 +18,7 @@ import { useActivePlaylistId, usePlaylistStore, usePlaylists } from "./store/use
 import { useLikedSongsStore } from "./store/useLikedSongsStore";
 import { useAlbumStore } from "./store/useAlbumStore";
 import { useArtistStore } from "./store/useArtistStore";
+import { useSearchStore } from "./store/useSearchStore";
 import {
   sanitizeNavView,
   useNavigationStore,
@@ -43,6 +44,11 @@ export function App() {
       const targetId = currentNav.params?.playlistId ?? null;
       if (usePlaylistStore.getState().activePlaylistId !== targetId) {
         usePlaylistStore.getState().setActivePlaylistId(targetId);
+      }
+    } else if (currentNav.view === "Search") {
+      const queryParam = currentNav.params?.searchQuery;
+      if (typeof queryParam === "string" && queryParam !== useSearchStore.getState().query) {
+        useSearchStore.getState().setQuery(queryParam, true);
       }
     } else if (currentNav.view === "Artists") {
       const targetId = currentNav.params?.artistId ?? null;

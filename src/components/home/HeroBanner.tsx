@@ -1,5 +1,6 @@
 import { useState, useEffect, type MouseEvent } from "react";
 import { ShowcaseItem } from "../../types/discovery";
+import { AlbumLink } from "../common/AlbumLink";
 import { usePlayerStore } from "../../store/usePlayerStore";
 
 interface HeroBannerProps {
@@ -191,7 +192,15 @@ export function HeroBanner({ item }: HeroBannerProps) {
               : "4.8M"}
           </span>
           <span aria-hidden="true">•</span>
-          <span>{item.track?.album || "Featured"}</span>
+          {item.track?.album ? (
+            <AlbumLink
+              title={item.track.album}
+              albumId={item.track.albumId}
+              artistName={item.track.artist}
+            />
+          ) : (
+            <span>Featured</span>
+          )}
         </div>
         <p style={{ margin: "4px 0 16px", color: "#c9bbb0", fontSize: "14px" }}>
           {item.description || "Every moment with you feels like the perfect song."}

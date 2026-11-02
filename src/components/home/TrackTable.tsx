@@ -3,6 +3,7 @@ import { Track } from "../../types/discovery";
 import { usePlayerStore } from "../../store/usePlayerStore";
 import { MarqueeText } from "./MarqueeText";
 import { formatDuration } from "../../utils/format";
+import { ArtistLink } from "../common/ArtistLink";
 
 interface TrackTableProps {
   tracks: Track[];
@@ -250,7 +251,7 @@ function TrackRow({
             whiteSpace: "nowrap",
           }}
         >
-          {track.artist}
+          <ArtistLink name={track.artist} artistId={track.artistId} />
           {typeof track.playsCount === "number" && track.playsCount > 0 ? (
             <span style={{ marginLeft: "6px", opacity: 0.8 }}>
               • {track.playsCount} {track.playsCount === 1 ? "play" : "plays"}

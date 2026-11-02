@@ -417,11 +417,12 @@ Make every displayed album and artist name across the desktop app an interactive
 spec [0024](../specs/0024-universal-album-artist-navigation-links/index.md)
 
 - [x] Design it (spec): `/architect universal album and artist navigation links`
-- [ ] Build it: `/develop universal album and artist navigation links`
-  - [ ] Implement useEntityNavigation application hook with overlay closing, entity resolution, and search query synchronization (AC-3, AC-4, AC-5, AC-7)
-  - [ ] Create reusable ArtistLink and AlbumLink components with compound band name protection, collaboration delimiter splitting, and event bubbling isolation (AC-6, AC-8, AC-9, AC-10)
-  - [ ] Integrate universal links across player footer, fullscreen views, and queue drawer (AC-1, AC-2, AC-6, AC-7)
-  - [ ] Integrate universal links across table views, search results, home showcase, and album/artist banners (AC-1, AC-2, AC-5, AC-6)
+- [x] Build it: `/develop universal album and artist navigation links`
+  - [x] Implement useEntityNavigation application hook with overlay closing, entity resolution, and search query synchronization (AC-3, AC-4, AC-5, AC-7)
+  - [x] Create reusable ArtistLink and AlbumLink components with compound band name protection, collaboration delimiter splitting, and event bubbling isolation (AC-6, AC-8, AC-9, AC-10)
+  - [x] Integrate universal links across player footer, fullscreen views, and queue drawer (AC-1, AC-2, AC-6, AC-7)
+  - [x] Integrate universal links across table views, search results, home showcase, and album/artist banners (AC-1, AC-2, AC-5, AC-6)
+        code in `src/hooks/useEntityNavigation.ts`, `src/components/common/`, `src/test/navigationLinks.test.tsx`
 - [ ] Verify it: `/check verify universal album and artist navigation links`
 - [ ] Test it: `/test universal album and artist navigation links`
 

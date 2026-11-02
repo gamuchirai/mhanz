@@ -8,6 +8,7 @@ import {
 } from "../../store/usePlaylistStore";
 import { useCurrentTrack, useIsPlaying, usePlayerStore } from "../../store/usePlayerStore";
 import { formatDuration, formatRelativeDate } from "../../utils/format";
+import { ArtistLink, AlbumLink } from "../common";
 
 interface PlaylistSongTableProps {
   playlist: Playlist;
@@ -436,7 +437,7 @@ export function PlaylistSongTable({ playlist }: PlaylistSongTableProps) {
                     textOverflow: "ellipsis",
                   }}
                 >
-                  {track.artist}
+                  <ArtistLink name={track.artist} artistId={track.artistId} />
                 </td>
 
                 {/* Album */}
@@ -450,7 +451,11 @@ export function PlaylistSongTable({ playlist }: PlaylistSongTableProps) {
                     textOverflow: "ellipsis",
                   }}
                 >
-                  {track.album}
+                  <AlbumLink
+                    title={track.album}
+                    albumId={track.albumId}
+                    artistName={track.artist}
+                  />
                 </td>
 
                 {/* Date Added */}

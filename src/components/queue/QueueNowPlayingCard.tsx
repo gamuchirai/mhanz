@@ -6,6 +6,7 @@ import {
   usePlayerStore,
 } from "../../store/usePlayerStore";
 import { formatDuration } from "../../utils/format";
+import { ArtistLink } from "../common/ArtistLink";
 
 export function QueueNowPlayingCard() {
   const currentTrack = useCurrentTrack();
@@ -104,7 +105,7 @@ export function QueueNowPlayingCard() {
               textOverflow: "ellipsis",
             }}
           >
-            {currentTrack.artist}
+            <ArtistLink name={currentTrack.artist} artistId={currentTrack.artistId} />
           </div>
         </div>
 
