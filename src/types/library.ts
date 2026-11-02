@@ -16,7 +16,9 @@ export interface LibraryTrack {
   id: string;
   title: string;
   artist: string;
+  artistId?: string | null;
   album: string;
+  albumId?: string | null;
   durationSeconds: number;
   artworkUrl: string;
   playsCount: number;

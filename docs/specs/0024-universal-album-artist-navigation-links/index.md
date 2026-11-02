@@ -1,7 +1,7 @@
 # 0024. Universal Album and Artist Navigation Links
 
 **Date**: 2026-11-02
-**Status**: Proposed
+**Status**: Accepted
 
 ## Summary
 
@@ -121,15 +121,15 @@ Client side desktop navigation only. All inputs are sanitized through existing n
 
 Following the project Facade delivery approach, build the reusable navigation hook and UI components first, wire them across existing surfaces, and verify end to end behavior:
 
-1. Implement `useEntityNavigation` hook with unconditional overlay dismissal, store hydration await, target ID resolution, album artist disambiguation, and search fallback with query synchronization, satisfies **AC-3**, **AC-4**, **AC-5**, **AC-7**.
-2. Create reusable `ArtistLink` and `AlbumLink` components in `src/components/common/` with band name lookup, delimiter splitting, click and double click propagation stops, placeholder checks, and keyboard accessibility, satisfies **AC-6**, **AC-8**, **AC-9**, **AC-10**.
-3. Integrate `ArtistLink` and `AlbumLink` into `PlayerFooter` and `NowPlayingFullscreen` (header and artwork), satisfies **AC-1**, **AC-2**, **AC-6**, **AC-7**.
-4. Integrate `ArtistLink` and `AlbumLink` into `LikedSongTable` and `SongTable` (Library), satisfies **AC-1**, **AC-2**, **AC-6**.
-5. Integrate `ArtistLink` and `AlbumLink` into `PlaylistSongTable` and `QueueTrackRow`, satisfies **AC-1**, **AC-6**, **AC-7**.
-6. Integrate `ArtistLink` and `AlbumLink` into `CategorizedResults` (Search) and `TrackTable` (Home), satisfies **AC-1**, **AC-2**, **AC-5**, **AC-6**.
-7. Integrate `ArtistLink` into `AlbumDetailBanner` and `AlbumTrackRow`, and `AlbumLink` into `ArtistPopularTrackRow`, satisfies **AC-1**, **AC-2**, **AC-6**.
-8. Add search route parameter synchronization in `App.tsx` and `Search.tsx` to ensure back and forward traversal hydrates prefilled search queries, satisfies **AC-5**.
-9. Verify link navigation, album disambiguation, band name preservation, double click isolation, and overlay closing with automated Vitest unit tests, satisfies **AC-1**, **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-6**, **AC-7**, **AC-8**, **AC-9**, **AC-10**.
+- [x] 1. Implement `useEntityNavigation` hook with unconditional overlay dismissal, store hydration await, target ID resolution, album artist disambiguation, and search fallback with query synchronization, satisfies **AC-3**, **AC-4**, **AC-5**, **AC-7**.
+- [x] 2. Create reusable `ArtistLink` and `AlbumLink` components in `src/components/common/` with band name lookup, delimiter splitting, click and double click propagation stops, placeholder checks, and keyboard accessibility, satisfies **AC-6**, **AC-8**, **AC-9**, **AC-10**.
+- [x] 3. Integrate `ArtistLink` and `AlbumLink` into `PlayerFooter` and `NowPlayingFullscreen` (header and artwork), satisfies **AC-1**, **AC-2**, **AC-6**, **AC-7**.
+- [x] 4. Integrate `ArtistLink` and `AlbumLink` into `LikedSongTable` and `SongTable` (Library), satisfies **AC-1**, **AC-2**, **AC-6**.
+- [x] 5. Integrate `ArtistLink` and `AlbumLink` into `PlaylistSongTable` and `QueueTrackRow`, satisfies **AC-1**, **AC-6**, **AC-7**.
+- [x] 6. Integrate `ArtistLink` and `AlbumLink` into `CategorizedResults` (Search) and `TrackTable` (Home), satisfies **AC-1**, **AC-2**, **AC-5**, **AC-6**.
+- [x] 7. Integrate `ArtistLink` into `AlbumDetailBanner` and `AlbumTrackRow`, and `AlbumLink` into `ArtistPopularTrackRow`, satisfies **AC-1**, **AC-2**, **AC-6**.
+- [x] 8. Add search route parameter synchronization in `App.tsx` and `Search.tsx` to ensure back and forward traversal hydrates prefilled search queries, satisfies **AC-5**.
+- [x] 9. Verify link navigation, album disambiguation, band name preservation, double click isolation, and overlay closing with automated Vitest unit tests, satisfies **AC-1**, **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-6**, **AC-7**, **AC-8**, **AC-9**, **AC-10**.
 
 ## Consequences
 

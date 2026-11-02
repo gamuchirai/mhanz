@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { AlbumTrack } from "../../types/album";
 import { useCurrentTrack, useIsPlaying, usePlayerStore } from "../../store/usePlayerStore";
+import { ArtistLink } from "../common/ArtistLink";
 
 interface AlbumTrackRowProps {
   track: AlbumTrack;
@@ -162,7 +163,7 @@ export function AlbumTrackRow({ track, albumArtistName, onPlay }: AlbumTrackRowP
           paddingRight: "12px",
         }}
       >
-        {hasFeaturedArtist ? track.artist : ""}
+        {hasFeaturedArtist ? <ArtistLink name={track.artist} artistId={track.artistId} /> : ""}
       </div>
 
       {/* Col 4: Duration */}

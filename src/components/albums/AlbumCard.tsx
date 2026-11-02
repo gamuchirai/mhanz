@@ -3,6 +3,7 @@ import type { Album } from "../../types/album";
 import { useAlbumStore } from "../../store/useAlbumStore";
 import { useNavigationStore } from "../../store/useNavigationStore";
 import { AlbumVinylPlaceholder } from "./AlbumVinylPlaceholder";
+import { ArtistLink } from "../common/ArtistLink";
 
 interface AlbumCardProps {
   album: Album;
@@ -136,7 +137,7 @@ export function AlbumCard({ album }: AlbumCardProps) {
             textOverflow: "ellipsis",
           }}
         >
-          {album.artistName}
+          <ArtistLink name={album.artistName} artistId={album.artistId} />
         </div>
 
         <div

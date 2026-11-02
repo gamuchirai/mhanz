@@ -3,6 +3,7 @@ import type { ArtistPopularTrack } from "../../types/artists";
 import { useCurrentTrack, useIsPlaying, usePlayerStore } from "../../store/usePlayerStore";
 import { formatDuration } from "../../utils/format";
 import { formatWithCommas } from "../../utils/avatarUtils";
+import { AlbumLink } from "../common/AlbumLink";
 
 interface ArtistPopularTrackRowProps {
   track: ArtistPopularTrack;
@@ -181,7 +182,7 @@ export function ArtistPopularTrackRow({ track, rank, onPlay }: ArtistPopularTrac
           }}
           title={track.albumTitle}
         >
-          {track.albumTitle}
+          <AlbumLink title={track.albumTitle} albumId={track.albumId} artistName={track.artistName} />
         </span>
       </div>
 

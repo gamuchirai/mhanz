@@ -34,7 +34,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 21  | Artists and artist profile persistence | Phase 2    | done        |
 | 22  | Local file lyrics parser and metadata extraction | Phase 2    | done        |
 | 23  | Home listening history and popular tracks persistence | Phase 2    | done |
-| 24  | Universal album and artist navigation links | Phase 2    | in-progress |
+| 24  | Universal album and artist navigation links | Phase 2    | done        |
 | 25  | Audio file metadata tag editor     | Phase 2    | in-progress |
 
 ## Foundations
@@ -409,7 +409,7 @@ spec [0022](../specs/0022-home-listening-history-popular-tracks-persistence/inde
 - [x] Verify it: `/check verify home listening history and popular tracks persistence`
 - [x] Test it: `/test home listening history and popular tracks persistence`
 
-### 24. Universal album and artist navigation links · in-progress
+### 24. Universal album and artist navigation links · done
 
 Make every displayed album and artist name across the desktop app an interactive link that navigates to the respective album detail or artist profile page, preventing row click side effects and closing open overlays.
 **Done when:** clicking any album name opens its album detail view, and clicking any artist name opens its artist profile view across all tables, cards, footer player, queue drawer, and fullscreen player, without triggering track playback or selection.
@@ -417,13 +417,14 @@ Make every displayed album and artist name across the desktop app an interactive
 spec [0024](../specs/0024-universal-album-artist-navigation-links/index.md)
 
 - [x] Design it (spec): `/architect universal album and artist navigation links`
-- [ ] Build it: `/develop universal album and artist navigation links`
-  - [ ] Implement useEntityNavigation application hook with overlay closing, entity resolution, and search query synchronization (AC-3, AC-4, AC-5, AC-7)
-  - [ ] Create reusable ArtistLink and AlbumLink components with compound band name protection, collaboration delimiter splitting, and event bubbling isolation (AC-6, AC-8, AC-9, AC-10)
-  - [ ] Integrate universal links across player footer, fullscreen views, and queue drawer (AC-1, AC-2, AC-6, AC-7)
-  - [ ] Integrate universal links across table views, search results, home showcase, and album/artist banners (AC-1, AC-2, AC-5, AC-6)
-- [ ] Verify it: `/check verify universal album and artist navigation links`
-- [ ] Test it: `/test universal album and artist navigation links`
+- [x] Build it: `/develop universal album and artist navigation links`
+  - [x] Implement useEntityNavigation application hook with overlay closing, entity resolution, and search query synchronization (AC-3, AC-4, AC-5, AC-7)
+  - [x] Create reusable ArtistLink and AlbumLink components with compound band name protection, collaboration delimiter splitting, and event bubbling isolation (AC-6, AC-8, AC-9, AC-10)
+  - [x] Integrate universal links across player footer, fullscreen views, and queue drawer (AC-1, AC-2, AC-6, AC-7)
+  - [x] Integrate universal links across table views, search results, home showcase, and album/artist banners (AC-1, AC-2, AC-5, AC-6)
+        code in `src/hooks/useEntityNavigation.ts`, `src/components/common/`, `src/test/navigationLinks.test.tsx`
+- [x] Verify it: `/check verify universal album and artist navigation links`
+- [x] Test it: `/test universal album and artist navigation links`
 
 ### 25. Audio file metadata tag editor · in-progress
 

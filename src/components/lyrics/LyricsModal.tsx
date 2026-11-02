@@ -6,6 +6,7 @@ import { useLyricsStore } from "../../store/useLyricsStore";
 import { getLyricsForTrack } from "../../data/mockLyrics";
 import { LyricsLineRow } from "./LyricsLineRow";
 import { EmptyLyricsState } from "./EmptyLyricsState";
+import { ArtistLink } from "../common/ArtistLink";
 
 export function LyricsModal() {
   const currentTrack = useCurrentTrack();
@@ -189,7 +190,15 @@ export function LyricsModal() {
               {currentTrack?.title ?? "No Track"}
             </h2>
             <div style={{ fontSize: "12px", color: "var(--m)", marginTop: "2px" }}>
-              {currentTrack?.artist ?? "Mutinhimira"}
+              {currentTrack ? (
+                <ArtistLink
+                  name={currentTrack.artist}
+                  artistId={currentTrack.artistId}
+                  style={{ color: "var(--m)" }}
+                />
+              ) : (
+                "Mutinhimira"
+              )}
             </div>
           </div>
 

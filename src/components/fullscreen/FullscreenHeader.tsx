@@ -1,5 +1,6 @@
 import type { FullscreenViewMode } from "../../types/overlays";
 import type { Track } from "../../types/discovery";
+import { ArtistLink } from "../common/ArtistLink";
 
 interface FullscreenHeaderProps {
   track: Track | null;
@@ -72,7 +73,7 @@ export function FullscreenHeader({
         {track?.artist ? (
           <>
             <span style={{ color: "var(--m)", opacity: 0.6 }}>•</span>
-            <span style={{ color: "var(--m)" }}>{track.artist}</span>
+            <ArtistLink name={track.artist} artistId={track.artistId} style={{ color: "var(--m)" }} />
           </>
         ) : null}
       </div>

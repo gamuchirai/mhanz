@@ -10,6 +10,7 @@ import {
 import { useCurrentTrack, useIsPlaying } from "../../store/usePlayerStore";
 import type { LikedSortColumn, LikedTrack } from "../../types/liked";
 import { formatDuration, formatRelativeDate } from "../../utils/format";
+import { ArtistLink, AlbumLink } from "../common";
 
 export function LikedSongTable() {
   const tracks = useLikedTracks();
@@ -372,7 +373,7 @@ export function LikedSongTable() {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {track.artist}
+                    <ArtistLink name={track.artist} artistId={track.artistId} />
                   </span>
                 </div>
               </div>
@@ -388,12 +389,16 @@ export function LikedSongTable() {
                   paddingRight: "16px",
                 }}
               >
-                {track.artist}
+                <ArtistLink name={track.artist} artistId={track.artistId} />
               </div>
 
               {/* Album Column */}
               <div className="max-[950px]:hidden text-[13px] text-[#a89b91] overflow-hidden text-ellipsis whitespace-nowrap pr-4">
-                {track.album}
+                <AlbumLink
+                  title={track.album}
+                  albumId={track.albumId}
+                  artistName={track.artist}
+                />
               </div>
 
               {/* Date Liked Column */}
