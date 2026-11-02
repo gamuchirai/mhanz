@@ -36,6 +36,7 @@ pub struct AudioEngine {
     app_handle: Arc<Mutex<Option<AppHandle>>>,
     db_manager: Arc<Mutex<Option<Arc<DatabaseManager>>>>,
     monitor_running: Arc<AtomicBool>,
+    pub is_reloading: Arc<AtomicBool>,
 }
 
 /// Dedicated thread initialization that holds the Rodio OutputStream alive.
@@ -85,6 +86,7 @@ impl AudioEngine {
             app_handle: Arc::new(Mutex::new(None)),
             db_manager: Arc::new(Mutex::new(None)),
             monitor_running: Arc::new(AtomicBool::new(false)),
+            is_reloading: Arc::new(AtomicBool::new(false)),
         }
     }
 
@@ -476,6 +478,7 @@ impl AudioEngine {
         let app_handle_clone = self.app_handle.clone();
         let db_manager_clone = self.db_manager.clone();
         let running_flag = self.monitor_running.clone();
+        let reloading_flag = self.is_reloading.clone();
 
         thread::Builder::new()
             .name("audio-monitor".to_string())
@@ -487,6 +490,10 @@ impl AudioEngine {
                         Ok(l) => l,
                         Err(_) => continue,
                     };
+
+                    if reloading_flag.load(Ordering::SeqCst) {
+                        continue;
+                    }
 
                     if inner.state.status != PlaybackStatus::Playing {
                         continue;
@@ -597,6 +604,167 @@ impl AudioEngine {
                 }
             })
             .expect("Failed to spawn audio monitor thread");
+    }
+
+    /// Checks if a file path matches the currently loaded active playback track.
+    pub fn is_file_active(&self, target_file_path: &Path) -> bool {
+        let canonical_target = match std::fs::canonicalize(target_file_path) {
+            Ok(p) => p,
+            Err(_) => target_file_path.to_path_buf(),
+        };
+
+        if let Ok(inner) = self.inner.lock() {
+            if let Some(ref current_fp) = inner.state.file_path {
+                return match std::fs::canonicalize(current_fp) {
+                    Ok(p) => p == canonical_target,
+                    Err(_) => current_fp == &target_file_path.to_string_lossy(),
+                };
+            }
+        }
+        false
+    }
+
+    /// Restores audio playback stream after a physical file modification.
+    fn restore_playback_stream(
+        &self,
+        track_id: String,
+        file_path: String,
+        position: f64,
+        should_play: bool,
+        context_title: Option<String>,
+        context_type: Option<String>,
+        play_count_recorded: bool,
+    ) -> Result<(), AudioError> {
+        let canonical_path = Self::validate_file_path(&file_path)?;
+        let file = File::open(&canonical_path)
+            .map_err(|err| AudioError::FileNotFound(err.to_string()))?;
+        let buf_reader = BufReader::new(file);
+        let decoder = Decoder::new(buf_reader)
+            .map_err(|err| AudioError::DecodeError(err.to_string()))?;
+        let duration = decoder
+            .total_duration()
+            .map(|d| d.as_secs_f64())
+            .unwrap_or(0.0);
+
+        let mut inner = self
+            .inner
+            .lock()
+            .map_err(|e| AudioError::LockError(e.to_string()))?;
+        let stream_handle = Self::ensure_stream_handle(&mut inner)?;
+
+        let new_sink = match Sink::try_new(&stream_handle) {
+            Ok(s) => s,
+            Err(err) => return Err(AudioError::DeviceError(err.to_string())),
+        };
+
+        let current_volume = if inner.state.is_muted {
+            0.0
+        } else {
+            inner.state.volume
+        };
+        new_sink.set_volume(current_volume);
+        new_sink.append(decoder);
+
+        if position > 0.0 {
+            let _ = new_sink.try_seek(Duration::from_secs_f64(position));
+        }
+
+        if !should_play {
+            new_sink.pause();
+        }
+
+        inner.state.track_id = Some(track_id);
+        inner.state.file_path = Some(canonical_path.to_string_lossy().to_string());
+        inner.state.status = if should_play {
+            PlaybackStatus::Playing
+        } else {
+            PlaybackStatus::Paused
+        };
+        inner.state.position_seconds = position;
+        inner.state.duration_seconds = duration;
+        inner.state.context_title = context_title;
+        inner.state.context_type = context_type;
+        inner.state.play_count_recorded = play_count_recorded;
+        inner.sink = Some(new_sink);
+
+        let state_dto = AudioPlaybackStateDto::from(&inner.state);
+        drop(inner);
+        self.emit_state_changed(&state_dto);
+
+        Ok(())
+    }
+
+    /// AC-7: Executes physical tag writing with atomic reload guard:
+    /// Closes Windows file handles by temporarily dropping Sink,
+    /// suppresses track completion events in monitor thread,
+    /// runs file writing operation, and restores playback position and state.
+    pub fn execute_with_reload_guard<F, R>(
+        &self,
+        target_file_path: &Path,
+        operation: F,
+    ) -> Result<R, String>
+    where
+        F: FnOnce() -> Result<R, String>,
+    {
+        let is_active = self.is_file_active(target_file_path);
+        if !is_active {
+            return operation();
+        }
+
+        // Set reload guard flag
+        self.is_reloading.store(true, Ordering::SeqCst);
+
+        // Snapshot prior state and drop sink
+        let mut prior_track_id: Option<String> = None;
+        let mut prior_file_path: Option<String> = None;
+        let mut prior_pos = 0.0;
+        let mut was_playing = false;
+        let mut context_title: Option<String> = None;
+        let mut context_type: Option<String> = None;
+        let mut play_count_recorded = false;
+
+        if let Ok(mut inner) = self.inner.lock() {
+            prior_track_id = inner.state.track_id.clone();
+            prior_file_path = inner.state.file_path.clone();
+            was_playing = inner.state.status == PlaybackStatus::Playing;
+            context_title = inner.state.context_title.clone();
+            context_type = inner.state.context_type.clone();
+            play_count_recorded = inner.state.play_count_recorded;
+
+            if let Some(ref sink) = inner.sink {
+                prior_pos = sink.get_pos().as_secs_f64();
+            } else {
+                prior_pos = inner.state.position_seconds;
+            }
+
+            if let Some(sink) = inner.sink.take() {
+                sink.stop();
+            }
+        }
+
+        // Allow Windows OS to release open file descriptors
+        std::thread::sleep(Duration::from_millis(20));
+
+        // Execute physical write operation
+        let op_result = operation();
+
+        // Restore playback stream
+        if let (Some(tid), Some(fp)) = (prior_track_id, prior_file_path) {
+            let _ = self.restore_playback_stream(
+                tid,
+                fp,
+                prior_pos,
+                was_playing,
+                context_title,
+                context_type,
+                play_count_recorded,
+            );
+        }
+
+        // Clear reload guard flag
+        self.is_reloading.store(false, Ordering::SeqCst);
+
+        op_result
     }
 }
 
