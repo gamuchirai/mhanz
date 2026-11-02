@@ -421,7 +421,7 @@ spec [0024](../specs/0024-universal-album-artist-navigation-links/index.md)
   - [x] Integrate universal links across player footer, fullscreen views, and queue drawer (AC-1, AC-2, AC-6, AC-7)
   - [x] Integrate universal links across table views, search results, home showcase, and album/artist banners (AC-1, AC-2, AC-5, AC-6)
         code in `src/hooks/useEntityNavigation.ts`, `src/components/common/`, `src/test/navigationLinks.test.tsx`
-- [ ] Verify it: `/check verify universal album and artist navigation links`
+- [x] Verify it: `/check verify universal album and artist navigation links`
 - [ ] Test it: `/test universal album and artist navigation links`
 ## Deferred
 
