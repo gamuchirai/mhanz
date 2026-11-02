@@ -41,6 +41,7 @@ This directory contains code reviews, audit records, and process analysis report
 
 ## Review and Audit Documents Index
 
+- [Review: Universal Album and Artist Navigation Links](2026-11-02-feat-universal-album-artist-navigation-links.md) (2026-11-02)
 - [Review: Local file lyrics parser and metadata extraction](2026-11-02-feat-local-file-lyrics-parser-metadata-extraction.md) (2026-11-02)
 - [Process 0003: Modern Desktop Player Capabilities](process-0003-modern-desktop-player-capabilities.md) (2026-11-02)
 - [Process 0002: UI Hydration Gaps and App Improvements](process-0002-ui-hydration-improvements.md) (2026-11-02)
