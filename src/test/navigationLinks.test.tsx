@@ -1,13 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, fireEvent, act, renderHook } from "@testing-library/react";
 import { ArtistLink } from "../components/common/ArtistLink";
 import { AlbumLink } from "../components/common/AlbumLink";
+import { useEntityNavigation } from "../hooks/useEntityNavigation";
+import { PlayerFooter } from "../components/player/PlayerFooter";
 import { useArtistStore } from "../store/useArtistStore";
 import { useAlbumStore } from "../store/useAlbumStore";
 import { useSearchStore } from "../store/useSearchStore";
 import { useNavigationStore } from "../store/useNavigationStore";
 import { useOverlayStore } from "../store/useOverlayStore";
+import { usePlayerStore } from "../store/usePlayerStore";
 import { initialArtists } from "../data/artistFixtures";
 import { initialAlbums } from "../data/mockAlbums";
 
@@ -271,6 +274,122 @@ describe("Universal Album and Artist Navigation Links (Feature 24)", () => {
       fireEvent.keyDown(link, { key: " " });
     });
 
+    expect(useNavigationStore.getState().current.view).toBe("Artists");
+  });
+
+  it("handles empty or whitespace inputs without error or state change (AC-3, AC-4)", async () => {
+    const { result } = renderHook(() => useEntityNavigation());
+
+    await act(async () => {
+      await result.current.navigateToArtist("   ");
+      await result.current.navigateToAlbum("   ");
+    });
+
+    expect(useNavigationStore.getState().current.view).toBe("Home");
+    expect(useArtistStore.getState().activeArtistId).toBe(null);
+    expect(useAlbumStore.getState().activeAlbumId).toBe(null);
+  });
+
+  it("awaits store hydration when store is currently loading on boot (AC-3, AC-4)", async () => {
+    act(() => {
+      useArtistStore.setState({ isLoaded: false, isLoading: true });
+    });
+
+    const { result } = renderHook(() => useEntityNavigation());
+
+    const navPromise = result.current.navigateToArtist("Amina V");
+
+    // Simulate store hydration completing after 50ms
+    setTimeout(() => {
+      act(() => {
+        useArtistStore.setState({ isLoaded: true, isLoading: false });
+      });
+    }, 50);
+
+    await act(async () => {
+      await navPromise;
+    });
+
+    expect(useArtistStore.getState().activeArtistId).toBe("artist-amina-v");
+    expect(useNavigationStore.getState().current.view).toBe("Artists");
+  });
+
+  it("splits collaboration strings with various delimiters like &, ft., vs., featuring, and comma (AC-8)", () => {
+    render(
+      <div>
+        <ArtistLink name="Artist One & Artist Two" />
+        <ArtistLink name="Artist Three ft. Artist Four" />
+        <ArtistLink name="Artist Five vs. Artist Six" />
+        <ArtistLink name="Artist Seven featuring Artist Eight" />
+        <ArtistLink name="Artist Nine, Artist Ten" />
+      </div>
+    );
+
+    expect(screen.getByRole("link", { name: /view artist artist one/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view artist artist two/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view artist artist three/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view artist artist four/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view artist artist five/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view artist artist six/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view artist artist seven/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view artist artist eight/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view artist artist nine/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view artist artist ten/i })).toBeInTheDocument();
+  });
+
+  it("supports keyboard activation and double click isolation on AlbumLink (AC-6, AC-10)", async () => {
+    const onDoubleClick = vi.fn();
+    render(
+      <div onDoubleClick={onDoubleClick}>
+        <AlbumLink title="Timeless Vibrations" albumId="album-1" className="custom-album-class" />
+      </div>
+    );
+
+    const link = screen.getByRole("link", { name: /view album timeless vibrations/i });
+    expect(link).toHaveClass("custom-album-class");
+
+    // Double click should stop propagation
+    await act(async () => {
+      fireEvent.doubleClick(link);
+    });
+    expect(onDoubleClick).not.toHaveBeenCalled();
+
+    // Keyboard activation with Enter
+    await act(async () => {
+      fireEvent.keyDown(link, { key: "Enter" });
+    });
+    expect(useAlbumStore.getState().activeAlbumId).toBe("album-1");
+    expect(useNavigationStore.getState().current.view).toBe("Albums");
+  });
+
+  it("renders interactive artist link in PlayerFooter and navigates to artist profile (AC-1, AC-3)", async () => {
+    act(() => {
+      usePlayerStore.setState({
+        currentTrack: {
+          id: "trk-sample",
+          title: "Solitary Horizon",
+          artist: "Amina V",
+          artistId: "artist-amina-v",
+          album: "Timeless Vibrations",
+          albumId: "album-1",
+          durationSeconds: 240,
+          artworkUrl: "",
+          playsCount: 15,
+          isLiked: false,
+        },
+      });
+    });
+
+    render(<PlayerFooter />);
+
+    const artistLink = screen.getByRole("link", { name: /view artist amina v/i });
+    expect(artistLink).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(artistLink);
+    });
+
+    expect(useArtistStore.getState().activeArtistId).toBe("artist-amina-v");
     expect(useNavigationStore.getState().current.view).toBe("Artists");
   });
 });
