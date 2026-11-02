@@ -4,8 +4,8 @@ use tauri::State;
 
 use crate::db::{
     AlbumDetailDto, AlbumDto, AlbumFavoriteResultDto, ArtistDto, ArtistProfileDto, DatabaseError,
-    DatabaseStatusDto, DbState, FolderDto, PaginatedTracksDto, PlayHistoryItemDto, PlaylistDetailDto, PlaylistDto,
-    PlaylistInputDto, SearchResultsDto, TrackDto, TrackFilterDto,
+    DatabaseStatusDto, DbState, FolderDto, PaginatedTracksDto, PlayHistoryItemDto,
+    PlaylistDetailDto, PlaylistDto, PlaylistInputDto, SearchResultsDto, TrackDto, TrackFilterDto,
 };
 
 /// Queries database health, migration schema version, and record statistics.
@@ -241,8 +241,6 @@ pub async fn db_get_popular_tracks(
 
 /// Clears all playback history entries.
 #[tauri::command]
-pub async fn db_clear_playback_history(
-    state: State<'_, DbState>,
-) -> Result<(), DatabaseError> {
+pub async fn db_clear_playback_history(state: State<'_, DbState>) -> Result<(), DatabaseError> {
     state.clear_playback_history()
 }

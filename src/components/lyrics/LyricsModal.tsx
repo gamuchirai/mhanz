@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useCurrentTime, useCurrentTrack, usePlayerStore } from "../../store/usePlayerStore";
 import { useOverlayStore } from "../../store/useOverlayStore";
 import { useSettingsStore } from "../../store/useSettingsStore";
+import { useLyricsStore } from "../../store/useLyricsStore";
 import { getLyricsForTrack } from "../../data/mockLyrics";
 import { LyricsLineRow } from "./LyricsLineRow";
 import { EmptyLyricsState } from "./EmptyLyricsState";
@@ -14,21 +15,62 @@ export function LyricsModal() {
   const lyricsFontSize = useSettingsStore((state) => state.settings.lyricsFontSize);
   const setLyricsFontSize = useSettingsStore((state) => state.setLyricsFontSize);
 
+  const {
+    currentLyrics,
+    fetchLyrics,
+    nudgeUserOffset,
+    resetUserOffset,
+  } = useLyricsStore();
+
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const isUserScrollingRef = useRef<boolean>(false);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [activeElement, setActiveElement] = useState<HTMLButtonElement | null>(null);
 
-  const lyrics = currentTrack
-    ? getLyricsForTrack(currentTrack.id, currentTrack.title, currentTrack.artist)
-    : { trackId: "", isSynced: false, lines: [] };
+  // Trigger reactive fetch on track switch
+  useEffect(() => {
+    if (currentTrack?.id) {
+      fetchLyrics(currentTrack.id, currentTrack.title, currentTrack.artist);
+    }
+  }, [currentTrack?.id, currentTrack?.title, currentTrack?.artist, fetchLyrics]);
 
-  // Determine active lyric index
+  // Resolve lyrics from store or synchronous fallback for zero flash rendering
+  const lyrics =
+    currentLyrics && currentTrack && currentLyrics.trackId === currentTrack.id
+      ? currentLyrics
+      : currentTrack
+        ? (() => {
+            const mock = getLyricsForTrack(currentTrack.id, currentTrack.title, currentTrack.artist);
+            return {
+              trackId: mock.trackId,
+              hasLyrics: (mock.lines && mock.lines.length > 0) || Boolean(mock.plainText),
+              isSynced: mock.isSynced,
+              lines: mock.lines,
+              plainText: mock.plainText ?? null,
+              sourceType: mock.source ?? "mock",
+              userOffsetMs: 0,
+            };
+          })()
+        : {
+            trackId: "",
+            hasLyrics: false,
+            isSynced: false,
+            lines: [],
+            plainText: null,
+            sourceType: "none",
+            userOffsetMs: 0,
+          };
+
+  const userOffsetMs = lyrics.userOffsetMs || 0;
+  const userOffsetSeconds = userOffsetMs / 1000.0;
+  const effectiveTime = currentTime + userOffsetSeconds;
+
+  // Determine active lyric index with offset calculation (AC-7, AC-8, AC-9)
   let activeIndex = -1;
   if (lyrics.isSynced && lyrics.lines.length > 0) {
     for (let i = 0; i < lyrics.lines.length; i++) {
-      if (currentTime >= lyrics.lines[i].timeSeconds) {
+      if (effectiveTime >= lyrics.lines[i].timeSeconds) {
         activeIndex = i;
       } else {
         break;
@@ -66,9 +108,11 @@ export function LyricsModal() {
     }
   }, [activeElement, activeIndex]);
 
+  // Click line to seek with offset arithmetic (AC-8)
   const handleLineClick = (timeSeconds: number) => {
     isUserScrollingRef.current = false;
-    seekToLyricLine(timeSeconds);
+    const seekTarget = Math.max(0, timeSeconds - userOffsetSeconds);
+    seekToLyricLine(seekTarget);
   };
 
   const cycleFontSize = () => {
@@ -168,6 +212,87 @@ export function LyricsModal() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* Timing offset adjustment controls (AC-8, AC-9) */}
+          {lyrics.isSynced && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "rgba(255, 255, 255, 0.03)",
+                border: "1px solid var(--l)",
+                borderRadius: "8px",
+                padding: "3px 8px",
+              }}
+            >
+              <span style={{ fontSize: "11px", color: "var(--m)" }}>Offset</span>
+              <button
+                aria-label="Delay lyrics timing by 0.1 seconds"
+                onClick={() => nudgeUserOffset(-100)}
+                style={{
+                  background: "rgba(255, 255, 255, 0.08)",
+                  border: "none",
+                  borderRadius: "4px",
+                  padding: "3px 7px",
+                  color: "var(--t)",
+                  fontSize: "11px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                -0.1s
+              </button>
+              <span
+                data-testid="lyrics-offset-value"
+                style={{
+                  fontSize: "11px",
+                  fontVariantNumeric: "tabular-nums",
+                  minWidth: "38px",
+                  textAlign: "center",
+                  color: userOffsetMs !== 0 ? "var(--accent)" : "var(--m)",
+                  fontWeight: 600,
+                }}
+              >
+                {userOffsetMs > 0
+                  ? `+${(userOffsetMs / 1000).toFixed(1)}s`
+                  : `${(userOffsetMs / 1000).toFixed(1)}s`}
+              </span>
+              <button
+                aria-label="Advance lyrics timing by 0.1 seconds"
+                onClick={() => nudgeUserOffset(100)}
+                style={{
+                  background: "rgba(255, 255, 255, 0.08)",
+                  border: "none",
+                  borderRadius: "4px",
+                  padding: "3px 7px",
+                  color: "var(--t)",
+                  fontSize: "11px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                +0.1s
+              </button>
+              {userOffsetMs !== 0 && (
+                <button
+                  aria-label="Reset lyrics timing offset"
+                  onClick={() => resetUserOffset()}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--m)",
+                    fontSize: "11px",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                    padding: "0 2px",
+                  }}
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Font size toggle */}
           <button
             aria-label={`Current font size ${lyricsFontSize}. Click to change.`}
@@ -244,7 +369,7 @@ export function LyricsModal() {
             );
           })
         ) : (
-          <EmptyLyricsState plainText={lyrics.plainText} songTitle={currentTrack?.title} />
+          <EmptyLyricsState plainText={lyrics.plainText ?? undefined} songTitle={currentTrack?.title} />
         )}
       </div>
     </div>

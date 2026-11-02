@@ -175,3 +175,20 @@ export interface PlayHistoryItemDto {
   context_type: string | null;
   track: TrackDto;
 }
+
+
+export interface LyricLineDto {
+  id: string;
+  timeSeconds: number;
+  text: string;
+}
+
+export interface TrackLyricsDto {
+  trackId: string;
+  hasLyrics: boolean;
+  isSynced: boolean;
+  lines: LyricLineDto[];
+  plainText?: string | null;
+  sourceType: string;
+  userOffsetMs: number;
+}

@@ -7,6 +7,7 @@ use std::sync::Arc;
 pub mod audio;
 pub mod commands;
 pub mod db;
+pub mod lyrics;
 pub mod scanner;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -80,6 +81,9 @@ pub fn run() {
             commands::scanner::scanner_scan_folder,
             commands::scanner::scanner_cancel_scan,
             commands::scanner::scanner_get_scan_status,
+            commands::lyrics::lyrics_get_for_track,
+            commands::lyrics::lyrics_set_user_offset,
+            commands::lyrics::lyrics_rescan_for_track,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

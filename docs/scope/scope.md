@@ -34,6 +34,8 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 21  | Artists and artist profile persistence | Phase 2    | done        |
 | 22  | Local file lyrics parser and metadata extraction | Phase 2    | in-progress |
 | 23  | Home listening history and popular tracks persistence | Phase 2    | done |
+| 24  | Universal album and artist navigation links | Phase 2    | in-progress |
+| 25  | Audio file metadata tag editor     | Phase 2    | in-progress |
 
 ## Foundations
 
@@ -406,6 +408,39 @@ spec [0022](../specs/0022-home-listening-history-popular-tracks-persistence/inde
   - [x] Home UI components wiring with dynamic showcase, deduplicated carousel, and contextual empty states (AC-12, AC-13)
 - [x] Verify it: `/check verify home listening history and popular tracks persistence`
 - [x] Test it: `/test home listening history and popular tracks persistence`
+
+### 24. Universal album and artist navigation links · in-progress
+
+Make every displayed album and artist name across the desktop app an interactive link that navigates to the respective album detail or artist profile page, preventing row click side effects and closing open overlays.
+**Done when:** clicking any album name opens its album detail view, and clicking any artist name opens its artist profile view across all tables, cards, footer player, queue drawer, and fullscreen player, without triggering track playback or selection.
+
+spec [0024](../specs/0024-universal-album-artist-navigation-links/index.md)
+
+- [x] Design it (spec): `/architect universal album and artist navigation links`
+- [ ] Build it: `/develop universal album and artist navigation links`
+  - [ ] Implement useEntityNavigation application hook with overlay closing, entity resolution, and search query synchronization (AC-3, AC-4, AC-5, AC-7)
+  - [ ] Create reusable ArtistLink and AlbumLink components with compound band name protection, collaboration delimiter splitting, and event bubbling isolation (AC-6, AC-8, AC-9, AC-10)
+  - [ ] Integrate universal links across player footer, fullscreen views, and queue drawer (AC-1, AC-2, AC-6, AC-7)
+  - [ ] Integrate universal links across table views, search results, home showcase, and album/artist banners (AC-1, AC-2, AC-5, AC-6)
+- [ ] Verify it: `/check verify universal album and artist navigation links`
+- [ ] Test it: `/test universal album and artist navigation links`
+
+### 25. Audio file metadata tag editor · in-progress
+
+Allow users to edit physical audio tags on disk and sync changes to SQLite, with support for title, artist, album, genre, year, track number, disc number, and cover art.
+**Done when:** users can open an edit modal from track context menus, save changes to file tags via Lofty, update the SQLite database atomically, and see immediate UI updates without playback lock conflicts.
+
+spec [0023](../specs/0023-audio-file-metadata-tag-editor/index.md)
+
+- [x] Design it (spec): `/architect audio file metadata tag editor`
+- [ ] Build it: `/develop audio file metadata tag editor`
+  - [ ] TypeScript DTO contracts, tag editor client service, and Zustand modal store (AC-1, AC-4)
+  - [ ] TagEditorModal and BatchTagEditorModal components with cover art picker, drag and drop, and Album Details integration (AC-2, AC-3, AC-4, AC-5)
+  - [ ] Native Rust Lofty probing, image normalization, and unique temporary file writer with Windows retry loop (AC-1, AC-5, AC-6)
+  - [ ] Rodio playback coordination with atomic reload guard to prevent file locks and premature track skips (AC-7)
+  - [ ] SQLite transaction repository for in place album updates, artist reconciliation, FTS5 sync, and Tauri event emission (AC-8, AC-9, AC-10, AC-11)
+- [ ] Verify it: `/check verify audio file metadata tag editor`
+- [ ] Test it: `/test audio file metadata tag editor`
 
 ## Deferred
 

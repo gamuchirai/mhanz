@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { convertFileSrc, invoke, isTauri } from "@tauri-apps/api/core";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import {
   dbAddFolder,
   dbAddTracksToPlaylist,

@@ -97,8 +97,9 @@ pub fn record_playback(
     prune_history_if_needed(conn)?;
 
     // Fetch the joined track
-    let track = track_repo::get_track_by_id(conn, track_id)?
-        .ok_or_else(|| DatabaseError::track_not_found(format!("Track with id {} not found", track_id)))?;
+    let track = track_repo::get_track_by_id(conn, track_id)?.ok_or_else(|| {
+        DatabaseError::track_not_found(format!("Track with id {} not found", track_id))
+    })?;
 
     Ok(PlayHistoryItemDto {
         id: history_id,
@@ -343,8 +344,13 @@ mod tests {
         assert!(updated_t2.last_played_at.is_some());
 
         // Record another play on track2 (deduplication check)
-        record_playback(conn, "trk-hist-2", Some("Custom Playlist"), Some("playlist"))
-            .expect("Second play recorded");
+        record_playback(
+            conn,
+            "trk-hist-2",
+            Some("Custom Playlist"),
+            Some("playlist"),
+        )
+        .expect("Second play recorded");
 
         // Record play on track1
         record_playback(conn, "trk-hist-1", None, None).expect("Track 1 play recorded");
@@ -379,7 +385,8 @@ mod tests {
         // Verify foreign key cascade deletion
         record_playback(conn, "trk-hist-3", None, None).expect("Play recorded for track 3");
         assert_eq!(get_recent_plays(conn, Some(10)).unwrap().len(), 1);
-        conn.execute("DELETE FROM tracks WHERE id = 'trk-hist-3'", []).expect("Track deleted");
+        conn.execute("DELETE FROM tracks WHERE id = 'trk-hist-3'", [])
+            .expect("Track deleted");
         assert_eq!(get_recent_plays(conn, Some(10)).unwrap().len(), 0);
     }
 }
