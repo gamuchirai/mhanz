@@ -5,6 +5,7 @@ import type { Track } from "../../types/discovery";
 import type { AlbumCard, ArtistCard, GenreCard, PlaylistCard } from "../../types/search";
 import { useAlbumStore } from "../../store/useAlbumStore";
 import { useArtistStore } from "../../store/useArtistStore";
+import { TrackRowMenuButton, handleTrackContextMenu } from "../tagger";
 
 function formatDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -217,6 +218,7 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                       <div
                         key={track.id}
                         onDoubleClick={() => handlePlaySong(track)}
+                        onContextMenu={(e) => handleTrackContextMenu(e, track.id, track.filePath)}
                         onMouseEnter={() => setHoveredTrackId(track.id)}
                         onMouseLeave={() => setHoveredTrackId(null)}
                         aria-label={`Song: ${track.title} by ${track.artist}`}
@@ -328,6 +330,7 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
                             <use href="#heart" />
                           </svg>
                         </button>
+                        <TrackRowMenuButton trackId={track.id} filePath={track.filePath} trackTitle={track.title} />
 
                         <span
                           style={{
@@ -488,7 +491,7 @@ export function CategorizedResults({ onNavigate }: CategorizedResultsProps = {})
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "40px 1fr 1fr 80px 60px",
+              gridTemplateColumns: "40px 1fr 1fr 100px 60px",
               padding: "8px 12px",
               color: "var(--m)",
               fontSize: "12px",
@@ -1078,4 +1081,3 @@ function PlaylistCardItem({
     </div>
   );
 }
-

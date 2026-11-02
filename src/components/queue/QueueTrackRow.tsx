@@ -2,6 +2,7 @@ import { useState, type DragEvent, type MouseEvent } from "react";
 import type { QueueItem } from "../../types/overlays";
 import { formatDuration } from "../../utils/format";
 import { usePlayerStore } from "../../store/usePlayerStore";
+import { TrackRowMenuButton, handleTrackContextMenu } from "../tagger";
 
 interface QueueTrackRowProps {
   item: QueueItem;
@@ -49,6 +50,7 @@ export function QueueTrackRow({
       onDragEnd={onDragEnd}
       onDrop={(e) => onDrop(e, index)}
       onClick={handleRowClick}
+      onContextMenu={(e) => handleTrackContextMenu(e, track.id, track.filePath)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
@@ -181,6 +183,7 @@ export function QueueTrackRow({
             <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>
+        <TrackRowMenuButton trackId={track.id} filePath={track.filePath} trackTitle={track.title} />
       </div>
     </div>
   );

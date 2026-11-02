@@ -12,6 +12,7 @@ import { useCurrentTrack, useIsPlaying, usePlayerStore } from "../../store/usePl
 import type { LibrarySortColumn, LibraryTrack } from "../../types/library";
 import type { Track } from "../../types/discovery";
 import { formatDuration } from "../../utils/format";
+import { TrackRowMenuButton, handleTrackContextMenu } from "../tagger";
 
 interface SongTableProps {
   onPlayTrack?: (track: LibraryTrack, queue: LibraryTrack[]) => void;
@@ -318,7 +319,7 @@ export function SongTable({ onPlayTrack }: SongTableProps) {
           {/* Table Header Row with progressive column hiding */}
           <div
             role="row"
-            className="sticky top-0 z-10 grid grid-cols-[48px_3fr_2fr_2fr_90px_110px_48px] max-[1150px]:grid-cols-[48px_3fr_2fr_2fr_90px_48px] max-[950px]:grid-cols-[40px_3fr_2fr_80px_40px] px-4 py-2.5 border-b border-white/[0.08] bg-[#18110f] text-[11px] uppercase tracking-[0.08em] text-[#a89b91] font-semibold select-none items-center shadow-sm"
+            className="sticky top-0 z-10 grid grid-cols-[48px_3fr_2fr_2fr_90px_110px_60px] max-[1150px]:grid-cols-[48px_3fr_2fr_2fr_90px_60px] max-[950px]:grid-cols-[40px_3fr_2fr_80px_54px] px-4 py-2.5 border-b border-white/[0.08] bg-[#18110f] text-[11px] uppercase tracking-[0.08em] text-[#a89b91] font-semibold select-none items-center shadow-sm"
           >
             <div role="columnheader" className="text-center">
               #
@@ -441,6 +442,7 @@ export function SongTable({ onPlayTrack }: SongTableProps) {
                   tabIndex={0}
                   aria-label={`${track.title} by ${track.artist}`}
                   onDoubleClick={() => handleRowPlay(track, index)}
+                  onContextMenu={(e) => handleTrackContextMenu(e, track.id, track.filePath)}
                   onMouseEnter={() => setHoveredRowId(track.id)}
                   onMouseLeave={() => setHoveredRowId(null)}
                   style={{
@@ -451,7 +453,7 @@ export function SongTable({ onPlayTrack }: SongTableProps) {
                     height: "52px",
                     transform: `translateY(${start}px)`,
                   }}
-                  className={`grid grid-cols-[48px_3fr_2fr_2fr_90px_110px_48px] max-[1150px]:grid-cols-[48px_3fr_2fr_2fr_90px_48px] max-[950px]:grid-cols-[40px_3fr_2fr_80px_40px] items-center px-4 border-b border-white/[0.03] text-[13px] cursor-pointer transition-colors duration-150 ${
+                  className={`grid grid-cols-[48px_3fr_2fr_2fr_90px_110px_60px] max-[1150px]:grid-cols-[48px_3fr_2fr_2fr_90px_60px] max-[950px]:grid-cols-[40px_3fr_2fr_80px_54px] items-center px-4 border-b border-white/[0.03] text-[13px] cursor-pointer transition-colors duration-150 ${
                     isCurrent
                       ? "bg-[#f0a982]/10 text-[#f0a982]"
                       : isHovered
@@ -545,7 +547,7 @@ export function SongTable({ onPlayTrack }: SongTableProps) {
                   </div>
 
                   {/* Like toggle cell */}
-                  <div role="cell" className="grid place-items-center">
+                  <div role="cell" className="flex items-center justify-center gap-1">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -571,6 +573,7 @@ export function SongTable({ onPlayTrack }: SongTableProps) {
                         <use href="#heart" />
                       </svg>
                     </button>
+                    <TrackRowMenuButton trackId={track.id} filePath={track.filePath} trackTitle={track.title} />
                   </div>
                 </div>
               );

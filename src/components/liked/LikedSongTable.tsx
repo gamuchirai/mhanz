@@ -10,6 +10,7 @@ import {
 import { useCurrentTrack, useIsPlaying } from "../../store/usePlayerStore";
 import type { LikedSortColumn, LikedTrack } from "../../types/liked";
 import { formatDuration, formatRelativeDate } from "../../utils/format";
+import { TrackRowMenuButton, handleTrackContextMenu } from "../tagger";
 
 export function LikedSongTable() {
   const tracks = useLikedTracks();
@@ -118,7 +119,7 @@ export function LikedSongTable() {
       }}
     >
       {/* Table Header Row */}
-      <div className="grid grid-cols-[48px_3fr_2fr_2fr_1.6fr_80px_48px] max-[1150px]:grid-cols-[48px_3fr_2fr_2fr_80px_48px] max-[950px]:grid-cols-[40px_3fr_2fr_80px_40px] items-center px-4 py-2.5 border-b border-white/[0.08] text-[#a89b91] text-xs font-semibold tracking-[0.08em] uppercase select-none sticky top-0 z-10 bg-[#18110f]">
+      <div className="grid grid-cols-[48px_3fr_2fr_2fr_1.6fr_80px_64px] max-[1150px]:grid-cols-[48px_3fr_2fr_2fr_80px_64px] max-[950px]:grid-cols-[40px_3fr_2fr_80px_54px] items-center px-4 py-2.5 border-b border-white/[0.08] text-[#a89b91] text-xs font-semibold tracking-[0.08em] uppercase select-none sticky top-0 z-10 bg-[#18110f]">
         <span>#</span>
 
         <button
@@ -252,7 +253,8 @@ export function LikedSongTable() {
               onMouseEnter={() => setHoveredTrackId(track.id)}
               onMouseLeave={() => setHoveredTrackId(null)}
               onDoubleClick={() => playTrackAtIndex(index)}
-              className={`grid grid-cols-[48px_3fr_2fr_2fr_1.6fr_80px_48px] max-[1150px]:grid-cols-[48px_3fr_2fr_2fr_80px_48px] max-[950px]:grid-cols-[40px_3fr_2fr_80px_40px] items-center px-4 py-2 rounded-lg cursor-pointer transition-colors duration-150 ${
+              onContextMenu={(e) => handleTrackContextMenu(e, track.id, track.filePath)}
+              className={`grid grid-cols-[48px_3fr_2fr_2fr_1.6fr_80px_64px] max-[1150px]:grid-cols-[48px_3fr_2fr_2fr_80px_64px] max-[950px]:grid-cols-[40px_3fr_2fr_80px_54px] items-center px-4 py-2 rounded-lg cursor-pointer transition-colors duration-150 ${
                 isHovered ? "bg-white/[0.05]" : isCurrent ? "bg-[#f0a982]/10" : "bg-transparent"
               } ${isCurrent ? "text-[#f0a982]" : "text-[#f4ebe4]"} ${
                 isPendingUnliked ? "opacity-60" : "opacity-100"
@@ -452,6 +454,7 @@ export function LikedSongTable() {
                     <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                   </svg>
                 </button>
+                <TrackRowMenuButton trackId={track.id} filePath={track.filePath} trackTitle={track.title} />
               </div>
             </div>
           );
