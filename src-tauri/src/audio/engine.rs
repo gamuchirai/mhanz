@@ -625,6 +625,7 @@ impl AudioEngine {
     }
 
     /// Restores audio playback stream after a physical file modification.
+    #[allow(clippy::too_many_arguments)]
     fn restore_playback_stream(
         &self,
         track_id: String,
@@ -636,11 +637,11 @@ impl AudioEngine {
         play_count_recorded: bool,
     ) -> Result<(), AudioError> {
         let canonical_path = Self::validate_file_path(&file_path)?;
-        let file = File::open(&canonical_path)
-            .map_err(|err| AudioError::FileNotFound(err.to_string()))?;
+        let file =
+            File::open(&canonical_path).map_err(|err| AudioError::FileNotFound(err.to_string()))?;
         let buf_reader = BufReader::new(file);
-        let decoder = Decoder::new(buf_reader)
-            .map_err(|err| AudioError::DecodeError(err.to_string()))?;
+        let decoder =
+            Decoder::new(buf_reader).map_err(|err| AudioError::DecodeError(err.to_string()))?;
         let duration = decoder
             .total_duration()
             .map(|d| d.as_secs_f64())

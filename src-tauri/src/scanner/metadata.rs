@@ -118,7 +118,10 @@ pub fn parse_audio_metadata(
 }
 
 /// Extracts front cover artwork, hashes with SHA256, and saves deduplicated into cache dir (AC-5).
-pub fn extract_cover_art<T: TaggedFileExt>(tagged_file: &T, cache_covers_dir: &Path) -> Option<String> {
+pub fn extract_cover_art<T: TaggedFileExt>(
+    tagged_file: &T,
+    cache_covers_dir: &Path,
+) -> Option<String> {
     let tag = tagged_file
         .primary_tag()
         .or_else(|| tagged_file.first_tag())?;

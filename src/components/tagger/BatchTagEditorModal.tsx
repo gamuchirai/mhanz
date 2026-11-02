@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { isTauri } from "@tauri-apps/api/core";
 import { useTagEditorStore } from "../../store/useTagEditorStore";
@@ -6,6 +6,62 @@ import type { BatchTrackUpdates } from "../../types/tagger";
 
 export function BatchTagEditorModal() {
   const isBatchOpen = useTagEditorStore((state) => state.isBatchOpen);
+  const isBatchSaving = useTagEditorStore((state) => state.isBatchSaving);
+  const batchAlbumId = useTagEditorStore((state) => state.batchAlbumId);
+  const batchTrackIds = useTagEditorStore((state) => state.batchTrackIds);
+  const closeBatchEditor = useTagEditorStore((state) => state.closeBatchEditor);
+
+  if (!isBatchOpen) {
+    return null;
+  }
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="batch-editor-title"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.75)",
+        backdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+        padding: "16px",
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isBatchSaving) {
+          closeBatchEditor();
+        }
+      }}
+    >
+      <div
+        style={{
+          background: "var(--bg-elevated)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          borderRadius: "14px",
+          width: "100%",
+          maxWidth: "760px",
+          maxHeight: "90vh",
+          padding: "24px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "18px",
+          overflowY: "auto",
+        }}
+      >
+        <BatchTagEditorForm key={batchAlbumId || batchTrackIds.join(",")} />
+      </div>
+    </div>
+  );
+}
+
+function BatchTagEditorForm() {
   const isBatchSaving = useTagEditorStore((state) => state.isBatchSaving);
   const batchError = useTagEditorStore((state) => state.batchError);
   const batchTracks = useTagEditorStore((state) => state.batchTracks);
@@ -18,12 +74,16 @@ export function BatchTagEditorModal() {
   const clearBatchSaveResult = useTagEditorStore((state) => state.clearBatchSaveResult);
 
   // Form values
-  const [artistName, setArtistName] = useState("");
-  const [albumName, setAlbumName] = useState("");
-  const [albumArtist, setAlbumArtist] = useState("");
-  const [genre, setGenre] = useState("");
-  const [year, setYear] = useState<string>("");
-  const [discNumber, setDiscNumber] = useState<string>("");
+  const [artistName, setArtistName] = useState(batchFields?.artist ?? "");
+  const [albumName, setAlbumName] = useState(batchFields?.album ?? "");
+  const [albumArtist, setAlbumArtist] = useState(batchFields?.albumArtist ?? "");
+  const [genre, setGenre] = useState(batchFields?.genre ?? "");
+  const [year, setYear] = useState<string>(
+    batchFields?.year !== null && batchFields?.year !== undefined ? String(batchFields.year) : ""
+  );
+  const [discNumber, setDiscNumber] = useState<string>(
+    batchFields?.discNumber !== null && batchFields?.discNumber !== undefined ? String(batchFields.discNumber) : ""
+  );
 
   // Tracking touched/modified fields to satisfy AC-4 (only commit explicitly changed fields)
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
@@ -31,23 +91,6 @@ export function BatchTagEditorModal() {
   const [isDragOver, setIsDragOver] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (batchFields) {
-      setArtistName(batchFields.artist ?? "");
-      setAlbumName(batchFields.album ?? "");
-      setAlbumArtist(batchFields.albumArtist ?? "");
-      setGenre(batchFields.genre ?? "");
-      setYear(batchFields.year !== null ? String(batchFields.year) : "");
-      setDiscNumber(batchFields.discNumber !== null ? String(batchFields.discNumber) : "");
-      setTouchedFields({});
-      setValidationError(null);
-    }
-  }, [batchFields]);
-
-  if (!isBatchOpen) {
-    return null;
-  }
 
   const markTouched = (fieldName: string) => {
     setTouchedFields((prev) => ({ ...prev, [fieldName]: true }));
@@ -109,21 +152,16 @@ export function BatchTagEditorModal() {
       } else {
         fileInputRef.current?.click();
       }
-    } catch (err) {
-      setValidationError(err instanceof Error ? err.message : String(err));
+    } catch {
+      fileInputRef.current?.click();
     }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      if (!file.type.startsWith("image/")) {
-        setValidationError("Please drop a valid image file (PNG, JPEG, WebP).");
-        return;
-      }
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
       handleFileReplacement(file);
     }
   };
@@ -136,515 +174,510 @@ export function BatchTagEditorModal() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const updates: BatchTrackUpdates = {};
+    const parsedYear = year.trim() ? parseInt(year.trim(), 10) : null;
+    if (touchedFields.year && parsedYear !== null && (isNaN(parsedYear) || parsedYear < 1000 || parsedYear > 2200)) {
+      setValidationError("Please enter a valid four digit release year.");
+      return;
+    }
 
-    if (touchedFields["artistName"]) {
-      updates.artistName = artistName.trim();
+    const parsedDiscNo = discNumber.trim() ? parseInt(discNumber.trim(), 10) : null;
+    if (touchedFields.discNumber && parsedDiscNo !== null && (isNaN(parsedDiscNo) || parsedDiscNo < 1)) {
+      setValidationError("Disc number must be greater than zero.");
+      return;
     }
-    if (touchedFields["albumName"]) {
-      updates.albumName = albumName.trim() || undefined;
-    }
-    if (touchedFields["albumArtist"]) {
-      updates.albumArtist = albumArtist.trim() || null;
-    }
-    if (touchedFields["genre"]) {
-      updates.genre = genre.trim() || null;
-    }
-    if (touchedFields["year"]) {
-      const parsed = year.trim() ? parseInt(year.trim(), 10) : null;
-      if (parsed !== null && (isNaN(parsed) || parsed < 1000 || parsed > 2200)) {
-        setValidationError("Please enter a valid four digit release year.");
-        return;
-      }
-      updates.year = parsed;
-    }
-    if (touchedFields["discNumber"]) {
-      const parsed = discNumber.trim() ? parseInt(discNumber.trim(), 10) : undefined;
-      updates.discNumber = parsed;
-    }
+
+    const updates: BatchTrackUpdates = {};
+    if (touchedFields.artist) updates.artistName = artistName.trim() || undefined;
+    if (touchedFields.album) updates.albumName = albumName.trim() || undefined;
+    if (touchedFields.albumArtist) updates.albumArtist = albumArtist.trim() || null;
+    if (touchedFields.genre) updates.genre = genre.trim() || null;
+    if (touchedFields.year) updates.year = parsedYear;
+    if (touchedFields.discNumber) updates.discNumber = parsedDiscNo || undefined;
 
     setValidationError(null);
     await saveBatch(updates);
   };
 
+  const handleDismissResult = () => {
+    clearBatchSaveResult();
+    closeBatchEditor();
+  };
+
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="batch-tag-editor-title"
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 60,
-        display: "grid",
-        placeItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.78)",
-        backdropFilter: "blur(8px)",
-        padding: "20px",
-      }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget && !isBatchSaving) {
-          closeBatchEditor();
-        }
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "Escape" && !isBatchSaving) {
-          closeBatchEditor();
-        }
-      }}
-    >
+    <>
+      {/* Header */}
       <div
         style={{
-          width: "100%",
-          maxWidth: "680px",
-          maxHeight: "90vh",
-          background: "#18110f",
-          border: "1px solid rgba(255, 255, 255, 0.12)",
-          borderRadius: "16px",
-          padding: "24px",
-          boxShadow: "0 24px 48px rgba(0, 0, 0, 0.7)",
           display: "flex",
-          flexDirection: "column",
-          gap: "18px",
-          overflowY: "auto",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+          paddingBottom: "14px",
         }}
       >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-            paddingBottom: "14px",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-            <h2
-              id="batch-tag-editor-title"
-              style={{
-                margin: 0,
-                fontSize: "18px",
-                fontWeight: 600,
-                color: "var(--t)",
-              }}
-            >
-              Batch Edit Details
-            </h2>
-            <span style={{ fontSize: "12px", color: "var(--m)" }}>
-              Applying changes across {batchTracks.length} tracks. Album ID and favorite status will be preserved.
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={closeBatchEditor}
-            disabled={isBatchSaving}
-            aria-label="Close modal"
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <h2
+            id="batch-editor-title"
             style={{
-              background: "none",
-              border: 0,
-              color: "var(--m)",
+              margin: 0,
               fontSize: "18px",
-              cursor: isBatchSaving ? "not-allowed" : "pointer",
-              padding: "4px 8px",
+              fontWeight: 600,
+              color: "var(--t)",
             }}
           >
-            ✕
-          </button>
+            Edit Multiple Tracks ({batchTracks.length} tracks)
+          </h2>
+          <span style={{ fontSize: "12px", color: "var(--m)" }}>
+            Applying changes across {batchTracks.length} tracks. Only touched fields are updated.
+          </span>
         </div>
 
-        {/* Partial failure notice from previous attempt if any */}
-        {batchSaveResult && batchSaveResult.failed.length > 0 && (
-          <div
-            role="alert"
-            style={{
-              background: "rgba(245, 158, 11, 0.12)",
-              border: "1px solid rgba(245, 158, 11, 0.3)",
-              color: "#fcd34d",
-              borderRadius: "8px",
-              padding: "12px 14px",
-              fontSize: "12px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "6px",
-            }}
-          >
-            <div style={{ fontWeight: 600 }}>
-              Saved {batchSaveResult.totalUpdated} tracks with {batchSaveResult.failed.length} failure(s):
-            </div>
-            <ul style={{ margin: 0, paddingLeft: "18px" }}>
-              {batchSaveResult.failed.map((fail) => (
-                <li key={fail.trackId}>
-                  <span style={{ fontFamily: "monospace" }}>{fail.filePath}</span>: {fail.error}
+        <button
+          type="button"
+          onClick={closeBatchEditor}
+          disabled={isBatchSaving}
+          aria-label="Close modal"
+          style={{
+            background: "none",
+            border: 0,
+            color: "var(--m)",
+            fontSize: "18px",
+            cursor: isBatchSaving ? "not-allowed" : "pointer",
+            padding: "4px 8px",
+          }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Partial / Full completion summary notice */}
+      {batchSaveResult && (
+        <div
+          role="status"
+          style={{
+            background:
+              batchSaveResult.failed.length > 0
+                ? "rgba(245, 158, 11, 0.12)"
+                : "rgba(16, 185, 129, 0.12)",
+            border: `1px solid ${batchSaveResult.failed.length > 0 ? "rgba(245, 158, 11, 0.3)" : "rgba(16, 185, 129, 0.3)"}`,
+            color: batchSaveResult.failed.length > 0 ? "#fcd34d" : "#6ee7b7",
+            borderRadius: "8px",
+            padding: "12px 16px",
+            fontSize: "13px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <strong>
+              {batchSaveResult.failed.length === 0
+                ? `Successfully updated ${batchSaveResult.totalUpdated} track(s)!`
+                : `Updated ${batchSaveResult.totalUpdated} track(s), with ${batchSaveResult.failed.length} failure(s).`}
+            </strong>
+            <button
+              type="button"
+              onClick={handleDismissResult}
+              style={{
+                background: "rgba(255, 255, 255, 0.15)",
+                border: 0,
+                borderRadius: "4px",
+                color: "#fff",
+                fontSize: "11px",
+                padding: "2px 8px",
+                cursor: "pointer",
+              }}
+            >
+              Done
+            </button>
+          </div>
+
+          {batchSaveResult.failed.length > 0 && (
+            <ul style={{ margin: "4px 0 0 0", paddingLeft: "20px", fontSize: "11px" }}>
+              {batchSaveResult.failed.map((f) => (
+                <li key={f.trackId}>
+                  Track {f.trackId}: {f.error}
                 </li>
               ))}
             </ul>
-            <button
-              type="button"
-              onClick={clearBatchSaveResult}
-              style={{
-                alignSelf: "flex-start",
-                background: "transparent",
-                border: "none",
-                color: "var(--t)",
-                textDecoration: "underline",
-                fontSize: "11px",
-                cursor: "pointer",
-                padding: 0,
-                marginTop: "4px",
-              }}
-            >
-              Dismiss notice
-            </button>
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
-        {(batchError || validationError) && (
-          <div
-            role="alert"
-            style={{
-              background: "rgba(239, 68, 68, 0.12)",
-              border: "1px solid rgba(239, 68, 68, 0.3)",
-              color: "#fca5a5",
-              borderRadius: "8px",
-              padding: "10px 14px",
-              fontSize: "12px",
-            }}
-          >
-            {batchError || validationError}
-          </div>
-        )}
-
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+      {(batchError || validationError) && (
+        <div
+          role="alert"
+          style={{
+            background: "rgba(239, 68, 68, 0.12)",
+            border: "1px solid rgba(239, 68, 68, 0.3)",
+            color: "#fca5a5",
+            borderRadius: "8px",
+            padding: "10px 14px",
+            fontSize: "12px",
+          }}
         >
-          {/* Top cover preview block */}
+          {batchError || validationError}
+        </div>
+      )}
+
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+      >
+        {/* Cover artwork row */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "140px 1fr",
+            gap: "18px",
+            background: "rgba(255, 255, 255, 0.02)",
+            padding: "14px",
+            borderRadius: "10px",
+            border: "1px solid rgba(255, 255, 255, 0.05)",
+          }}
+        >
           <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragOver(true);
+            }}
+            onDragLeave={() => setIsDragOver(false)}
+            onDrop={handleDrop}
             style={{
+              position: "relative",
+              width: "140px",
+              height: "140px",
+              borderRadius: "8px",
+              overflow: "hidden",
+              border: isDragOver
+                ? "2px dashed var(--accent)"
+                : "1px solid rgba(255, 255, 255, 0.1)",
+              background: "rgba(0, 0, 0, 0.3)",
               display: "flex",
-              gap: "18px",
+              flexDirection: "column",
               alignItems: "center",
-              background: "rgba(0, 0, 0, 0.2)",
-              padding: "14px",
-              borderRadius: "12px",
-              border: "1px solid rgba(255, 255, 255, 0.05)",
+              justifyContent: "center",
             }}
           >
+            {batchCoverPreviewUrl ? (
+              <img
+                src={batchCoverPreviewUrl}
+                alt="Batch artwork"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "6px",
+                  color: "var(--m)",
+                  fontSize: "11px",
+                  textAlign: "center",
+                  padding: "8px",
+                }}
+              >
+                <span>(Multiple or empty artwork)</span>
+              </div>
+            )}
+
             <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setIsDragOver(true);
-              }}
-              onDragLeave={() => setIsDragOver(false)}
-              onDrop={handleDrop}
               style={{
-                width: "90px",
-                height: "90px",
-                borderRadius: "10px",
-                overflow: "hidden",
-                position: "relative",
-                background: "#241a16",
-                border: isDragOver
-                  ? "2px dashed var(--accent)"
-                  : "1px solid rgba(255, 255, 255, 0.12)",
-                display: "grid",
-                placeItems: "center",
-                flexShrink: 0,
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                background: "rgba(0, 0, 0, 0.75)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                padding: "6px 4px",
               }}
             >
-              {batchCoverPreviewUrl ? (
-                <img
-                  src={batchCoverPreviewUrl}
-                  alt="Batch cover artwork preview"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "6px",
-                    color: "var(--m)",
-                    fontSize: "11px",
-                  }}
-                >
-                  {batchFields?.hasMultipleCovers ? "(Multiple artwork)" : "No Artwork"}
-                </div>
-              )}
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
-              <div style={{ fontSize: "12px", color: "var(--t)", fontWeight: 500 }}>
-                Album Artwork
-              </div>
-              <div style={{ fontSize: "11px", color: "var(--m)" }}>
-                Drop or select an image to replace embedded cover across all {batchTracks.length} tracks.
-              </div>
-              <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                type="button"
+                onClick={handleNativeFilePick}
+                disabled={isBatchSaving}
+                style={{
+                  background: "rgba(255, 255, 255, 0.15)",
+                  border: 0,
+                  borderRadius: "4px",
+                  color: "#fff",
+                  fontSize: "10px",
+                  padding: "3px 6px",
+                  cursor: "pointer",
+                }}
+              >
+                Replace
+              </button>
+              {batchCoverPreviewUrl && (
                 <button
                   type="button"
-                  onClick={handleNativeFilePick}
+                  onClick={handleRemoveCover}
+                  disabled={isBatchSaving}
                   style={{
-                    padding: "6px 12px",
-                    background: "rgba(255, 255, 255, 0.06)",
-                    border: "1px solid rgba(255, 255, 255, 0.12)",
-                    borderRadius: "6px",
-                    color: "var(--t)",
-                    fontSize: "11px",
+                    background: "rgba(239, 68, 68, 0.3)",
+                    border: 0,
+                    borderRadius: "4px",
+                    color: "#fca5a5",
+                    fontSize: "10px",
+                    padding: "3px 6px",
                     cursor: "pointer",
                   }}
                 >
-                  Replace Artwork
+                  Remove
                 </button>
-                {(batchCoverPreviewUrl || !batchFields?.hasMultipleCovers) && (
-                  <button
-                    type="button"
-                    onClick={handleRemoveCover}
-                    style={{
-                      padding: "6px 12px",
-                      background: "rgba(239, 68, 68, 0.1)",
-                      border: "1px solid rgba(239, 68, 68, 0.25)",
-                      borderRadius: "6px",
-                      color: "#fca5a5",
-                      fontSize: "11px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Remove Artwork
-                  </button>
-                )}
-              </div>
+              )}
             </div>
 
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/png,image/jpeg,image/webp"
+              accept="image/jpeg,image/png,image/webp"
               style={{ display: "none" }}
               onChange={(e) => {
-                const files = e.target.files;
-                if (files && files.length > 0) {
-                  handleFileReplacement(files[0]);
-                }
+                const f = e.target.files?.[0];
+                if (f) handleFileReplacement(f);
               }}
             />
           </div>
 
-          {/* Form grid */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "12px",
-            }}
-          >
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <label htmlFor="batch-artist" style={{ fontSize: "11px", color: "var(--m)", fontWeight: 500 }}>
-                  Artist
-                </label>
-                <input id="batch-artist"
-                type="text"
-                value={artistName}
-                placeholder={batchFields?.hasMultipleArtists ? "(Multiple values)" : ""}
-                onChange={(e) => {
-                  setArtistName(e.target.value);
-                  markTouched("artistName");
-                }}
-                style={{
-                  background: "rgba(255, 255, 255, 0.05)",
-                  border: touchedFields["artistName"]
-                    ? "1px solid var(--accent)"
-                    : "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "8px",
-                  padding: "8px 10px",
-                  color: "var(--t)",
-                  fontSize: "13px",
-                }}
-              />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <label htmlFor="batch-album-title" style={{ fontSize: "11px", color: "var(--m)", fontWeight: 500 }}>
-                  Album Title
-                </label>
-                <input id="batch-album-title"
-                type="text"
-                value={albumName}
-                placeholder={batchFields?.hasMultipleAlbums ? "(Multiple values)" : ""}
-                onChange={(e) => {
-                  setAlbumName(e.target.value);
-                  markTouched("albumName");
-                }}
-                style={{
-                  background: "rgba(255, 255, 255, 0.05)",
-                  border: touchedFields["albumName"]
-                    ? "1px solid var(--accent)"
-                    : "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "8px",
-                  padding: "8px 10px",
-                  color: "var(--t)",
-                  fontSize: "13px",
-                }}
-              />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <label htmlFor="batch-album-artist" style={{ fontSize: "11px", color: "var(--m)", fontWeight: 500 }}>
-                  Album Artist
-                </label>
-                <input id="batch-album-artist"
-                type="text"
-                value={albumArtist}
-                placeholder={batchFields?.hasMultipleAlbumArtists ? "(Multiple values)" : ""}
-                onChange={(e) => {
-                  setAlbumArtist(e.target.value);
-                  markTouched("albumArtist");
-                }}
-                style={{
-                  background: "rgba(255, 255, 255, 0.05)",
-                  border: touchedFields["albumArtist"]
-                    ? "1px solid var(--accent)"
-                    : "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "8px",
-                  padding: "8px 10px",
-                  color: "var(--t)",
-                  fontSize: "13px",
-                }}
-              />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <label htmlFor="batch-genre" style={{ fontSize: "11px", color: "var(--m)", fontWeight: 500 }}>
-                  Genre
-                </label>
-                <input id="batch-genre"
-                type="text"
-                value={genre}
-                placeholder={batchFields?.hasMultipleGenres ? "(Multiple values)" : ""}
-                onChange={(e) => {
-                  setGenre(e.target.value);
-                  markTouched("genre");
-                }}
-                style={{
-                  background: "rgba(255, 255, 255, 0.05)",
-                  border: touchedFields["genre"]
-                    ? "1px solid var(--accent)"
-                    : "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "8px",
-                  padding: "8px 10px",
-                  color: "var(--t)",
-                  fontSize: "13px",
-                }}
-              />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <label htmlFor="batch-release-year" style={{ fontSize: "11px", color: "var(--m)", fontWeight: 500 }}>
-                  Release Year
-                </label>
-                <input id="batch-release-year"
-                type="number"
-                value={year}
-                placeholder={batchFields?.hasMultipleYears ? "(Multiple values)" : ""}
-                onChange={(e) => {
-                  setYear(e.target.value);
-                  markTouched("year");
-                }}
-                style={{
-                  background: "rgba(255, 255, 255, 0.05)",
-                  border: touchedFields["year"]
-                    ? "1px solid var(--accent)"
-                    : "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "8px",
-                  padding: "8px 10px",
-                  color: "var(--t)",
-                  fontSize: "13px",
-                }}
-              />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <label htmlFor="batch-disc-number" style={{ fontSize: "11px", color: "var(--m)", fontWeight: 500 }}>
-                  Disc Number
-                </label>
-                <input id="batch-disc-number"
-                type="number"
-                min="1"
-                value={discNumber}
-                placeholder={batchFields?.hasMultipleDiscs ? "(Multiple values)" : ""}
-                onChange={(e) => {
-                  setDiscNumber(e.target.value);
-                  markTouched("discNumber");
-                }}
-                style={{
-                  background: "rgba(255, 255, 255, 0.05)",
-                  border: touchedFields["discNumber"]
-                    ? "1px solid var(--accent)"
-                    : "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "8px",
-                  padding: "8px 10px",
-                  color: "var(--t)",
-                  fontSize: "13px",
-                }}
-              />
-            </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px", justifyContent: "center" }}>
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+                color: "var(--m)",
+              }}
+            >
+              Batch Album Artwork
+            </span>
+            <p style={{ margin: 0, fontSize: "12px", color: "var(--t)", lineHeight: "1.5" }}>
+              Replaces the embedded cover art on all {batchTracks.length} selected files and updates the album record in place.
+            </p>
           </div>
+        </div>
 
-          {/* Modal action buttons */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: "10px",
-              marginTop: "12px",
-              borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-              paddingTop: "16px",
-            }}
-          >
-            <button
-              type="button"
-              onClick={closeBatchEditor}
+        {/* Form fields: Row 1 Artist & Album Artist */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label htmlFor="batch-edit-artist" style={{ fontSize: "12px", color: "var(--t)", fontWeight: 500 }}>
+              Artist
+            </label>
+            <input
+              id="batch-edit-artist"
+              type="text"
+              value={artistName}
+              placeholder={batchFields?.hasMultipleArtists ? "(Multiple values)" : "Artist name"}
+              onChange={(e) => {
+                setArtistName(e.target.value);
+                markTouched("artist");
+              }}
               disabled={isBatchSaving}
               style={{
-                padding: "8px 16px",
-                background: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
-                borderRadius: "20px",
+                background: "var(--bg-input, rgba(0, 0, 0, 0.25))",
+                border: `1px solid ${touchedFields.artist ? "var(--accent)" : "rgba(255, 255, 255, 0.12)"}`,
+                borderRadius: "8px",
+                padding: "8px 12px",
                 color: "var(--t)",
                 fontSize: "13px",
-                cursor: isBatchSaving ? "not-allowed" : "pointer",
+                outline: "none",
               }}
-            >
-              Cancel
-            </button>
+            />
+          </div>
 
-            <button
-              type="submit"
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label htmlFor="batch-edit-album-artist" style={{ fontSize: "12px", color: "var(--t)", fontWeight: 500 }}>
+              Album Artist
+            </label>
+            <input
+              id="batch-edit-album-artist"
+              type="text"
+              value={albumArtist}
+              placeholder={batchFields?.hasMultipleAlbumArtists ? "(Multiple values)" : "Album artist"}
+              onChange={(e) => {
+                setAlbumArtist(e.target.value);
+                markTouched("albumArtist");
+              }}
               disabled={isBatchSaving}
               style={{
-                padding: "8px 20px",
-                background: isBatchSaving ? "rgba(240, 169, 130, 0.5)" : "var(--accent)",
-                border: 0,
-                borderRadius: "20px",
-                color: "#18110f",
-                fontWeight: 600,
+                background: "var(--bg-input, rgba(0, 0, 0, 0.25))",
+                border: `1px solid ${touchedFields.albumArtist ? "var(--accent)" : "rgba(255, 255, 255, 0.12)"}`,
+                borderRadius: "8px",
+                padding: "8px 12px",
+                color: "var(--t)",
                 fontSize: "13px",
-                cursor: isBatchSaving ? "wait" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
+                outline: "none",
               }}
-            >
-              {isBatchSaving ? "Updating files..." : `Save changes (${batchTracks.length} tracks)`}
-            </button>
+            />
           </div>
-        </form>
-      </div>
-    </div>
+        </div>
+
+        {/* Form fields: Row 2 Album title & Genre */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label htmlFor="batch-edit-album" style={{ fontSize: "12px", color: "var(--t)", fontWeight: 500 }}>
+              Album
+            </label>
+            <input
+              id="batch-edit-album"
+              type="text"
+              value={albumName}
+              placeholder={batchFields?.hasMultipleAlbums ? "(Multiple values)" : "Album title"}
+              onChange={(e) => {
+                setAlbumName(e.target.value);
+                markTouched("album");
+              }}
+              disabled={isBatchSaving}
+              style={{
+                background: "var(--bg-input, rgba(0, 0, 0, 0.25))",
+                border: `1px solid ${touchedFields.album ? "var(--accent)" : "rgba(255, 255, 255, 0.12)"}`,
+                borderRadius: "8px",
+                padding: "8px 12px",
+                color: "var(--t)",
+                fontSize: "13px",
+                outline: "none",
+              }}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label htmlFor="batch-edit-genre" style={{ fontSize: "12px", color: "var(--t)", fontWeight: 500 }}>
+              Genre
+            </label>
+            <input
+              id="batch-edit-genre"
+              type="text"
+              value={genre}
+              placeholder={batchFields?.hasMultipleGenres ? "(Multiple values)" : "Genre"}
+              onChange={(e) => {
+                setGenre(e.target.value);
+                markTouched("genre");
+              }}
+              disabled={isBatchSaving}
+              style={{
+                background: "var(--bg-input, rgba(0, 0, 0, 0.25))",
+                border: `1px solid ${touchedFields.genre ? "var(--accent)" : "rgba(255, 255, 255, 0.12)"}`,
+                borderRadius: "8px",
+                padding: "8px 12px",
+                color: "var(--t)",
+                fontSize: "13px",
+                outline: "none",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Form fields: Row 3 Year & Disc Number */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label htmlFor="batch-edit-year" style={{ fontSize: "12px", color: "var(--t)", fontWeight: 500 }}>
+              Release Year
+            </label>
+            <input
+              id="batch-edit-year"
+              type="number"
+              value={year}
+              placeholder={batchFields?.hasMultipleYears ? "(Multiple values)" : "YYYY"}
+              onChange={(e) => {
+                setYear(e.target.value);
+                markTouched("year");
+              }}
+              disabled={isBatchSaving}
+              style={{
+                background: "var(--bg-input, rgba(0, 0, 0, 0.25))",
+                border: `1px solid ${touchedFields.year ? "var(--accent)" : "rgba(255, 255, 255, 0.12)"}`,
+                borderRadius: "8px",
+                padding: "8px 12px",
+                color: "var(--t)",
+                fontSize: "13px",
+                outline: "none",
+              }}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label htmlFor="batch-edit-disc-number" style={{ fontSize: "12px", color: "var(--t)", fontWeight: 500 }}>
+              Disc Number
+            </label>
+            <input
+              id="batch-edit-disc-number"
+              type="number"
+              value={discNumber}
+              placeholder={batchFields?.hasMultipleDiscs ? "(Multiple values)" : "1"}
+              min="1"
+              onChange={(e) => {
+                setDiscNumber(e.target.value);
+                markTouched("discNumber");
+              }}
+              disabled={isBatchSaving}
+              style={{
+                background: "var(--bg-input, rgba(0, 0, 0, 0.25))",
+                border: `1px solid ${touchedFields.discNumber ? "var(--accent)" : "rgba(255, 255, 255, 0.12)"}`,
+                borderRadius: "8px",
+                padding: "8px 12px",
+                color: "var(--t)",
+                fontSize: "13px",
+                outline: "none",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: "10px",
+            marginTop: "8px",
+            paddingTop: "14px",
+            borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+          }}
+        >
+          <button
+            type="button"
+            onClick={closeBatchEditor}
+            disabled={isBatchSaving}
+            style={{
+              padding: "8px 16px",
+              background: "transparent",
+              border: "1px solid rgba(255, 255, 255, 0.15)",
+              borderRadius: "20px",
+              color: "var(--t)",
+              fontSize: "13px",
+              cursor: isBatchSaving ? "not-allowed" : "pointer",
+            }}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            disabled={isBatchSaving}
+            style={{
+              padding: "8px 20px",
+              background: isBatchSaving ? "rgba(240, 169, 130, 0.5)" : "var(--accent)",
+              border: 0,
+              borderRadius: "20px",
+              color: "#18110f",
+              fontWeight: 600,
+              fontSize: "13px",
+              cursor: isBatchSaving ? "wait" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            {isBatchSaving ? "Saving batch..." : `Save ${batchTracks.length} tracks`}
+          </button>
+        </div>
+      </form>
+    </>
   );
 }
-

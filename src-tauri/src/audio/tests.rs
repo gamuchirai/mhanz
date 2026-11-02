@@ -192,5 +192,7 @@ fn test_audio_engine_reload_guard() {
     assert!(res.is_ok());
     assert_eq!(res.unwrap(), "write_ok");
     assert!(executed);
-    assert!(!engine.is_reloading.load(std::sync::atomic::Ordering::SeqCst));
+    assert!(!engine
+        .is_reloading
+        .load(std::sync::atomic::Ordering::SeqCst));
 }

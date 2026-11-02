@@ -158,16 +158,3 @@ export function TrackRowMenuButton({
   );
 }
 
-/**
- * Attaches right click context menu listener to track row elements.
- */
-export function handleTrackContextMenu(
-  e: React.MouseEvent,
-  trackId: string,
-  filePath?: string,
-) {
-  e.preventDefault();
-  e.stopPropagation();
-  useTagEditorStore.getState().openTrackEditor(trackId, filePath);
-}
-

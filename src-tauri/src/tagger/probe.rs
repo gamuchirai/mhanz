@@ -6,8 +6,8 @@ use lofty::file::{AudioFile, TaggedFileExt};
 use lofty::probe::Probe;
 use lofty::tag::{Accessor, ItemKey};
 
-use crate::scanner::metadata::{extract_cover_art, UNKNOWN_ALBUM, UNKNOWN_ARTIST};
 use super::models::ProbedAudioTagsDto;
+use crate::scanner::metadata::{extract_cover_art, UNKNOWN_ALBUM, UNKNOWN_ARTIST};
 
 /// Probes the physical audio file tags on disk using Lofty.
 pub fn probe_audio_file(

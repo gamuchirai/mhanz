@@ -4,6 +4,9 @@ import { TagEditorModal, BatchTagEditorModal, TrackRowMenuButton } from "../comp
 import { AlbumDetailBanner } from "../components/albums/AlbumDetailBanner";
 import { useTagEditorStore } from "../store/useTagEditorStore";
 import { useAlbumStore } from "../store/useAlbumStore";
+import { useLibraryStore } from "../store/useLibraryStore";
+import { usePlayerStore } from "../store/usePlayerStore";
+import { taggerSync } from "../services/taggerSync";
 import type { TrackDto } from "../types/database";
 import type { Album } from "../types/album";
 
@@ -217,5 +220,87 @@ describe("Audio Metadata Tag Editor Frontend (Feature 25)", () => {
 
     fireEvent.click(editItem);
     expect(openSpy).toHaveBeenCalledWith("trk-99", testPath);
+  });
+
+  it("synchronizes audio tag edits across library and player stores (AC-11)", async () => {
+    const mockTrackDto: TrackDto = {
+      id: "trk-sync-1",
+      file_path: "C:\\Music\\SyncTrack.mp3",
+      title: "Synchronized Track Title",
+      artist_id: "art-sync-1",
+      artist_name: "Synchronized Artist",
+      album_id: "alb-sync-1",
+      album_name: "Synchronized Album",
+      album_artist: "Synchronized Artist",
+      duration: 240,
+      year: 2025,
+      genre: "Ambient",
+      disc_number: 1,
+      track_number: 1,
+      bitrate: 320,
+      format: "mp3",
+      cover_art_path: "covers/synced.jpg",
+      is_favorite: true,
+      liked_at: 1000,
+      play_count: 5,
+      last_played_at: null,
+      file_modified_at: 2000,
+      file_size_bytes: 5000000,
+      folder_id: "f-1",
+      created_at: 1000,
+      updated_at: 2000,
+    };
+
+    act(() => {
+      useLibraryStore.setState({
+        tracks: [
+          {
+            id: "trk-sync-1",
+            title: "Old Track Title",
+            artist: "Old Artist",
+            artistId: "art-sync-1",
+            album: "Old Album",
+            albumId: "alb-sync-1",
+            durationSeconds: 240,
+            artworkUrl: "",
+            playsCount: 5,
+            isLiked: true,
+            filePath: "C:\\Music\\SyncTrack.mp3",
+            folderId: "f-1",
+            dateAdded: "2025-01-01",
+          },
+        ],
+      });
+
+      usePlayerStore.setState({
+        currentTrack: {
+          id: "trk-sync-1",
+          title: "Old Track Title",
+          artist: "Old Artist",
+          album: "Old Album",
+          durationSeconds: 240,
+          artworkUrl: "",
+          playsCount: 5,
+          isLiked: true,
+        },
+        queue: [],
+        queueItems: [],
+      });
+    });
+
+    act(() => {
+      taggerSync.broadcast(
+        { trackIds: ["trk-sync-1"], albumIds: ["alb-sync-1"] },
+        [mockTrackDto],
+      );
+    });
+
+    const libTrack = useLibraryStore.getState().tracks.find((t) => t.id === "trk-sync-1");
+    expect(libTrack?.title).toBe("Synchronized Track Title");
+    expect(libTrack?.artist).toBe("Synchronized Artist");
+
+    const playerTrack = usePlayerStore.getState().currentTrack;
+    expect(playerTrack?.title).toBe("Synchronized Track Title");
+    expect(playerTrack?.artist).toBe("Synchronized Artist");
   });
 });

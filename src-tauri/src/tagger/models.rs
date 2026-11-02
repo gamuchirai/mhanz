@@ -26,9 +26,10 @@ pub struct ProbedAudioTagsDto {
 }
 
 /// Cover art modification instructions.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum CoverArtAction {
+    #[default]
     Keep,
     Remove,
     ReplacePath {
@@ -41,12 +42,6 @@ pub enum CoverArtAction {
         #[serde(rename = "mimeType")]
         mime_type: String,
     },
-}
-
-impl Default for CoverArtAction {
-    fn default() -> Self {
-        CoverArtAction::Keep
-    }
 }
 
 /// Payload for saving single track tag modifications.

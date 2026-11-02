@@ -10,6 +10,7 @@ import { create } from "zustand";
 import { dbSearchLibrary, mapSearchResultsDtoToUi } from "../services/db";
 import { exploreGenres, mockAlbums, mockArtists, searchTracksPool } from "../data/searchFixtures";
 import type { GenreCard, SearchCategory, SearchResults, SearchState } from "../types/search";
+import { taggerSync } from "../services/taggerSync";
 
 const MAX_RECENT_SEARCHES = 6;
 
@@ -96,7 +97,7 @@ export const useSearchStore = create<ExtendedSearchState>()((set, get) => ({
             get().addRecentSearch(trimmed);
           }
         }
-      } catch (err) {
+      } catch {
         // Fallback for tests or browser preview where Tauri IPC is unavailable
         if (reqId === currentRequestId) {
           const fallbackResults = performLocalFallbackSearch(trimmed);
@@ -187,7 +188,7 @@ export const useSearchStore = create<ExtendedSearchState>()((set, get) => ({
           set({ results, isSearching: false });
           get().addRecentSearch(query);
         }
-      } catch (err) {
+      } catch {
         if (reqId === currentRequestId) {
           const fallbackResults = performLocalFallbackSearch(query);
           set({ results: fallbackResults, isSearching: false });
@@ -215,6 +216,14 @@ export const useSearchStore = create<ExtendedSearchState>()((set, get) => ({
     set({ recentSearches: [] });
   },
 }));
+
+// Invalidate and refresh search query when tags are edited (AC-11)
+taggerSync.subscribe(() => {
+  const query = useSearchStore.getState().query;
+  if (query.trim()) {
+    useSearchStore.getState().setQuery(query, true);
+  }
+});
 
 // Typed selector hooks for clean consumption and optimized renders
 export const useSearchQuery = () => useSearchStore((state) => state.query);

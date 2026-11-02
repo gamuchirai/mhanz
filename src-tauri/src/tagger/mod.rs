@@ -2,6 +2,7 @@
 
 pub mod models;
 pub mod probe;
+pub mod repo;
 pub mod writer;
 
 #[cfg(test)]

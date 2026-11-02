@@ -407,6 +407,24 @@ spec [0022](../specs/0022-home-listening-history-popular-tracks-persistence/inde
 - [x] Verify it: `/check verify home listening history and popular tracks persistence`
 - [x] Test it: `/test home listening history and popular tracks persistence`
 
+### 25. Audio file metadata tag editor · in-progress
+
+Allow users to edit physical audio tags on disk and sync changes to SQLite, with support for title, artist, album, genre, year, track number, disc number, and cover art.
+**Done when:** users can open an edit modal from track context menus, save changes to file tags via Lofty, update the SQLite database atomically, and see immediate UI updates without playback lock conflicts.
+
+spec [0023](../specs/0023-audio-file-metadata-tag-editor/index.md)
+
+- [x] Design it (spec): `/architect audio file metadata tag editor`
+- [x] Build it: `/develop audio file metadata tag editor`
+  - [x] TypeScript DTO contracts, tag editor client service, and Zustand modal store (AC-1, AC-4)
+  - [x] TagEditorModal and BatchTagEditorModal components with cover art picker, drag and drop, and Album Details integration (AC-2, AC-3, AC-4, AC-5)
+  - [x] Native Rust Lofty probing, image normalization, and unique temporary file writer with Windows retry loop (AC-1, AC-5, AC-6)
+  - [x] Rodio playback coordination with atomic reload guard to prevent file locks and premature track skips (AC-7)
+  - [x] SQLite transaction repository for in place album updates, artist reconciliation, FTS5 sync, and Tauri event emission (AC-8, AC-9, AC-10, AC-11)
+        code in `src/components/tagger/`, `src/store/useTagEditorStore.ts`, `src-tauri/src/tagger/`, `src-tauri/src/commands/tagger.rs`, `src-tauri/src/audio/engine.rs`
+- [ ] Verify it: `/check verify audio file metadata tag editor`
+- [ ] Test it: `/test audio file metadata tag editor`
+
 ## Deferred
 
 Out of scope for the current build pass, kept so the plan stays honest.

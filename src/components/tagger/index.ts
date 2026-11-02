@@ -1,4 +1,5 @@
 export { TagEditorModal } from "./TagEditorModal";
 export { BatchTagEditorModal } from "./BatchTagEditorModal";
-export { TrackRowMenuButton, handleTrackContextMenu } from "./TrackContextMenu";
+export { TrackRowMenuButton } from "./TrackContextMenu";
+export { handleTrackContextMenu } from "./trackContextMenuHandler";
 

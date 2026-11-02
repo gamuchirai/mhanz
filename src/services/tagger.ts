@@ -15,6 +15,7 @@ import type {
   SaveTrackTagsDto,
 } from "../types/tagger";
 import { initialLibraryTracks } from "../data/libraryFixtures";
+import { taggerSync } from "./taggerSync";
 
 // In memory fallback store for tests and mock environments
 const mockTagsCache = new Map<string, ProbedAudioTagsDto>();
@@ -77,7 +78,15 @@ export async function tagEditorSaveTrack(
   payload: SaveTrackTagsDto,
 ): Promise<TrackDto> {
   if (isTauri()) {
-    return invoke<TrackDto>("tag_editor_save_track", { payload });
+    const track = await invoke<TrackDto>("tag_editor_save_track", { payload });
+    taggerSync.broadcast(
+      {
+        trackIds: [track.id],
+        albumIds: track.album_id ? [track.album_id] : [],
+      },
+      [track]
+    );
+    return track;
   }
 
   const now = Math.floor(Date.now() / 1000);
@@ -135,6 +144,14 @@ export async function tagEditorSaveTrack(
     updated_at: now,
   };
 
+  taggerSync.broadcast(
+    {
+      trackIds: [updatedTrack.id],
+      albumIds: updatedTrack.album_id ? [updatedTrack.album_id] : [],
+    },
+    [updatedTrack]
+  );
+
   return updatedTrack;
 }
 
@@ -145,7 +162,15 @@ export async function tagEditorSaveBatch(
   payload: SaveBatchTagsDto,
 ): Promise<BatchSaveResultDto> {
   if (isTauri()) {
-    return invoke<BatchSaveResultDto>("tag_editor_save_batch", { payload });
+    const result = await invoke<BatchSaveResultDto>("tag_editor_save_batch", { payload });
+    taggerSync.broadcast(
+      {
+        trackIds: result.succeeded.map((t) => t.id),
+        albumIds: result.album ? [result.album.id] : [],
+      },
+      result.succeeded
+    );
+    return result;
   }
 
   const succeeded: TrackDto[] = [];
@@ -168,11 +193,21 @@ export async function tagEditorSaveBatch(
     succeeded.push(updated);
   }
 
-  return {
+  const result: BatchSaveResultDto = {
     succeeded,
     failed: [],
     totalUpdated: succeeded.length,
   };
+
+  taggerSync.broadcast(
+    {
+      trackIds: succeeded.map((t) => t.id),
+      albumIds: payload.albumId ? [payload.albumId] : [],
+    },
+    succeeded
+  );
+
+  return result;
 }
 
 /**

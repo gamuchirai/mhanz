@@ -81,6 +81,9 @@ pub fn run() {
             commands::scanner::scanner_scan_folder,
             commands::scanner::scanner_cancel_scan,
             commands::scanner::scanner_get_scan_status,
+            commands::tagger::tag_editor_probe_file,
+            commands::tagger::tag_editor_save_track,
+            commands::tagger::tag_editor_save_batch,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

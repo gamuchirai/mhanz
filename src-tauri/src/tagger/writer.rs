@@ -13,10 +13,10 @@ use lofty::tag::{Accessor, ItemKey, Tag, TagExt};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
+use super::models::{CoverArtAction, SaveTrackTagsDto};
 use crate::scanner::metadata::{
     detect_image_extension_from_magic, mime_to_extension, MAX_COVER_ART_SIZE_BYTES,
 };
-use super::models::{CoverArtAction, SaveTrackTagsDto};
 
 /// Result of a physical file tag write operation.
 #[derive(Debug, Clone)]
@@ -198,7 +198,9 @@ pub fn write_tags_to_file(
     }
 
     let resolved_cover_art_path: Option<String> = match &payload.cover_art_action {
-        CoverArtAction::Keep => crate::scanner::metadata::extract_cover_art(&tagged_file, cache_covers_dir),
+        CoverArtAction::Keep => {
+            crate::scanner::metadata::extract_cover_art(&tagged_file, cache_covers_dir)
+        }
         CoverArtAction::Remove => {
             tag.remove_picture_type(PictureType::CoverFront);
             while !tag.pictures().is_empty() {
@@ -209,7 +211,10 @@ pub fn write_tags_to_file(
         CoverArtAction::ReplacePath { source_file_path } => {
             let src = Path::new(source_file_path);
             if !src.exists() {
-                return Err(format!("Replacement cover image file not found: {}", source_file_path));
+                return Err(format!(
+                    "Replacement cover image file not found: {}",
+                    source_file_path
+                ));
             }
             let data = fs::read(src).map_err(|e| format!("Failed to read cover image: {}", e))?;
             let cached_path = cache_cover_image(&data, None, cache_covers_dir)?;
