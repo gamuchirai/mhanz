@@ -265,7 +265,7 @@ export function mapAlbumDtoToUi(dto: AlbumDto): AlbumCard {
     title: dto.title,
     artist: dto.artist_name,
     releaseYear: dto.year || 0,
-    coverUrl: dto.cover_art_path || "/assets/images/defaults/album-art.webp",
+    coverUrl: formatCoverArtUrl(dto.cover_art_path) || "/assets/images/defaults/album-art.webp",
     trackCount: dto.track_count,
     tracks: [],
   };
@@ -278,7 +278,7 @@ export function mapArtistDtoToUi(dto: ArtistDto): ArtistCard {
   return {
     id: dto.id,
     name: dto.name,
-    avatarUrl: dto.avatar_path || "/assets/images/defaults/artist-avatar.webp",
+    avatarUrl: formatCoverArtUrl(dto.avatar_path) || "/assets/images/defaults/artist-avatar.webp",
     followersCount: dto.track_count * 128,
     monthlyListeners: dto.track_count * 256,
     popularTracks: [],

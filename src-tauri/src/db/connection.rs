@@ -25,6 +25,9 @@ pub const MIGRATION_V004: &str = include_str!("../../migrations/V004__album_favo
 /// Embedded V005 listening history and popular tracks migration script.
 pub const MIGRATION_V005: &str = include_str!("../../migrations/V005__listening_history.sql");
 
+/// Embedded V006 track lyrics schema migration script.
+pub const MIGRATION_V006: &str = include_str!("../../migrations/V006__track_lyrics.sql");
+
 /// Construct the compiled migrations suite for Mutinhimira.
 pub fn create_migrations() -> Migrations<'static> {
     Migrations::new(vec![
@@ -33,6 +36,7 @@ pub fn create_migrations() -> Migrations<'static> {
         M::up(MIGRATION_V003),
         M::up(MIGRATION_V004),
         M::up(MIGRATION_V005),
+        M::up(MIGRATION_V006),
     ])
 }
 

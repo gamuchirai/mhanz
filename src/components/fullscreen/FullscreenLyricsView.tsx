@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import type { Track } from "../../types/discovery";
+import { useLyricsStore } from "../../store/useLyricsStore";
 import { getLyricsForTrack } from "../../data/mockLyrics";
 
 interface FullscreenLyricsViewProps {
@@ -14,13 +15,48 @@ export function FullscreenLyricsView({ track, currentTime, onSeek }: FullscreenL
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activeElement, setActiveElement] = useState<HTMLButtonElement | null>(null);
 
-  const lyrics = getLyricsForTrack(track.id, track.title, track.artist);
+  const { currentLyrics, fetchLyrics } = useLyricsStore();
 
-  // Compute active lyric line index
+  useEffect(() => {
+    if (track?.id) {
+      fetchLyrics(track.id, track.title, track.artist);
+    }
+  }, [track?.id, track?.title, track?.artist, fetchLyrics]);
+
+  const lyrics =
+    currentLyrics && track && currentLyrics.trackId === track.id
+      ? currentLyrics
+      : track
+        ? (() => {
+            const mock = getLyricsForTrack(track.id, track.title, track.artist);
+            return {
+              trackId: mock.trackId,
+              hasLyrics: (mock.lines && mock.lines.length > 0) || Boolean(mock.plainText),
+              isSynced: mock.isSynced,
+              lines: mock.lines,
+              plainText: mock.plainText ?? null,
+              sourceType: mock.source ?? "mock",
+              userOffsetMs: 0,
+            };
+          })()
+        : {
+            trackId: "",
+            hasLyrics: false,
+            isSynced: false,
+            lines: [],
+            plainText: null,
+            sourceType: "none",
+            userOffsetMs: 0,
+          };
+
+  const userOffsetSeconds = (lyrics.userOffsetMs || 0) / 1000.0;
+  const effectiveTime = currentTime + userOffsetSeconds;
+
+  // Compute active lyric line index with user timing offset
   let activeIndex = -1;
   if (lyrics.isSynced && lyrics.lines.length > 0) {
     for (let i = 0; i < lyrics.lines.length; i++) {
-      if (currentTime >= lyrics.lines[i].timeSeconds) {
+      if (effectiveTime >= lyrics.lines[i].timeSeconds) {
         activeIndex = i;
       } else {
         break;
@@ -59,7 +95,8 @@ export function FullscreenLyricsView({ track, currentTime, onSeek }: FullscreenL
 
   const handleLineClick = (timeSeconds: number) => {
     isUserScrollingRef.current = false;
-    onSeek(timeSeconds);
+    const seekTarget = Math.max(0, timeSeconds - userOffsetSeconds);
+    onSeek(seekTarget);
   };
 
   if (!lyrics.lines || lyrics.lines.length === 0) {

@@ -1,7 +1,7 @@
 # 0020. Local file lyrics parser and metadata extraction
 
 **Date**: 2026-10-31
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

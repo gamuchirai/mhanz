@@ -97,16 +97,32 @@ describe("Scanner Service (src/services/scanner.ts)", () => {
       expect(unlisten2).toBe(unlistenCompletedMock);
     });
 
-    it("formatCoverArtUrl converts local paths via convertFileSrc", () => {
+    it("formatCoverArtUrl converts local paths via convertFileSrc and handles edge cases", () => {
       const localPath = "C:/Users/Cache/covers/abcdef123456.jpg";
       const url = formatCoverArtUrl(localPath);
       expect(convertFileSrc).toHaveBeenCalledWith(localPath);
       expect(url).toContain("asset://localhost");
 
-      // Remote and empty paths
+      // Windows backslash path
+      const winPath = "C:\\Users\\Cache\\covers\\artwork.png";
+      expect(formatCoverArtUrl(winPath)).toContain("asset://localhost");
+
+      // Remote and data URIs bypass convertFileSrc
       expect(formatCoverArtUrl("https://example.com/art.jpg")).toBe("https://example.com/art.jpg");
+      expect(formatCoverArtUrl("http://example.com/art.jpg")).toBe("http://example.com/art.jpg");
+      expect(formatCoverArtUrl("data:image/png;base64,iVBORw0KGgo=")).toBe("data:image/png;base64,iVBORw0KGgo=");
+
+      // Empty, null, undefined, or whitespace only paths return empty string
       expect(formatCoverArtUrl("")).toBe("");
+      expect(formatCoverArtUrl("   ")).toBe("");
       expect(formatCoverArtUrl(null)).toBe("");
+      expect(formatCoverArtUrl(undefined)).toBe("");
+
+      // Gracefully handles convertFileSrc throwing an error
+      vi.mocked(convertFileSrc).mockImplementationOnce(() => {
+        throw new Error("Invalid asset path");
+      });
+      expect(formatCoverArtUrl("/problematic/path.jpg")).toBe("");
     });
   });
 

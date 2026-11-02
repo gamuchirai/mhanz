@@ -322,3 +322,64 @@ pub struct PlayHistoryItemDto {
     /// Full joined track entity.
     pub track: TrackDto,
 }
+
+/// Database entity representing a stored track lyrics record in SQLite.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TrackLyricsEntity {
+    /// Unique identifier for the lyrics record.
+    pub id: String,
+    /// Associated track identifier.
+    pub track_id: String,
+    /// Whether lyrics content exists for this track.
+    pub has_lyrics: bool,
+    /// Whether synchronized timestamps are available.
+    pub is_synced: bool,
+    /// Optional plain text representation of lyrics.
+    pub plain_text: Option<String>,
+    /// JSON serialized array of LyricLineDto objects.
+    pub lines_json: Option<String>,
+    /// Source type: "lrc", "embedded", or "none".
+    pub source_type: String,
+    /// Path to companion lrc file or audio file.
+    pub source_file_path: Option<String>,
+    /// Source file modification timestamp for cache freshness checks.
+    pub source_modified_at: Option<i64>,
+    /// User configured offset adjustment in milliseconds.
+    pub user_offset_ms: i32,
+    /// Record creation timestamp.
+    pub created_at: i64,
+    /// Record update timestamp.
+    pub updated_at: i64,
+}
+
+/// Data transfer object for track lyrics delivered to the frontend presentation shell.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackLyricsDto {
+    /// Associated track identifier.
+    pub track_id: String,
+    /// Whether lyrics content exists for this track.
+    pub has_lyrics: bool,
+    /// Whether synchronized timestamps are available.
+    pub is_synced: bool,
+    /// Ordered list of synchronized lyric lines.
+    pub lines: Vec<LyricLineDto>,
+    /// Optional plain text representation.
+    pub plain_text: Option<String>,
+    /// Source type: "lrc", "embedded", or "none".
+    pub source_type: String,
+    /// User configured offset adjustment in milliseconds.
+    pub user_offset_ms: i32,
+}
+
+/// Data transfer object for an individual synchronized lyric line.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct LyricLineDto {
+    /// Deterministic identifier for this line (format: "{track_id}-l{index}").
+    pub id: String,
+    /// Timing offset in seconds from track start.
+    pub time_seconds: f64,
+    /// Cleaned lyric text for this line.
+    pub text: String,
+}

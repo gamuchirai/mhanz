@@ -537,7 +537,8 @@ impl AudioEngine {
                         && (current_pos >= 30.0
                             || (duration > 0.0 && current_pos >= duration / 2.0));
 
-                    let mut history_to_record: Option<(String, Option<String>, Option<String>)> = None;
+                    let mut history_to_record: Option<(String, Option<String>, Option<String>)> =
+                        None;
 
                     if should_record_play {
                         inner.state.play_count_recorded = true;
@@ -581,7 +582,8 @@ impl AudioEngine {
 
                                     if let Ok(history_dto) = record_res {
                                         if let Some(app) = app_handle_opt {
-                                            let _ = app.emit("audio:history-recorded", &history_dto);
+                                            let _ =
+                                                app.emit("audio:history-recorded", &history_dto);
                                         }
                                     }
                                 });

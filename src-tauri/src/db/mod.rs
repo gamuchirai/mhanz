@@ -5,6 +5,7 @@ pub mod connection;
 pub mod error;
 pub mod folder_repo;
 pub mod history_repo;
+pub mod lyrics_repo;
 pub mod models;
 pub mod playlist_repo;
 pub mod search_repo;
@@ -95,18 +96,23 @@ impl DbState {
     }
 
     /// Queries recent playback history deduplicated by track.
-    pub fn get_recent_plays(&self, limit: Option<u32>) -> Result<Vec<PlayHistoryItemDto>, DatabaseError> {
-        self.0.with_conn(|conn| history_repo::get_recent_plays(conn, limit))
+    pub fn get_recent_plays(
+        &self,
+        limit: Option<u32>,
+    ) -> Result<Vec<PlayHistoryItemDto>, DatabaseError> {
+        self.0
+            .with_conn(|conn| history_repo::get_recent_plays(conn, limit))
     }
 
     /// Queries popular tracks ordered by play_count descending with backfill.
     pub fn get_popular_tracks(&self, limit: Option<u32>) -> Result<Vec<TrackDto>, DatabaseError> {
-        self.0.with_conn(|conn| history_repo::get_popular_tracks(conn, limit))
+        self.0
+            .with_conn(|conn| history_repo::get_popular_tracks(conn, limit))
     }
 
     /// Clears all playback history entries.
     pub fn clear_playback_history(&self) -> Result<(), DatabaseError> {
-        self.0.with_conn(|conn| history_repo::clear_history(conn))
+        self.0.with_conn(history_repo::clear_history)
     }
 
     /// Records playback session and updates track play count.
@@ -116,8 +122,9 @@ impl DbState {
         context_title: Option<&str>,
         context_type: Option<&str>,
     ) -> Result<PlayHistoryItemDto, DatabaseError> {
-        self.0
-            .with_conn(|conn| history_repo::record_playback(conn, track_id, context_title, context_type))
+        self.0.with_conn(|conn| {
+            history_repo::record_playback(conn, track_id, context_title, context_type)
+        })
     }
 
     /// Queries all albums.
@@ -257,7 +264,7 @@ mod tests {
 
         let status = state.get_status().expect("Status should be readable");
         assert!(status.is_ready);
-        assert_eq!(status.schema_version, 5);
+        assert_eq!(status.schema_version, 6);
         assert_eq!(status.track_count, 0);
         // Default sample playlists are seeded automatically
         assert_eq!(status.playlist_count, 5);
@@ -731,5 +738,148 @@ mod tests {
             .get_artist_profile("nonexistent")
             .expect("Query succeeds");
         assert!(missing.is_none());
+    }
+
+    #[test]
+    fn test_track_lyrics() {
+        let manager = DatabaseManager::new_in_memory().expect("Database initialized");
+        let track_id = "test-lyrics-track-1";
+
+        let track = TrackDto {
+            id: track_id.to_string(),
+            file_path: "/music/track1.mp3".to_string(),
+            title: "Test Lyrics Song".to_string(),
+            artist_id: None,
+            artist_name: "Test Artist".to_string(),
+            album_id: None,
+            album_name: None,
+            album_artist: None,
+            duration: 180.0,
+            year: None,
+            genre: None,
+            disc_number: 1,
+            track_number: Some(1),
+            bitrate: None,
+            format: "mp3".to_string(),
+            cover_art_path: None,
+            is_favorite: false,
+            liked_at: None,
+            play_count: 0,
+            last_played_at: None,
+            file_modified_at: 1700000000,
+            file_size_bytes: 5000000,
+            folder_id: None,
+            created_at: 1700000000,
+            updated_at: 1700000000,
+        };
+
+        manager
+            .with_conn(|conn| {
+                track_repo::upsert_track(conn, &track)?;
+                Ok(())
+            })
+            .expect("Track inserted");
+
+        // 1. Initial retrieval should be None
+        let initial = manager
+            .with_conn(|conn| lyrics_repo::get_lyrics_by_track_id(conn, track_id))
+            .expect("Query succeeds");
+        assert!(initial.is_none());
+
+        // 2. Insert lyrics with user offset 150
+        let entity = TrackLyricsEntity {
+            id: "lyrics-uuid-1".to_string(),
+            track_id: track_id.to_string(),
+            has_lyrics: true,
+            is_synced: true,
+            plain_text: Some("First line\nSecond line".to_string()),
+            lines_json: Some(
+                serde_json::to_string(&vec![
+                    LyricLineDto {
+                        id: format!("{}-l0", track_id),
+                        time_seconds: 5.5,
+                        text: "First line".to_string(),
+                    },
+                    LyricLineDto {
+                        id: format!("{}-l1", track_id),
+                        time_seconds: 12.0,
+                        text: "Second line".to_string(),
+                    },
+                ])
+                .unwrap(),
+            ),
+            source_type: "lrc".to_string(),
+            source_file_path: Some("/music/track1.lrc".to_string()),
+            source_modified_at: Some(1700000100),
+            user_offset_ms: 150,
+            created_at: 1700000000,
+            updated_at: 1700000000,
+        };
+
+        manager
+            .with_conn(|conn| lyrics_repo::upsert_track_lyrics(conn, &entity))
+            .expect("Lyrics inserted");
+
+        let stored = manager
+            .with_conn(|conn| lyrics_repo::get_lyrics_by_track_id(conn, track_id))
+            .expect("Query succeeds")
+            .expect("Lyrics found");
+        assert_eq!(stored.track_id, track_id);
+        assert!(stored.has_lyrics);
+        assert!(stored.is_synced);
+        assert_eq!(stored.user_offset_ms, 150);
+        assert_eq!(stored.source_type, "lrc");
+
+        let dto = lyrics_repo::entity_to_dto(&stored);
+        assert_eq!(dto.lines.len(), 2);
+        assert_eq!(dto.lines[0].text, "First line");
+        assert_eq!(dto.lines[0].time_seconds, 5.5);
+
+        // 3. Upsert with new text and user_offset_ms = 0: verify user offset is preserved (AC-4)
+        let mut updated_entity = entity.clone();
+        updated_entity.plain_text = Some("Updated first line\nSecond line".to_string());
+        updated_entity.user_offset_ms = 0; // Simulated reparse without offset knowledge
+
+        manager
+            .with_conn(|conn| lyrics_repo::upsert_track_lyrics(conn, &updated_entity))
+            .expect("Lyrics updated");
+
+        let rechecked = manager
+            .with_conn(|conn| lyrics_repo::get_lyrics_by_track_id(conn, track_id))
+            .expect("Query succeeds")
+            .expect("Lyrics found");
+        assert_eq!(
+            rechecked.plain_text.as_deref(),
+            Some("Updated first line\nSecond line")
+        );
+        assert_eq!(rechecked.user_offset_ms, 150); // Preserved!
+
+        // 4. Update user offset directly (AC-9)
+        manager
+            .with_conn(|conn| lyrics_repo::update_user_offset(conn, track_id, 300))
+            .expect("Offset updated");
+
+        let offset_checked = manager
+            .with_conn(|conn| lyrics_repo::get_lyrics_by_track_id(conn, track_id))
+            .expect("Query succeeds")
+            .expect("Lyrics found");
+        assert_eq!(offset_checked.user_offset_ms, 300);
+
+        // 5. Cascade delete on track deletion
+        manager
+            .with_conn(|conn| {
+                conn.execute(
+                    "DELETE FROM tracks WHERE id = ?1",
+                    rusqlite::params![track_id],
+                )
+                .map_err(|e| DatabaseError::write_failed(e.to_string()))?;
+                Ok(())
+            })
+            .expect("Track deleted");
+
+        let after_delete = manager
+            .with_conn(|conn| lyrics_repo::get_lyrics_by_track_id(conn, track_id))
+            .expect("Query succeeds");
+        assert!(after_delete.is_none());
     }
 }
