@@ -43,8 +43,6 @@ export function AlbumDetailBanner({ album, onNavigateArtist, onNavigate }: Album
     e?.stopPropagation();
     if (onNavigateArtist) {
       onNavigateArtist(album.artistId, album.artistName);
-    } else if (onNavigate) {
-      onNavigate("Artists");
     } else {
       navigateToArtist(album.artistName, album.artistId);
     }
