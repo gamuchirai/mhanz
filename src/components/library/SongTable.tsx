@@ -12,6 +12,7 @@ import { useCurrentTrack, useIsPlaying, usePlayerStore } from "../../store/usePl
 import type { LibrarySortColumn, LibraryTrack } from "../../types/library";
 import type { Track } from "../../types/discovery";
 import { formatDuration } from "../../utils/format";
+import { ArtistLink, AlbumLink } from "../common";
 
 interface SongTableProps {
   onPlayTrack?: (track: LibraryTrack, queue: LibraryTrack[]) => void;
@@ -519,7 +520,11 @@ export function SongTable({ onPlayTrack }: SongTableProps) {
                     }`}
                     title={track.artist}
                   >
-                    {track.artist}
+                    <ArtistLink
+                      name={track.artist}
+                      artistId={track.artistId}
+                      className={isCurrent ? "text-[#f0a982]" : "text-[#a89b91] hover:text-[#f4ebe4]"}
+                    />
                   </div>
 
                   {/* Album cell - progressive column hiding under 950px */}
@@ -528,7 +533,12 @@ export function SongTable({ onPlayTrack }: SongTableProps) {
                     className="max-[950px]:hidden text-[#a89b91] whitespace-nowrap overflow-hidden text-ellipsis pr-3"
                     title={track.album}
                   >
-                    {track.album}
+                    <AlbumLink
+                      title={track.album}
+                      albumId={track.albumId}
+                      artistName={track.artist}
+                      className="hover:text-[#f4ebe4]"
+                    />
                   </div>
 
                   {/* Duration cell */}

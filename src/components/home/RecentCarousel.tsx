@@ -3,6 +3,7 @@ import { isTauri } from "@tauri-apps/api/core";
 import { PlayHistoryItem } from "../../types/discovery";
 import { useIsHomeInitialized, usePlayerStore } from "../../store/usePlayerStore";
 import { MarqueeText } from "./MarqueeText";
+import { ArtistLink } from "../common/ArtistLink";
 
 interface RecentCarouselProps {
   items: PlayHistoryItem[];
@@ -299,7 +300,7 @@ function RecentItemCard({ item, isActive, isPlaying, onPlay }: RecentItemCardPro
             whiteSpace: "nowrap",
           }}
         >
-          {item.track.artist}
+          <ArtistLink name={item.track.artist} artistId={item.track.artistId} />
         </div>
       </div>
     </div>

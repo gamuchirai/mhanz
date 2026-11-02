@@ -19,6 +19,7 @@ export interface AlbumCard {
   id: string;
   title: string;
   artist: string;
+  artistId?: string | null;
   releaseYear: number;
   coverUrl: string;
   trackCount: number;

@@ -2,6 +2,7 @@ import { useState, type DragEvent, type MouseEvent } from "react";
 import type { QueueItem } from "../../types/overlays";
 import { formatDuration } from "../../utils/format";
 import { usePlayerStore } from "../../store/usePlayerStore";
+import { ArtistLink } from "../common/ArtistLink";
 
 interface QueueTrackRowProps {
   item: QueueItem;
@@ -144,7 +145,7 @@ export function QueueTrackRow({
             textOverflow: "ellipsis",
           }}
         >
-          {track.artist}
+          <ArtistLink name={track.artist} artistId={track.artistId} />
         </div>
       </div>
 

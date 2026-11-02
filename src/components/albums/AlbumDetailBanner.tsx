@@ -3,6 +3,7 @@ import type { Album } from "../../types/album";
 import { useAlbumStore, useAlbumTracks, useFavoriteAlbumIds } from "../../store/useAlbumStore";
 import { useNavigationStore } from "../../store/useNavigationStore";
 import { AlbumVinylPlaceholder } from "./AlbumVinylPlaceholder";
+import { useEntityNavigation } from "../../hooks/useEntityNavigation";
 
 interface AlbumDetailBannerProps {
   album: Album;
@@ -12,6 +13,7 @@ interface AlbumDetailBannerProps {
 
 export function AlbumDetailBanner({ album, onNavigateArtist, onNavigate }: AlbumDetailBannerProps) {
   const [imageError, setImageError] = useState(false);
+  const { navigateToArtist } = useEntityNavigation();
   const setActiveAlbumId = useAlbumStore((state) => state.setActiveAlbumId);
   const playAlbum = useAlbumStore((state) => state.playAlbum);
   const shuffleAlbum = useAlbumStore((state) => state.shuffleAlbum);
@@ -37,11 +39,14 @@ export function AlbumDetailBanner({ album, onNavigateArtist, onNavigate }: Album
     return `${minutes} min`;
   };
 
-  const handleArtistClick = () => {
+  const handleArtistClick = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (onNavigateArtist) {
       onNavigateArtist(album.artistId, album.artistName);
     } else if (onNavigate) {
       onNavigate("Artists");
+    } else {
+      navigateToArtist(album.artistName, album.artistId);
     }
   };
 

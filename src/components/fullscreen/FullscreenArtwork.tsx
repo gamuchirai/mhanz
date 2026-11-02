@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Track } from "../../types/discovery";
+import { ArtistLink, AlbumLink } from "../common";
 
 interface FullscreenArtworkProps {
   track: Track;
@@ -109,11 +110,11 @@ export function FullscreenArtwork({ track, isLiked, onToggleLike }: FullscreenAr
             color: "var(--m)",
           }}
         >
-          <span style={{ fontWeight: 500 }}>{track.artist}</span>
+          <ArtistLink name={track.artist} artistId={track.artistId} style={{ fontWeight: 500 }} />
           {track.album ? (
             <>
               <span style={{ opacity: 0.5 }}>•</span>
-              <span style={{ opacity: 0.85 }}>{track.album}</span>
+              <AlbumLink title={track.album} albumId={track.albumId} artistName={track.artist} style={{ opacity: 0.85 }} />
             </>
           ) : null}
         </div>

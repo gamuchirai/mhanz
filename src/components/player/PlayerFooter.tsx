@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePlayerStore } from "../../store/usePlayerStore";
 import { useOverlayStore } from "../../store/useOverlayStore";
 import { MarqueeText } from "../home/MarqueeText";
+import { ArtistLink } from "../common/ArtistLink";
 import { Scrubber } from "./Scrubber";
 
 interface PlayerFooterProps {
@@ -102,7 +103,15 @@ export function PlayerFooter({ className = "" }: PlayerFooterProps) {
             />
           </button>
           <div className="text-xs text-[#a89b91] mt-0.5 truncate">
-            {currentTrack?.artist ?? "Mutinhimira"}
+            {currentTrack ? (
+              <ArtistLink
+                name={currentTrack.artist}
+                artistId={currentTrack.artistId}
+                className="hover:text-[#f4ebe4] transition-colors"
+              />
+            ) : (
+              "Mutinhimira"
+            )}
           </div>
         </div>
 
