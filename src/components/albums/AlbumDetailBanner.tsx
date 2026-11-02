@@ -11,7 +11,7 @@ interface AlbumDetailBannerProps {
   onNavigate?: (nav: string) => void;
 }
 
-export function AlbumDetailBanner({ album, onNavigateArtist, onNavigate }: AlbumDetailBannerProps) {
+export function AlbumDetailBanner({ album, onNavigateArtist, onNavigate: _onNavigate }: AlbumDetailBannerProps) {
   const [imageError, setImageError] = useState(false);
   const { navigateToArtist } = useEntityNavigation();
   const setActiveAlbumId = useAlbumStore((state) => state.setActiveAlbumId);
