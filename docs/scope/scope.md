@@ -34,6 +34,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 21  | Artists and artist profile persistence | Phase 2    | done        |
 | 22  | Local file lyrics parser and metadata extraction | Phase 2    | in-progress |
 | 23  | Home listening history and popular tracks persistence | Phase 2    | done |
+| 24  | Universal album and artist navigation links | Phase 2    | done        |
 
 ## Foundations
 
