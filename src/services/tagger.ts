@@ -31,6 +31,9 @@ function createMockProbedTags(trackId: string, filePath?: string): ProbedAudioTa
   const derivedArtist = fixture?.artist ?? "Sample Artist";
   const derivedAlbum = fixture?.album ?? "Sample Album";
   const path = filePath || fixture?.filePath || `C:\\Music\\${derivedArtist}\\${derivedAlbum}\\${derivedTitle}.mp3`;
+  const ext = path.split(".").pop()?.toLowerCase();
+  const derivedFormat =
+    ext && ["mp3", "flac", "wav", "ogg", "m4a", "aac"].includes(ext) ? ext : "mp3";
 
   const probed: ProbedAudioTagsDto = {
     trackId,
@@ -45,7 +48,7 @@ function createMockProbedTags(trackId: string, filePath?: string): ProbedAudioTa
     discNumber: 1,
     duration: fixture?.durationSeconds ?? 215,
     bitrate: fixture?.bitrate ?? 320,
-    format: "mp3",
+    format: derivedFormat,
     hasEmbeddedCover: Boolean(fixture?.artworkUrl),
     coverArtPath: fixture?.artworkUrl ?? null,
   };

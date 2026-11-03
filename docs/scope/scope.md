@@ -423,7 +423,7 @@ spec [0023](../specs/0023-audio-file-metadata-tag-editor/index.md)
   - [x] SQLite transaction repository for in place album updates, artist reconciliation, FTS5 sync, and Tauri event emission (AC-8, AC-9, AC-10, AC-11)
         code in `src/components/tagger/`, `src/store/useTagEditorStore.ts`, `src-tauri/src/tagger/`, `src-tauri/src/commands/tagger.rs`, `src-tauri/src/audio/engine.rs`
 - [ ] Verify it: `/check verify audio file metadata tag editor`
-- [ ] Test it: `/test audio file metadata tag editor`
+- [x] Test it: `/test audio file metadata tag editor`
 
 ## Deferred
 

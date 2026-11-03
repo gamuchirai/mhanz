@@ -320,9 +320,7 @@ describe("Audio Metadata Tag Editor Frontend (Feature 25)", () => {
             id: "trk-sync-1",
             title: "Old Track Title",
             artist: "Old Artist",
-            artistId: "art-sync-1",
             album: "Old Album",
-            albumId: "alb-sync-1",
             durationSeconds: 240,
             artworkUrl: "",
             playsCount: 5,
@@ -351,10 +349,7 @@ describe("Audio Metadata Tag Editor Frontend (Feature 25)", () => {
     });
 
     act(() => {
-      taggerSync.broadcast(
-        { trackIds: ["trk-sync-1"], albumIds: ["alb-sync-1"] },
-        [mockTrackDto],
-      );
+      taggerSync.broadcast({ trackIds: ["trk-sync-1"], albumIds: ["alb-sync-1"] }, [mockTrackDto]);
     });
 
     const libTrack = useLibraryStore.getState().tracks.find((t) => t.id === "trk-sync-1");
