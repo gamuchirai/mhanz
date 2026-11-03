@@ -1,6 +1,6 @@
 //! DTO models and payloads for audio tag probing and physical disk writing.
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::db::models::{AlbumDto, TrackDto};
 
@@ -67,11 +67,22 @@ pub struct SaveTrackTagsDto {
 pub struct BatchTrackUpdates {
     pub artist_name: Option<String>,
     pub album_name: Option<String>,
-    pub album_artist: Option<String>,
-    pub genre: Option<String>,
-    pub year: Option<i32>,
+    #[serde(default, deserialize_with = "deserialize_nullable_update")]
+    pub album_artist: Option<Option<String>>,
+    #[serde(default, deserialize_with = "deserialize_nullable_update")]
+    pub genre: Option<Option<String>>,
+    #[serde(default, deserialize_with = "deserialize_nullable_update")]
+    pub year: Option<Option<i32>>,
     pub disc_number: Option<i32>,
     pub cover_art_action: Option<CoverArtAction>,
+}
+
+fn deserialize_nullable_update<'de, D, T>(deserializer: D) -> Result<Option<Option<T>>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    Option::<T>::deserialize(deserializer).map(Some)
 }
 
 /// Payload for batch updating multiple audio tracks.

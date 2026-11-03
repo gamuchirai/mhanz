@@ -144,7 +144,11 @@ pub fn purge_orphan_artists(tx: &Transaction<'_>) -> Result<usize, rusqlite::Err
     tx.execute(
         r#"
         DELETE FROM artists
-        WHERE id NOT IN (SELECT DISTINCT artist_id FROM tracks WHERE artist_id IS NOT NULL)
+        WHERE id NOT IN (
+            SELECT artist_id FROM tracks WHERE artist_id IS NOT NULL
+            UNION
+            SELECT artist_id FROM albums WHERE artist_id IS NOT NULL
+        )
         "#,
         [],
     )
@@ -185,12 +189,14 @@ pub fn save_track_metadata_transaction(
         .album_artist
         .as_deref()
         .unwrap_or(&payload.artist_name);
+    let album_artist_id = resolve_or_create_artist(&tx, album_artist, now)
+        .map_err(|err| format!("Failed to resolve album artist record: {}", err))?;
 
     let album_title = payload.album_name.as_deref().unwrap_or("Unknown Album");
     let album_id = resolve_or_create_album(
         &tx,
         album_title,
-        &artist_id,
+        &album_artist_id,
         album_artist,
         payload.year,
         payload.genre.as_deref(),
@@ -240,8 +246,8 @@ pub fn save_track_metadata_transaction(
     .map_err(|err| format!("Failed to update track in database: {}", err))?;
 
     // 4. Purge orphan artists and albums
-    let _ = purge_orphan_artists(&tx);
     let _ = purge_orphan_albums(&tx);
+    let _ = purge_orphan_artists(&tx);
 
     // 5. Query updated track dto
     let sql = format!("SELECT {} FROM tracks WHERE id = ?1", TRACK_SELECT_FIELDS);
@@ -284,9 +290,22 @@ pub fn save_batch_metadata_transaction(
             set_clauses.push(format!("title = ?{}", params_vec.len() + 1));
             params_vec.push(Box::new(title.trim().to_string()));
         }
-        if let Some(ref art) = updates.artist_name {
-            set_clauses.push(format!("artist_name = ?{}", params_vec.len() + 1));
-            params_vec.push(Box::new(art.trim().to_string()));
+        if let Some(album_artist) = &updates.album_artist {
+            let album_artist_name = album_artist.as_deref().or_else(|| {
+                item_results
+                    .first()
+                    .map(|(payload, _)| payload.artist_name.as_str())
+            });
+            if let Some(album_artist_name) = album_artist_name {
+                let album_artist_id = resolve_or_create_artist(&tx, album_artist_name, now)
+                    .map_err(|err| {
+                        format!("Failed to resolve batch album artist record: {}", err)
+                    })?;
+                set_clauses.push(format!("artist_id = ?{}", params_vec.len() + 1));
+                params_vec.push(Box::new(album_artist_id));
+                set_clauses.push(format!("artist_name = ?{}", params_vec.len() + 1));
+                params_vec.push(Box::new(album_artist_name.trim().to_string()));
+            }
         }
         if let Some(ref yr) = updates.year {
             set_clauses.push(format!("year = ?{}", params_vec.len() + 1));
@@ -332,11 +351,13 @@ pub fn save_batch_metadata_transaction(
                 .album_artist
                 .as_deref()
                 .unwrap_or(&payload.artist_name);
+            let album_artist_id = resolve_or_create_artist(&tx, album_artist, now)
+                .map_err(|err| format!("Failed to resolve batch album artist: {}", err))?;
             let album_title = payload.album_name.as_deref().unwrap_or("Unknown Album");
             resolve_or_create_album(
                 &tx,
                 album_title,
-                &artist_id,
+                &album_artist_id,
                 album_artist,
                 payload.year,
                 payload.genre.as_deref(),
@@ -399,8 +420,8 @@ pub fn save_batch_metadata_transaction(
     }
 
     // 3. Purge orphan artists and albums
-    let _ = purge_orphan_artists(&tx);
     let _ = purge_orphan_albums(&tx);
+    let _ = purge_orphan_artists(&tx);
 
     // 4. Query updated album DTO if applicable
     let mut updated_album_dto: Option<AlbumDto> = None;

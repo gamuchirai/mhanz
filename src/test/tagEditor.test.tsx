@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { TagEditorModal, BatchTagEditorModal, TrackRowMenuButton } from "../components/tagger";
 import { AlbumDetailBanner } from "../components/albums/AlbumDetailBanner";
@@ -9,6 +9,8 @@ import { usePlayerStore } from "../store/usePlayerStore";
 import { taggerSync } from "../services/taggerSync";
 import type { TrackDto } from "../types/database";
 import type { Album } from "../types/album";
+import type { ProbedAudioTagsDto } from "../types/tagger";
+import * as taggerService from "../services/tagger";
 
 describe("Audio Metadata Tag Editor Frontend (Feature 25)", () => {
   beforeEach(() => {
@@ -16,6 +18,10 @@ describe("Audio Metadata Tag Editor Frontend (Feature 25)", () => {
       useTagEditorStore.getState().closeTrackEditor();
       useTagEditorStore.getState().closeBatchEditor();
     });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("opens single track tag editor modal and populates probed fields (AC-1, AC-2)", async () => {
@@ -37,6 +43,69 @@ describe("Audio Metadata Tag Editor Frontend (Feature 25)", () => {
     const artistInput = screen.getByLabelText(/artist \*/i) as HTMLInputElement;
     expect(titleInput.value).toBeTruthy();
     expect(artistInput.value).toBeTruthy();
+  });
+
+  it("ignores an older probe response after another track becomes active (AC-1)", async () => {
+    let resolveOldProbe: (tags: ProbedAudioTagsDto) => void = () => {};
+    let resolveCurrentProbe: (tags: ProbedAudioTagsDto) => void = () => {};
+    const oldProbe = new Promise<ProbedAudioTagsDto>((resolve) => {
+      resolveOldProbe = resolve;
+    });
+    const currentProbe = new Promise<ProbedAudioTagsDto>((resolve) => {
+      resolveCurrentProbe = resolve;
+    });
+    const probeSpy = vi
+      .spyOn(taggerService, "tagEditorProbeFile")
+      .mockImplementation((trackId) => (trackId === "trk-old" ? oldProbe : currentProbe));
+
+    const oldOpen = useTagEditorStore.getState().openTrackEditor("trk-old");
+    const currentOpen = useTagEditorStore.getState().openTrackEditor("trk-current");
+
+    resolveOldProbe({
+      trackId: "trk-old",
+      filePath: "C:\\Music\\old.mp3",
+      title: "Old Track",
+      artist: "Old Artist",
+      album: "Old Album",
+      albumArtist: null,
+      genre: null,
+      year: null,
+      trackNumber: null,
+      discNumber: 1,
+      duration: 180,
+      bitrate: null,
+      format: "mp3",
+      hasEmbeddedCover: false,
+      coverArtPath: null,
+    });
+    await oldOpen;
+
+    expect(useTagEditorStore.getState().trackId).toBe("trk-current");
+    expect(useTagEditorStore.getState().tags).toBeNull();
+    expect(useTagEditorStore.getState().isLoading).toBe(true);
+
+    resolveCurrentProbe({
+      trackId: "trk-current",
+      filePath: "C:\\Music\\current.mp3",
+      title: "Current Track",
+      artist: "Current Artist",
+      album: "Current Album",
+      albumArtist: null,
+      genre: null,
+      year: null,
+      trackNumber: null,
+      discNumber: 1,
+      duration: 200,
+      bitrate: null,
+      format: "mp3",
+      hasEmbeddedCover: false,
+      coverArtPath: null,
+    });
+    await currentOpen;
+
+    expect(useTagEditorStore.getState().tags?.trackId).toBe("trk-current");
+    expect(useTagEditorStore.getState().isLoading).toBe(false);
+    probeSpy.mockRestore();
   });
 
   it("validates empty title and artist on save in single editor (AC-2)", async () => {
@@ -204,13 +273,7 @@ describe("Audio Metadata Tag Editor Frontend (Feature 25)", () => {
     const openSpy = vi.spyOn(useTagEditorStore.getState(), "openTrackEditor");
     const testPath = "C:\\Music\\Track99.mp3";
 
-    render(
-      <TrackRowMenuButton
-        trackId="trk-99"
-        filePath={testPath}
-        trackTitle="Track 99"
-      />,
-    );
+    render(<TrackRowMenuButton trackId="trk-99" filePath={testPath} trackTitle="Track 99" />);
 
     const triggerBtn = screen.getByRole("button", { name: /more options for track 99/i });
     fireEvent.click(triggerBtn);
@@ -221,7 +284,6 @@ describe("Audio Metadata Tag Editor Frontend (Feature 25)", () => {
     fireEvent.click(editItem);
     expect(openSpy).toHaveBeenCalledWith("trk-99", testPath);
   });
-
   it("synchronizes audio tag edits across library and player stores (AC-11)", async () => {
     const mockTrackDto: TrackDto = {
       id: "trk-sync-1",

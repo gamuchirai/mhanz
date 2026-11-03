@@ -27,6 +27,23 @@ fn resolve_covers_dir(app: &AppHandle) -> PathBuf {
         .join("covers")
 }
 
+fn restore_file_backup(
+    audio_state: &AudioState,
+    backup: &writer::AudioFileBackup,
+) -> Result<(), String> {
+    let backup = backup.clone();
+    let path = backup.path().to_path_buf();
+    audio_state
+        .0
+        .execute_with_reload_guard(&path, move || writer::restore_audio_file_backup(&backup))
+}
+
+fn cleanup_file_backup(backup: &writer::AudioFileBackup) {
+    if let Err(err) = writer::discard_audio_file_backup(backup) {
+        eprintln!("Warning: {}", err);
+    }
+}
+
 /// Probes physical audio file tags and stream properties using Lofty (AC-1).
 #[tauri::command]
 pub async fn tag_editor_probe_file(
@@ -94,25 +111,41 @@ pub async fn tag_editor_save_track(
         .map_err(|err| err.to_string())?;
 
     let covers_dir = resolve_covers_dir(&app);
+    let backup = writer::backup_audio_file(&canonical_path)?;
 
     // Physical write under reload guard
     let payload_clone = payload.clone();
     let covers_dir_clone = covers_dir.clone();
     let path_for_write = canonical_path.clone();
-    let write_result = audio_state
+    let write_result = match audio_state
         .0
         .execute_with_reload_guard(&canonical_path, move || {
             writer::write_tags_to_file(&path_for_write, &payload_clone, &covers_dir_clone)
-        })?;
+        }) {
+        Ok(write_result) => write_result,
+        Err(err) => {
+            return match restore_file_backup(&audio_state, &backup) {
+                Ok(()) => Err(err),
+                Err(restore_err) => Err(format!("{}. {}", err, restore_err)),
+            };
+        }
+    };
 
     // Commit to SQLite
-    let updated_track = db_state
-        .0
-        .with_conn(|conn| {
-            repo::save_track_metadata_transaction(conn, &payload, &write_result)
-                .map_err(DatabaseError::write_failed)
-        })
-        .map_err(|err| err.to_string())?;
+    let updated_track = match db_state.0.with_conn(|conn| {
+        repo::save_track_metadata_transaction(conn, &payload, &write_result)
+            .map_err(DatabaseError::write_failed)
+    }) {
+        Ok(updated_track) => updated_track,
+        Err(err) => {
+            let db_error = err.to_string();
+            return match restore_file_backup(&audio_state, &backup) {
+                Ok(()) => Err(db_error),
+                Err(restore_err) => Err(format!("{}. {}", db_error, restore_err)),
+            };
+        }
+    };
+    cleanup_file_backup(&backup);
 
     // Emit event
     let album_ids = updated_track.album_id.clone().into_iter().collect();
@@ -134,7 +167,11 @@ pub async fn tag_editor_save_batch(
     app: AppHandle,
 ) -> Result<BatchSaveResultDto, String> {
     let covers_dir = resolve_covers_dir(&app);
-    let mut item_results: Vec<(SaveTrackTagsDto, writer::PhysicalWriteResult)> = Vec::new();
+    let mut item_results: Vec<(
+        SaveTrackTagsDto,
+        writer::PhysicalWriteResult,
+        writer::AudioFileBackup,
+    )> = Vec::new();
     let mut failed: Vec<BatchItemErrorDto> = Vec::new();
 
     for track_id in &payload.track_ids {
@@ -196,17 +233,17 @@ pub async fn tag_editor_save_batch(
                 .as_ref()
                 .cloned()
                 .or(track.album_name.clone()),
-            album_artist: if payload.updates.album_artist.is_some() {
-                payload.updates.album_artist.clone()
-            } else {
-                track.album_artist.clone()
-            },
-            genre: if payload.updates.genre.is_some() {
-                payload.updates.genre.clone()
-            } else {
-                track.genre.clone()
-            },
-            year: payload.updates.year.or(track.year),
+            album_artist: payload
+                .updates
+                .album_artist
+                .clone()
+                .unwrap_or_else(|| track.album_artist.clone()),
+            genre: payload
+                .updates
+                .genre
+                .clone()
+                .unwrap_or_else(|| track.genre.clone()),
+            year: payload.updates.year.unwrap_or(track.year),
             track_number: track.track_number,
             disc_number: payload.updates.disc_number.unwrap_or(track.disc_number),
             cover_art_action: payload
@@ -214,6 +251,18 @@ pub async fn tag_editor_save_batch(
                 .cover_art_action
                 .clone()
                 .unwrap_or(CoverArtAction::Keep),
+        };
+
+        let backup = match writer::backup_audio_file(&canonical_path) {
+            Ok(backup) => backup,
+            Err(err) => {
+                failed.push(BatchItemErrorDto {
+                    track_id: track.id.clone(),
+                    file_path: track.file_path.clone(),
+                    error: err,
+                });
+                continue;
+            }
         };
 
         let payload_for_write = item_payload.clone();
@@ -228,13 +277,17 @@ pub async fn tag_editor_save_batch(
 
         match write_op {
             Ok(write_res) => {
-                item_results.push((item_payload, write_res));
+                item_results.push((item_payload, write_res, backup));
             }
             Err(err) => {
+                let error = match restore_file_backup(&audio_state, &backup) {
+                    Ok(()) => err,
+                    Err(restore_err) => format!("{}. {}", err, restore_err),
+                };
                 failed.push(BatchItemErrorDto {
                     track_id: track.id.clone(),
                     file_path: track.file_path.clone(),
-                    error: err,
+                    error,
                 });
             }
         }
@@ -249,18 +302,45 @@ pub async fn tag_editor_save_batch(
         });
     }
 
-    let (album_dto, succeeded_tracks) = db_state
+    let db_item_results: Vec<_> = item_results
+        .iter()
+        .map(|(item_payload, write_result, _)| (item_payload.clone(), write_result.clone()))
+        .collect();
+    let db_result = db_state
         .0
         .with_conn(|conn| {
             repo::save_batch_metadata_transaction(
                 conn,
                 payload.album_id.as_deref(),
                 &payload.updates,
-                &item_results,
+                &db_item_results,
             )
             .map_err(DatabaseError::write_failed)
         })
-        .map_err(|err| err.to_string())?;
+        .map_err(|err| err.to_string());
+    let (album_dto, succeeded_tracks) = match db_result {
+        Ok(result) => result,
+        Err(db_error) => {
+            let mut rollback_errors = Vec::new();
+            for (_, _, backup) in &item_results {
+                if let Err(err) = restore_file_backup(&audio_state, backup) {
+                    rollback_errors.push(err);
+                }
+            }
+            return if rollback_errors.is_empty() {
+                Err(db_error)
+            } else {
+                Err(format!(
+                    "{}. Failed to restore one or more files: {}",
+                    db_error,
+                    rollback_errors.join("; ")
+                ))
+            };
+        }
+    };
+    for (_, _, backup) in &item_results {
+        cleanup_file_backup(backup);
+    }
 
     let total_updated = succeeded_tracks.len();
 

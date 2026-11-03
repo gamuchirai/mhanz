@@ -6,7 +6,34 @@ use std::path::Path;
 use lofty::picture::{MimeType, Picture, PictureType};
 use lofty::tag::{Accessor, ItemKey, Tag, TagType};
 
-use super::writer::{cache_cover_image, decode_base64};
+use super::writer::{
+    backup_audio_file, cache_cover_image, decode_base64, restore_audio_file_backup,
+};
+
+#[test]
+fn test_batch_updates_distinguish_omitted_nullable_fields_from_explicit_clears() {
+    use crate::tagger::models::BatchTrackUpdates;
+
+    let unchanged: BatchTrackUpdates =
+        serde_json::from_str("{}").expect("Empty updates should deserialize");
+    assert!(unchanged.album_artist.is_none());
+    assert!(unchanged.genre.is_none());
+    assert!(unchanged.year.is_none());
+
+    let cleared: BatchTrackUpdates =
+        serde_json::from_str(r#"{"albumArtist":null,"genre":null,"year":null}"#)
+            .expect("Explicit null updates should deserialize");
+    assert_eq!(cleared.album_artist, Some(None));
+    assert_eq!(cleared.genre, Some(None));
+    assert_eq!(cleared.year, Some(None));
+
+    let changed: BatchTrackUpdates =
+        serde_json::from_str(r#"{"albumArtist":"Album Artist","genre":"Jazz","year":2024}"#)
+            .expect("Populated updates should deserialize");
+    assert_eq!(changed.album_artist, Some(Some("Album Artist".to_string())));
+    assert_eq!(changed.genre, Some(Some("Jazz".to_string())));
+    assert_eq!(changed.year, Some(Some(2024)));
+}
 
 #[test]
 fn test_decode_base64_valid_and_invalid() {
@@ -18,6 +45,25 @@ fn test_decode_base64_valid_and_invalid() {
 
     // Invalid character
     assert!(decode_base64("Invalid!@#$").is_err());
+}
+
+#[test]
+fn test_audio_file_backup_restores_original_after_failed_database_update() {
+    let temp_dir = std::env::temp_dir().join(format!("test_tag_restore_{}", uuid::Uuid::new_v4()));
+    fs::create_dir_all(&temp_dir).expect("Temporary directory should be created");
+    let audio_file = temp_dir.join("sample.mp3");
+    fs::write(&audio_file, b"original audio and tags").expect("Original file should be written");
+
+    let backup = backup_audio_file(&audio_file).expect("Audio file should be backed up");
+    fs::write(&audio_file, b"updated audio and tags").expect("Updated file should be written");
+    restore_audio_file_backup(&backup).expect("Original audio file should be restored");
+
+    assert_eq!(
+        fs::read(&audio_file).expect("Restored file should be readable"),
+        b"original audio and tags"
+    );
+    assert!(!backup.backup_path().exists());
+    fs::remove_dir_all(&temp_dir).expect("Temporary directory should be removed");
 }
 
 fn expect_equal(a: &[u8], b: &[u8]) {
@@ -169,7 +215,7 @@ fn test_track_metadata_transaction_and_orphan_cleanup() {
         title: "Brand New Title".to_string(),
         artist_name: "Fresh Artist".to_string(),
         album_name: Some("Fresh Album".to_string()),
-        album_artist: Some("Fresh Artist".to_string()),
+        album_artist: Some("Compilation Artist".to_string()),
         genre: Some("Synthwave".to_string()),
         year: Some(2025),
         track_number: Some(7),
@@ -186,7 +232,7 @@ fn test_track_metadata_transaction_and_orphan_cleanup() {
     let updated_track = mgr
         .with_conn(|conn| {
             save_track_metadata_transaction(conn, &payload, &write_res)
-                .map_err(|e| crate::db::DatabaseError::write_failed(e))
+                .map_err(crate::db::DatabaseError::write_failed)
         })
         .expect("Save track succeeds");
 
@@ -200,6 +246,22 @@ fn test_track_metadata_transaction_and_orphan_cleanup() {
         updated_track.cover_art_path.as_deref(),
         Some("/cache/covers/art123.jpg")
     );
+    mgr.with_conn(|conn| {
+        let (album_artist_id, album_artist_name): (String, String) = conn.query_row(
+            "SELECT artist_id, artist_name FROM albums WHERE id = ?1",
+            [updated_track.album_id.as_deref().expect("Album id exists")],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )?;
+        assert_eq!(album_artist_name, "Compilation Artist");
+        let linked_artist_name: String = conn.query_row(
+            "SELECT name FROM artists WHERE id = ?1",
+            [&album_artist_id],
+            |row| row.get(0),
+        )?;
+        assert_eq!(linked_artist_name, "Compilation Artist");
+        Ok(())
+    })
+    .expect("Album artist relationship is consistent");
 
     // 4. Check orphan purge: Old Artist and Old Album should be purged!
     mgr.with_conn(|conn| {
@@ -245,9 +307,9 @@ fn test_track_metadata_transaction_and_orphan_cleanup() {
     let batch_updates = BatchTrackUpdates {
         artist_name: Some("Renamed Artist".to_string()),
         album_name: Some("Renamed Album".to_string()),
-        album_artist: Some("Renamed Artist".to_string()),
-        genre: Some("Cyberpunk".to_string()),
-        year: Some(2026),
+        album_artist: Some(Some("Album Editor".to_string())),
+        genre: Some(Some("Cyberpunk".to_string())),
+        year: Some(Some(2026)),
         disc_number: Some(2),
         cover_art_action: None,
     };
@@ -258,7 +320,7 @@ fn test_track_metadata_transaction_and_orphan_cleanup() {
         title: "Brand New Title".to_string(),
         artist_name: "Renamed Artist".to_string(),
         album_name: Some("Renamed Album".to_string()),
-        album_artist: Some("Renamed Artist".to_string()),
+        album_artist: Some("Album Editor".to_string()),
         genre: Some("Cyberpunk".to_string()),
         year: Some(2026),
         track_number: Some(7),
@@ -272,9 +334,9 @@ fn test_track_metadata_transaction_and_orphan_cleanup() {
                 conn,
                 Some(&album_id),
                 &batch_updates,
-                &[(batch_track_payload, write_res)],
+                &[(batch_track_payload.clone(), write_res.clone())],
             )
-            .map_err(|e| crate::db::DatabaseError::write_failed(e))
+            .map_err(crate::db::DatabaseError::write_failed)
         })
         .expect("Batch save succeeds");
 
@@ -285,10 +347,54 @@ fn test_track_metadata_transaction_and_orphan_cleanup() {
     let alb = album_dto.expect("Updated album DTO exists");
     assert_eq!(alb.id, album_id, "Album id must be preserved in place");
     assert_eq!(alb.title, "Renamed Album");
-    assert_eq!(alb.artist_name, "Renamed Artist");
+    assert_eq!(alb.artist_name, "Album Editor");
     assert_eq!(alb.year, Some(2026));
     assert_eq!(alb.genre.as_deref(), Some("Cyberpunk"));
     assert!(alb.is_favorite, "Album favorite status must be preserved");
+    mgr.with_conn(|conn| {
+        let linked_artist_name: String = conn.query_row(
+            "SELECT name FROM artists WHERE id = ?1",
+            [&alb.artist_id],
+            |row| row.get(0),
+        )?;
+        assert_eq!(linked_artist_name, "Album Editor");
+        Ok(())
+    })
+    .expect("Updated album artist relationship is consistent");
+
+    let clear_updates = BatchTrackUpdates {
+        artist_name: None,
+        album_name: None,
+        album_artist: Some(None),
+        genre: Some(None),
+        year: Some(None),
+        disc_number: None,
+        cover_art_action: None,
+    };
+    let cleared_track_payload = SaveTrackTagsDto {
+        album_artist: None,
+        genre: None,
+        year: None,
+        ..batch_track_payload
+    };
+    let (cleared_album, cleared_tracks) = mgr
+        .with_conn(|conn| {
+            save_batch_metadata_transaction(
+                conn,
+                Some(&album_id),
+                &clear_updates,
+                &[(cleared_track_payload, write_res)],
+            )
+            .map_err(crate::db::DatabaseError::write_failed)
+        })
+        .expect("Explicit nullable field clears succeed");
+    let cleared_album = cleared_album.expect("Album DTO is returned after clearing");
+    assert_eq!(cleared_album.artist_name, "Renamed Artist");
+    assert_eq!(cleared_album.year, None);
+    assert_eq!(cleared_album.genre, None);
+    assert_eq!(cleared_tracks[0].album_artist, None);
+    assert_eq!(cleared_tracks[0].year, None);
+    assert_eq!(cleared_tracks[0].genre, None);
 
     let _ = fs::remove_dir_all(&temp_folder);
 }

@@ -2,7 +2,7 @@
 //! Windows retry loops, and embedded cover art extraction/caching.
 
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use lofty::config::WriteOptions;
@@ -24,6 +24,75 @@ pub struct PhysicalWriteResult {
     pub file_modified_at: i64,
     pub file_size_bytes: i64,
     pub cover_art_path: Option<String>,
+}
+
+/// Keeps a sibling copy so a failed database transaction can restore the audio file.
+#[derive(Debug, Clone)]
+pub struct AudioFileBackup {
+    original_path: PathBuf,
+    backup_path: PathBuf,
+}
+
+impl AudioFileBackup {
+    pub fn path(&self) -> &Path {
+        &self.original_path
+    }
+
+    pub fn backup_path(&self) -> &Path {
+        &self.backup_path
+    }
+}
+
+pub fn backup_audio_file(file_path: &Path) -> Result<AudioFileBackup, String> {
+    let parent_dir = file_path.parent().unwrap_or_else(|| Path::new("."));
+    let stem = file_path
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("track");
+    let backup_path = parent_dir.join(format!(".{}.{}.bak", stem, Uuid::new_v4()));
+    fs::copy(file_path, &backup_path).map_err(|err| {
+        format!(
+            "Failed to back up audio file before metadata update: {}",
+            err
+        )
+    })?;
+
+    Ok(AudioFileBackup {
+        original_path: file_path.to_path_buf(),
+        backup_path,
+    })
+}
+
+pub fn restore_audio_file_backup(backup: &AudioFileBackup) -> Result<(), String> {
+    let mut last_error = None;
+    for attempt in 0..5 {
+        if attempt > 0 {
+            std::thread::sleep(Duration::from_millis(30));
+        }
+
+        match fs::rename(&backup.backup_path, &backup.original_path) {
+            Ok(()) => return Ok(()),
+            Err(err) => last_error = Some(err),
+        }
+    }
+
+    Err(format!(
+        "Failed to restore audio file from backup '{}': {}",
+        backup.backup_path.display(),
+        last_error
+            .map(|error| error.to_string())
+            .unwrap_or_else(|| "Unknown filesystem error".to_string())
+    ))
+}
+
+pub fn discard_audio_file_backup(backup: &AudioFileBackup) -> Result<(), String> {
+    fs::remove_file(&backup.backup_path).map_err(|err| {
+        format!(
+            "Failed to remove audio file backup '{}': {}",
+            backup.backup_path.display(),
+            err
+        )
+    })
 }
 
 /// Simple RFC 4648 Base64 decoder.

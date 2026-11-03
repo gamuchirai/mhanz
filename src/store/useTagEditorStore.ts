@@ -41,6 +41,7 @@ export interface TagEditorState {
   isOpen: boolean;
   isLoading: boolean;
   isSaving: boolean;
+  probeRequestId: number;
   error: string | null;
   trackId: string | null;
   filePath: string | null;
@@ -132,6 +133,7 @@ export const useTagEditorStore = create<TagEditorState>((set, get) => ({
   isOpen: false,
   isLoading: false,
   isSaving: false,
+  probeRequestId: 0,
   error: null,
   trackId: null,
   filePath: null,
@@ -152,10 +154,12 @@ export const useTagEditorStore = create<TagEditorState>((set, get) => ({
   batchSaveResult: null,
 
   openTrackEditor: async (trackId: string, filePath?: string) => {
+    const probeRequestId = get().probeRequestId + 1;
     set({
       isOpen: true,
       isLoading: true,
       isSaving: false,
+      probeRequestId,
       error: null,
       trackId,
       filePath: filePath ?? null,
@@ -166,12 +170,30 @@ export const useTagEditorStore = create<TagEditorState>((set, get) => ({
 
     try {
       const probed = await tagEditorProbeFile(trackId, filePath);
+      const current = get();
+      if (
+        current.probeRequestId !== probeRequestId ||
+        !current.isOpen ||
+        current.trackId !== trackId
+      ) {
+        return;
+      }
+
       set({
         isLoading: false,
         tags: probed,
         coverPreviewUrl: probed.coverArtPath ? formatCoverArtUrl(probed.coverArtPath) : null,
       });
     } catch (err) {
+      const current = get();
+      if (
+        current.probeRequestId !== probeRequestId ||
+        !current.isOpen ||
+        current.trackId !== trackId
+      ) {
+        return;
+      }
+
       set({
         isLoading: false,
         error: err instanceof Error ? err.message : String(err),
@@ -184,6 +206,7 @@ export const useTagEditorStore = create<TagEditorState>((set, get) => ({
       isOpen: false,
       isLoading: false,
       isSaving: false,
+      probeRequestId: get().probeRequestId + 1,
       error: null,
       trackId: null,
       filePath: null,
