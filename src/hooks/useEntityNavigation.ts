@@ -104,12 +104,9 @@ export function useEntityNavigation() {
           targetAlbum = titleMatches[0];
         } else if (titleMatches.length > 1 && artistName) {
           const trimmedArtist = artistName.trim().toLowerCase();
-          targetAlbum =
-            titleMatches.find(
-              (a) => a.artistName.trim().toLowerCase() === trimmedArtist
-            ) || titleMatches[0];
-        } else if (titleMatches.length > 1) {
-          targetAlbum = titleMatches[0];
+          targetAlbum = titleMatches.find(
+            (a) => a.artistName.trim().toLowerCase() === trimmedArtist
+          );
         }
       }
 

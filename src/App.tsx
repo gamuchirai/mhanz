@@ -259,13 +259,7 @@ export function App() {
       ) : activeNav === "Playlists" ? (
         <Playlists />
       ) : activeNav === "Albums" ? (
-        <Albums
-          onNavigate={handleNavigate}
-          onNavigateArtist={(artistId) => {
-            useArtistStore.getState().setActiveArtistId(artistId);
-            navigate("Artists", { artistId });
-          }}
-        />
+        <Albums onNavigate={handleNavigate} />
       ) : activeNav === "Artists" ? (
         <Artists onNavigate={handleNavigate} />
       ) : (

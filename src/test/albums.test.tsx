@@ -6,6 +6,7 @@ import { Albums } from "../pages/Albums";
 import { useAlbumStore } from "../store/useAlbumStore";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { useSearchStore } from "../store/useSearchStore";
+import { useNavigationStore } from "../store/useNavigationStore";
 import { initialAlbums, initialAlbumTracks } from "../data/mockAlbums";
 
 describe("Albums and Album Detail Screen", () => {
@@ -161,7 +162,6 @@ describe("Albums and Album Detail Screen", () => {
   });
 
   it("clicking artist name link in Album Detail navigates to Artists view (AC-6)", () => {
-    const onNavigateArtist = vi.fn();
     const onNavigate = vi.fn();
 
     // Set active album to album-1
@@ -169,12 +169,12 @@ describe("Albums and Album Detail Screen", () => {
       useAlbumStore.getState().setActiveAlbumId("album-1");
     });
 
-    render(<Albums onNavigate={onNavigate} onNavigateArtist={onNavigateArtist} />);
+    render(<Albums onNavigate={onNavigate} />);
 
     const artistLink = screen.getByRole("button", { name: /view artist profile for amina v/i });
     fireEvent.click(artistLink);
 
-    expect(onNavigateArtist).toHaveBeenCalledWith("artist-amina-v", "Amina V");
+    expect(useNavigationStore.getState().current.view).toBe("Artists");
   });
 
   it("clicking Play All or Shuffle queues all album tracks in correct sequence (AC-7)", () => {

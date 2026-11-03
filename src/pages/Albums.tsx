@@ -6,10 +6,9 @@ import { AlbumTrackList } from "../components/albums/AlbumTrackList";
 
 interface AlbumsPageProps {
   onNavigate?: (nav: string) => void;
-  onNavigateArtist?: (artistId: string, artistName: string) => void;
 }
 
-export function Albums({ onNavigate, onNavigateArtist }: AlbumsPageProps = {}) {
+export function Albums({ onNavigate }: AlbumsPageProps = {}) {
   const activeAlbum = useActiveAlbum();
 
   return (
@@ -25,11 +24,7 @@ export function Albums({ onNavigate, onNavigateArtist }: AlbumsPageProps = {}) {
         </>
       ) : (
         <>
-          <AlbumDetailBanner
-            album={activeAlbum}
-            onNavigate={onNavigate}
-            onNavigateArtist={onNavigateArtist}
-          />
+          <AlbumDetailBanner album={activeAlbum} onNavigate={onNavigate} />
           <AlbumTrackList album={activeAlbum} />
         </>
       )}
