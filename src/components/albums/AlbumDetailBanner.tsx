@@ -7,11 +7,10 @@ import { useEntityNavigation } from "../../hooks/useEntityNavigation";
 
 interface AlbumDetailBannerProps {
   album: Album;
-  onNavigateArtist?: (artistId: string, artistName: string) => void;
   onNavigate?: (nav: string) => void;
 }
 
-export function AlbumDetailBanner({ album, onNavigateArtist, onNavigate: _onNavigate }: AlbumDetailBannerProps) {
+export function AlbumDetailBanner({ album, onNavigate: _onNavigate }: AlbumDetailBannerProps) {
   const [imageError, setImageError] = useState(false);
   const { navigateToArtist } = useEntityNavigation();
   const setActiveAlbumId = useAlbumStore((state) => state.setActiveAlbumId);
@@ -41,11 +40,7 @@ export function AlbumDetailBanner({ album, onNavigateArtist, onNavigate: _onNavi
 
   const handleArtistClick = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (onNavigateArtist) {
-      onNavigateArtist(album.artistId, album.artistName);
-    } else {
-      navigateToArtist(album.artistName, album.artistId);
-    }
+    navigateToArtist(album.artistName, album.artistId);
   };
 
   const hasImage = Boolean(album.coverUrl) && !imageError;

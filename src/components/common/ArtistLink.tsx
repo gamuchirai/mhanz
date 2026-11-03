@@ -21,6 +21,14 @@ export function ArtistLink({ name, artistId, className, style }: ArtistLinkProps
   const { navigateToArtist } = useEntityNavigation();
   const trimmed = (name || "").trim();
 
+  // AC-8: Check if full string matches an existing artist in memory to preserve compound band names
+  const storeArtists = useArtistStore((state) => state.artists);
+  const exactBandMatch = useMemo(() => {
+    return storeArtists.find(
+      (a) => a.name.trim().toLowerCase() === trimmed.toLowerCase()
+    );
+  }, [storeArtists, trimmed]);
+
   // AC-9: Generic placeholder tokens render as inert non-clickable text
   if (!trimmed || PLACEHOLDER_REGEX.test(trimmed)) {
     return (
@@ -29,14 +37,6 @@ export function ArtistLink({ name, artistId, className, style }: ArtistLinkProps
       </span>
     );
   }
-
-  // AC-8: Check if full string matches an existing artist in memory to preserve compound band names
-  const storeArtists = useArtistStore((state) => state.artists);
-  const exactBandMatch = useMemo(() => {
-    return storeArtists.find(
-      (a) => a.name.trim().toLowerCase() === trimmed.toLowerCase()
-    );
-  }, [storeArtists, trimmed]);
 
   const handleLinkClick = (e: MouseEvent, targetName: string, targetId?: string | null) => {
     e.stopPropagation();
