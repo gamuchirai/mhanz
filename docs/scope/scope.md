@@ -407,7 +407,7 @@ spec [0022](../specs/0022-home-listening-history-popular-tracks-persistence/inde
 - [x] Verify it: `/check verify home listening history and popular tracks persistence`
 - [x] Test it: `/test home listening history and popular tracks persistence`
 
-### 24. Universal album and artist navigation links · in-progress
+### 24. Universal album and artist navigation links · done
 
 Make every displayed album and artist name across the desktop app an interactive link that navigates to the respective album detail or artist profile page, preventing row click side effects and closing open overlays.
 **Done when:** clicking any album name opens its album detail view, and clicking any artist name opens its artist profile view across all tables, cards, footer player, queue drawer, and fullscreen player, without triggering track playback or selection.
