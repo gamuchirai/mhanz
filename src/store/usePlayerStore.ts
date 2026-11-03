@@ -31,7 +31,8 @@ import {
   mapPlayHistoryDtoToUi,
 } from "../services/db";
 import { favoritesSync } from "../services/favoritesSync";
-import { onScanCompleted } from "../services/scanner";
+import { taggerSync } from "../services/taggerSync";
+import { formatCoverArtUrl, onScanCompleted } from "../services/scanner";
 
 let queueIdCounter = 0;
 function createUniqueQueueId(prefix = "queue"): string {
@@ -668,6 +669,57 @@ favoritesSync.subscribe((trackId, isLiked) => {
         track: updateTrack(qi.track),
       })),
       popularTracks: state.popularTracks.map(updateTrack),
+    };
+  });
+});
+
+// Synchronize audio tag edits for currently playing and queued tracks (AC-11)
+taggerSync.subscribe((event, updatedTracks) => {
+  usePlayerStore.setState((state) => {
+    const isCurrentAffected = Boolean(state.currentTrack && event.trackIds.includes(state.currentTrack.id));
+    const activeTrack = state.currentTrack;
+    let currentTrack = activeTrack;
+    if (isCurrentAffected && activeTrack && updatedTracks) {
+      const found = updatedTracks.find((t) => t.id === activeTrack.id);
+      if (found) {
+        currentTrack = {
+          ...activeTrack,
+          title: found.title,
+          artist: found.artist_name,
+          album: found.album_name || activeTrack.album,
+          artworkUrl: found.cover_art_path ? formatCoverArtUrl(found.cover_art_path) : activeTrack.artworkUrl,
+        };
+      }
+    }
+    return {
+      currentTrack,
+      queue: state.queue.map((t) => {
+        const found = updatedTracks?.find((ut) => ut.id === t.id);
+        return found
+          ? {
+              ...t,
+              title: found.title,
+              artist: found.artist_name,
+              album: found.album_name || t.album,
+              artworkUrl: found.cover_art_path ? formatCoverArtUrl(found.cover_art_path) : t.artworkUrl,
+            }
+          : t;
+      }),
+      queueItems: state.queueItems.map((qi) => {
+        const found = updatedTracks?.find((ut) => ut.id === qi.track.id);
+        return found
+          ? {
+              ...qi,
+              track: {
+                ...qi.track,
+                title: found.title,
+                artist: found.artist_name,
+                album: found.album_name || qi.track.album,
+                artworkUrl: found.cover_art_path ? formatCoverArtUrl(found.cover_art_path) : qi.track.artworkUrl,
+              },
+            }
+          : qi;
+      }),
     };
   });
 });

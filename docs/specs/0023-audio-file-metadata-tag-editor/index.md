@@ -1,7 +1,7 @@
 # 0023. Audio file metadata tag editor
 
 **Date**: 2026-11-02
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 

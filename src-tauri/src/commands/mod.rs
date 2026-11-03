@@ -4,3 +4,4 @@ pub mod audio;
 pub mod db;
 pub mod lyrics;
 pub mod scanner;
+pub mod tagger;

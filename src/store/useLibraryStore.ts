@@ -19,6 +19,7 @@ import {
 } from "../services/scanner";
 import { dbAddFolder, dbGetFolders, dbGetTracks, dbRemoveFolder } from "../services/db";
 import { favoritesSync } from "../services/favoritesSync";
+import { taggerSync } from "../services/taggerSync";
 
 /**
  * Maps SQLite TrackDto to frontend LibraryTrack presentation model.
@@ -391,6 +392,20 @@ favoritesSync.subscribe((trackId: string, isLiked: boolean) => {
   useLibraryStore.setState((state) => ({
     tracks: state.tracks.map((t) => (t.id === trackId ? { ...t, isLiked } : t)),
   }));
+});
+
+// Synchronize audio tag edits across library tracks (AC-11)
+taggerSync.subscribe((_event, updatedTracks) => {
+  if (isTauri()) {
+    useLibraryStore.getState().refreshFromDatabase().catch(() => {});
+  } else if (updatedTracks && updatedTracks.length > 0) {
+    useLibraryStore.setState((state) => ({
+      tracks: state.tracks.map((t) => {
+        const found = updatedTracks.find((ut) => ut.id === t.id);
+        return found ? mapTrackDtoToLibraryTrack(found) : t;
+      }),
+    }));
+  }
 });
 
 // Performance-optimized selector hooks

@@ -7,6 +7,7 @@ import type { AlbumDto, TrackDto } from "../types/database";
 import { initialAlbums, initialAlbumTracks } from "../data/mockAlbums";
 import { dbGetAlbums, dbGetAlbumDetails, dbToggleAlbumFavorite } from "../services/db";
 import { favoritesSync } from "../services/favoritesSync";
+import { taggerSync } from "../services/taggerSync";
 import { formatCoverArtUrl, onScanCompleted } from "../services/scanner";
 import { usePlayerStore } from "./usePlayerStore";
 
@@ -461,6 +462,28 @@ if (typeof window !== "undefined") {
     }
   }).catch(() => {});
 }
+
+// Synchronize audio tag edits across albums and album tracks (AC-11)
+taggerSync.subscribe((event, updatedTracks) => {
+  if (isTauri()) {
+    useAlbumStore.getState().initializeAlbums().catch(() => {});
+    const activeId = useAlbumStore.getState().activeAlbumId;
+    if (activeId && event.albumIds.includes(activeId)) {
+      useAlbumStore.getState().fetchAlbumDetails(activeId, true).catch(() => {});
+    }
+  } else if (updatedTracks && updatedTracks.length > 0) {
+    useAlbumStore.setState((state) => {
+      const updatedAlbumTracks = { ...state.albumTracks };
+      for (const [albId, tracks] of Object.entries(updatedAlbumTracks)) {
+        updatedAlbumTracks[albId] = tracks.map((t) => {
+          const found = updatedTracks.find((ut) => ut.id === t.id);
+          return found ? mapTrackDtoToAlbumTrack(found, t.album, t.coverUrl) : t;
+        });
+      }
+      return { albumTracks: updatedAlbumTracks };
+    });
+  }
+});
 
 // Granular selector hooks for optimal component rendering
 export function useAlbums(): Album[] {

@@ -2,6 +2,9 @@ import { useState } from "react";
 import type { Album } from "../../types/album";
 import { useAlbumStore, useAlbumTracks, useFavoriteAlbumIds } from "../../store/useAlbumStore";
 import { useNavigationStore } from "../../store/useNavigationStore";
+import type { TrackDto } from "../../types/database";
+import { useTagEditorStore } from "../../store/useTagEditorStore";
+import { dbGetAlbumDetails } from "../../services/db";
 import { AlbumVinylPlaceholder } from "./AlbumVinylPlaceholder";
 import { useEntityNavigation } from "../../hooks/useEntityNavigation";
 
@@ -46,6 +49,47 @@ export function AlbumDetailBanner({ album, onNavigateArtist, onNavigate: _onNavi
     } else {
       navigateToArtist(album.artistName, album.artistId);
     }
+  };
+
+  const handleEditDetails = async () => {
+    try {
+      const details = await dbGetAlbumDetails(album.id);
+      if (details && details.tracks.length > 0) {
+        useTagEditorStore.getState().openBatchEditor(album.id, details.tracks);
+        return;
+      }
+    } catch {
+      // Fallback
+    }
+
+    const fallbackTracks: TrackDto[] = tracks.map((t) => ({
+      id: t.id,
+      file_path: t.audioUrl || "",
+      title: t.title,
+      artist_id: t.artistId || null,
+      artist_name: t.artist,
+      album_id: album.id,
+      album_name: album.title,
+      album_artist: album.artistName,
+      duration: t.duration,
+      year: album.releaseYear,
+      genre: album.genre,
+      disc_number: t.discNumber,
+      track_number: t.trackNumber,
+      bitrate: null,
+      format: "mp3",
+      cover_art_path: album.coverUrl || null,
+      is_favorite: Boolean(t.isLiked),
+      liked_at: null,
+      play_count: 0,
+      last_played_at: null,
+      file_modified_at: Math.floor(Date.now() / 1000),
+      file_size_bytes: 0,
+      folder_id: null,
+      created_at: 0,
+      updated_at: 0,
+    }));
+    useTagEditorStore.getState().openBatchEditor(album.id, fallbackTracks);
   };
 
   const hasImage = Boolean(album.coverUrl) && !imageError;
@@ -305,6 +349,45 @@ export function AlbumDetailBanner({ album, onNavigateArtist, onNavigate: _onNavi
               <use href="#shuffle" />
             </svg>
             <span>Shuffle</span>
+          </button>
+
+          {/* Edit Details Button */}
+          <button
+            type="button"
+            onClick={handleEditDetails}
+            aria-label="Edit album details"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "10px 20px",
+              borderRadius: "24px",
+              background: "rgba(255, 255, 255, 0.06)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              color: "var(--t)",
+              fontSize: "13px",
+              fontWeight: 500,
+              cursor: "pointer",
+              transition: "background 0.15s ease",
+            }}
+          >
+            <svg
+              className="i"
+              width="15"
+              height="15"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
+              />
+            </svg>
+            <span>Edit details</span>
           </button>
 
           {/* Favorite Album Heart Toggle */}

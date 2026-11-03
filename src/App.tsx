@@ -13,6 +13,7 @@ import { QueueDrawer } from "./components/queue/QueueDrawer";
 import { LyricsModal } from "./components/lyrics/LyricsModal";
 import { SettingsModal } from "./components/settings/SettingsModal";
 import { NowPlayingFullscreen } from "./components/fullscreen/NowPlayingFullscreen";
+import { TagEditorModal, BatchTagEditorModal } from "./components/tagger";
 import { useActiveOverlay, useOverlayStore } from "./store/useOverlayStore";
 import { useActivePlaylistId, usePlaylistStore, usePlaylists } from "./store/usePlaylistStore";
 import { useLikedSongsStore } from "./store/useLikedSongsStore";
@@ -159,6 +160,8 @@ export function App() {
           {activeOverlay === "lyrics" && <LyricsModal />}
           {activeOverlay === "settings" && <SettingsModal />}
           {activeOverlay === "fullscreen" && <NowPlayingFullscreen />}
+          <TagEditorModal />
+          <BatchTagEditorModal />
         </>
       }
     >

@@ -176,3 +176,23 @@ fn test_audio_engine_state_and_controls() {
     let stop_dto = engine.stop().expect("Stop failed");
     assert_eq!(stop_dto.status, PlaybackStatus::Stopped);
 }
+
+#[test]
+fn test_audio_engine_reload_guard() {
+    let engine = AudioEngine::new();
+    let temp_file = std::env::temp_dir().join("test_inactive_track.mp3");
+
+    // Inactive file execution
+    let mut executed = false;
+    let res = engine.execute_with_reload_guard(&temp_file, || {
+        executed = true;
+        Ok::<_, String>("write_ok".to_string())
+    });
+
+    assert!(res.is_ok());
+    assert_eq!(res.unwrap(), "write_ok");
+    assert!(executed);
+    assert!(!engine
+        .is_reloading
+        .load(std::sync::atomic::Ordering::SeqCst));
+}

@@ -9,6 +9,7 @@ import {
 import { useCurrentTrack, useIsPlaying, usePlayerStore } from "../../store/usePlayerStore";
 import { formatDuration, formatRelativeDate } from "../../utils/format";
 import { ArtistLink, AlbumLink } from "../common";
+import { TrackRowMenuButton, handleTrackContextMenu } from "../tagger";
 
 interface PlaylistSongTableProps {
   playlist: Playlist;
@@ -265,6 +266,7 @@ export function PlaylistSongTable({ playlist }: PlaylistSongTableProps) {
                 onMouseEnter={() => setHoveredEntryId(entry.entryId)}
                 onMouseLeave={() => setHoveredEntryId(null)}
                 onDoubleClick={() => playPlaylist(playlist.id, originalIndex)}
+                onContextMenu={(e) => handleTrackContextMenu(e, track.id, track.filePath)}
                 style={{
                   borderBottom: "1px solid rgba(255, 255, 255, 0.04)",
                   background: isHovered ? "rgba(255, 255, 255, 0.04)" : "transparent",
@@ -542,6 +544,7 @@ export function PlaylistSongTable({ playlist }: PlaylistSongTableProps) {
                     >
                       ✕
                     </button>
+                    <TrackRowMenuButton trackId={track.id} filePath={track.filePath} trackTitle={track.title} />
                   </div>
                 </td>
               </tr>

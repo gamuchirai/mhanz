@@ -9,6 +9,7 @@ pub mod commands;
 pub mod db;
 pub mod lyrics;
 pub mod scanner;
+pub mod tagger;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -84,6 +85,9 @@ pub fn run() {
             commands::lyrics::lyrics_get_for_track,
             commands::lyrics::lyrics_set_user_offset,
             commands::lyrics::lyrics_rescan_for_track,
+            commands::tagger::tag_editor_probe_file,
+            commands::tagger::tag_editor_save_track,
+            commands::tagger::tag_editor_save_batch,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

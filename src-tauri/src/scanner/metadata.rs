@@ -118,7 +118,10 @@ pub fn parse_audio_metadata(
 }
 
 /// Extracts front cover artwork, hashes with SHA256, and saves deduplicated into cache dir (AC-5).
-fn extract_cover_art<T: TaggedFileExt>(tagged_file: &T, cache_covers_dir: &Path) -> Option<String> {
+pub fn extract_cover_art<T: TaggedFileExt>(
+    tagged_file: &T,
+    cache_covers_dir: &Path,
+) -> Option<String> {
     let tag = tagged_file
         .primary_tag()
         .or_else(|| tagged_file.first_tag())?;
@@ -171,7 +174,7 @@ fn extract_cover_art<T: TaggedFileExt>(tagged_file: &T, cache_covers_dir: &Path)
 }
 
 /// Maps image MIME string to file extension.
-fn mime_to_extension(mime: &str) -> &'static str {
+pub fn mime_to_extension(mime: &str) -> &'static str {
     let lower = mime.to_ascii_lowercase();
     if lower.contains("png") {
         "png"
@@ -185,7 +188,7 @@ fn mime_to_extension(mime: &str) -> &'static str {
 }
 
 /// Fallback magic byte detection for common image formats.
-fn detect_image_extension_from_magic(data: &[u8]) -> &'static str {
+pub fn detect_image_extension_from_magic(data: &[u8]) -> &'static str {
     if data.len() >= 8 && &data[0..8] == b"\x89PNG\r\n\x1a\n" {
         "png"
     } else if data.len() >= 3 && &data[0..3] == b"\xff\xd8\xff" {
