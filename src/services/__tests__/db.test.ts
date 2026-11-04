@@ -15,6 +15,7 @@ import {
   dbGetSetting,
   dbGetStatus,
   dbGetTrackById,
+  dbGetAllTracks,
   dbGetTracks,
   dbIncrementPlayCount,
   dbRemoveFolder,
@@ -149,6 +150,36 @@ describe("Database Service (src/services/db.ts)", () => {
     });
     expect(result.items[0].title).toBe("Midnight Drive");
   });
+  it("dbGetAllTracks aggregates all pages when total exceeds page size", async () => {
+    vi.mocked(invoke).mockImplementation(async (cmd: string, args?: unknown) => {
+      if (cmd === "db_get_tracks") {
+        const { page = 0 } = (args as { page?: number }) ?? {};
+        if (page === 0) {
+          return {
+            items: [{ id: "trk-1", title: "Page 0 Track" }],
+            total: 2,
+            page: 0,
+            limit: 1,
+          };
+        }
+        if (page === 1) {
+          return {
+            items: [{ id: "trk-2", title: "Page 1 Track" }],
+            total: 2,
+            page: 1,
+            limit: 1,
+          };
+        }
+      }
+      return null;
+    });
+
+    const allTracks = await dbGetAllTracks(undefined, 1);
+    expect(allTracks).toHaveLength(2);
+    expect(allTracks[0].title).toBe("Page 0 Track");
+    expect(allTracks[1].title).toBe("Page 1 Track");
+  });
+
 
   it("dbGetTrackById, dbToggleTrackFavorite, and dbIncrementPlayCount work reliably", async () => {
     vi.mocked(invoke).mockResolvedValueOnce({
