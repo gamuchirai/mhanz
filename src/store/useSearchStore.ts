@@ -7,6 +7,7 @@
  */
 
 import { create } from "zustand";
+import { isTauri } from "@tauri-apps/api/core";
 import { dbSearchLibrary, mapSearchResultsDtoToUi } from "../services/db";
 import { exploreGenres, mockAlbums, mockArtists, searchTracksPool } from "../data/searchFixtures";
 import type { GenreCard, SearchCategory, SearchResults, SearchState } from "../types/search";
@@ -70,10 +71,11 @@ export const useSearchStore = create<ExtendedSearchState>()((set, get) => ({
   recentSearches: ["Chillwave", "Aiden Vale", "Midnight"],
   isSearching: false,
   results: emptyResults,
+  error: null,
 
   setQuery: (query: string, immediate = false) => {
     // Immediate input value update to ensure zero keystroke lag
-    set({ query });
+    set({ query, error: null });
 
     if (debounceTimer) {
       clearTimeout(debounceTimer);
@@ -83,7 +85,7 @@ export const useSearchStore = create<ExtendedSearchState>()((set, get) => ({
     const trimmed = query.trim();
     if (!trimmed) {
       currentRequestId += 1;
-      set({ results: emptyResults, isSearching: false });
+      set({ results: emptyResults, isSearching: false, error: null });
       return;
     }
 
@@ -92,18 +94,26 @@ export const useSearchStore = create<ExtendedSearchState>()((set, get) => ({
         const dto = await dbSearchLibrary(trimmed, "all");
         if (reqId === currentRequestId) {
           const results = mapSearchResultsDtoToUi(dto);
-          set({ results, isSearching: false });
+          set({ results, isSearching: false, error: null });
           if (results.totalMatches > 0) {
             get().addRecentSearch(trimmed);
           }
         }
-      } catch {
-        // Fallback for tests or browser preview where Tauri IPC is unavailable
+      } catch (err) {
         if (reqId === currentRequestId) {
-          const fallbackResults = performLocalFallbackSearch(trimmed);
-          set({ results: fallbackResults, isSearching: false });
-          if (fallbackResults.totalMatches > 0) {
-            get().addRecentSearch(trimmed);
+          if (!isTauri()) {
+            const fallbackResults = performLocalFallbackSearch(trimmed);
+            set({ results: fallbackResults, isSearching: false, error: null });
+            if (fallbackResults.totalMatches > 0) {
+              get().addRecentSearch(trimmed);
+            }
+          } else {
+            console.error("Failed to search SQLite library:", err);
+            set({
+              results: emptyResults,
+              isSearching: false,
+              error: err instanceof Error ? err.message : String(err),
+            });
           }
         }
       }
@@ -112,30 +122,30 @@ export const useSearchStore = create<ExtendedSearchState>()((set, get) => ({
     if (immediate) {
       currentRequestId += 1;
       const reqId = currentRequestId;
-      // In unit test environments (where window.__TAURI_INTERNALS__ is undefined), execute synchronously
-      if (typeof window === "undefined" || !("__TAURI_INTERNALS__" in window)) {
+      // In unit test or browser preview environments where isTauri() is false, execute synchronously
+      if (!isTauri()) {
         const fallbackResults = performLocalFallbackSearch(trimmed);
-        set({ results: fallbackResults, isSearching: false });
+        set({ results: fallbackResults, isSearching: false, error: null });
         if (fallbackResults.totalMatches > 0) {
           get().addRecentSearch(trimmed);
         }
         return;
       }
 
-      set({ isSearching: true });
+      set({ isSearching: true, error: null });
       void executeSearch(reqId);
       return;
     }
 
-    set({ isSearching: true });
+    set({ isSearching: true, error: null });
     currentRequestId += 1;
     const reqId = currentRequestId;
 
     debounceTimer = setTimeout(() => {
-      if (typeof window === "undefined" || !("__TAURI_INTERNALS__" in window)) {
+      if (!isTauri()) {
         if (reqId === currentRequestId) {
           const fallbackResults = performLocalFallbackSearch(trimmed);
-          set({ results: fallbackResults, isSearching: false });
+          set({ results: fallbackResults, isSearching: false, error: null });
           if (fallbackResults.totalMatches > 0) {
             get().addRecentSearch(trimmed);
           }
@@ -162,6 +172,7 @@ export const useSearchStore = create<ExtendedSearchState>()((set, get) => ({
       isSearching: false,
       results: emptyResults,
       activeCategory: "all",
+      error: null,
     });
   },
 
@@ -178,21 +189,32 @@ export const useSearchStore = create<ExtendedSearchState>()((set, get) => ({
       query,
       activeCategory: "genres",
       isSearching: true,
+      error: null,
     });
+
+    if (!isTauri()) {
+      const fallbackResults = performLocalFallbackSearch(query);
+      set({ results: fallbackResults, isSearching: false, error: null });
+      get().addRecentSearch(query);
+      return;
+    }
 
     void (async () => {
       try {
         const dto = await dbSearchLibrary(query, "all");
         if (reqId === currentRequestId) {
           const results = mapSearchResultsDtoToUi(dto);
-          set({ results, isSearching: false });
+          set({ results, isSearching: false, error: null });
           get().addRecentSearch(query);
         }
-      } catch {
+      } catch (err) {
         if (reqId === currentRequestId) {
-          const fallbackResults = performLocalFallbackSearch(query);
-          set({ results: fallbackResults, isSearching: false });
-          get().addRecentSearch(query);
+          console.error("Failed to search genre from SQLite:", err);
+          set({
+            results: emptyResults,
+            isSearching: false,
+            error: err instanceof Error ? err.message : String(err),
+          });
         }
       }
     })();
@@ -231,3 +253,4 @@ export const useSearchCategory = () => useSearchStore((state) => state.activeCat
 export const useSearchResults = () => useSearchStore((state) => state.results);
 export const useRecentSearches = () => useSearchStore((state) => state.recentSearches);
 export const useIsSearching = () => useSearchStore((state) => state.isSearching);
+export const useSearchError = () => useSearchStore((state) => state.error);

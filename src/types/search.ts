@@ -65,6 +65,7 @@ export interface SearchState {
   recentSearches: string[];
   isSearching: boolean;
   results: SearchResults;
+  error: string | null;
   setQuery: (query: string) => void;
   setCategory: (category: SearchCategory) => void;
   clearSearch: () => void;

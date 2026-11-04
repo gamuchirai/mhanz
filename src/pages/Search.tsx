@@ -15,6 +15,7 @@ export function Search({ onNavigate }: SearchProps = {}) {
   const query = useSearchStore((state) => state.query);
   const results = useSearchStore((state) => state.results);
   const isSearching = useSearchStore((state) => state.isSearching);
+  const error = useSearchStore((state) => state.error);
   const currentNav = useNavigationStore((state) => state.current);
 
   useEffect(() => {
@@ -53,7 +54,7 @@ export function Search({ onNavigate }: SearchProps = {}) {
       {/* Main Dynamic View Content */}
       {!hasQuery ? (
         <ExploreGenresGrid />
-      ) : hasNoResults ? (
+      ) : error || hasNoResults ? (
         <EmptySearchState />
       ) : (
         <CategorizedResults onNavigate={onNavigate} />
