@@ -18,6 +18,8 @@ import {
   audioSetMuted,
   audioSetVolume,
   audioStop,
+  isAudioMockActive,
+  listenAudioError,
   listenAudioHistoryRecorded,
   listenAudioPosition,
   listenAudioStateChanged,
@@ -140,17 +142,17 @@ const initialQueueTracks = popularTracksList;
 const initialQueueItems = convertTracksToQueueItems(initialQueueTracks);
 
 export const usePlayerStore = create<PlayerState>()((set, get) => ({
-  currentTrack: showcaseItem.track ?? sampleTracks[0],
-  queue: initialQueueTracks,
-  queueItems: initialQueueItems,
-  currentIndex: 1, // 'Perfect' is index 1 in popularTracksList
+  currentTrack: isTauri() ? null : (showcaseItem.track ?? sampleTracks[0]),
+  queue: isTauri() ? [] : initialQueueTracks,
+  queueItems: isTauri() ? [] : initialQueueItems,
+  currentIndex: isTauri() ? -1 : 1, // 'Perfect' is index 1 in popularTracksList
   isPlaying: false,
-  currentTime: 107,
+  currentTime: isTauri() ? 0 : 107,
   volume: 0.8,
   isMuted: false,
   isShuffle: false,
   repeatMode: "off",
-  likedTrackIds: initialLikes,
+  likedTrackIds: isTauri() ? {} : initialLikes,
   recentPlays: isTauri() ? [] : initialRecentPlays,
   curatedCollections: curatedPlaylists,
   popularTracks: isTauri() ? [] : popularTracksList,
@@ -207,6 +209,19 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
 
     const newQueueItems = convertTracksToQueueItems(updatedQueue);
 
+    if (!isAudioMockActive() && (!track.filePath || track.filePath.startsWith("mock://"))) {
+      set({
+        currentTrack: track,
+        queue: updatedQueue,
+        queueItems: newQueueItems,
+        currentIndex: index,
+        isPlaying: false,
+        currentTime: 0,
+      });
+      stopPlaybackTimer();
+      return;
+    }
+
     set({
       currentTrack: track,
       queue: updatedQueue,
@@ -218,7 +233,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
 
     startPlaybackTimer(get);
 
-    const filePath = track.filePath || `mock://${track.id}.mp3`;
+    const filePath = track.filePath || (isAudioMockActive() ? `mock://${track.id}.mp3` : "");
     const context = get().playbackContext;
     audioPlayTrack(
       track.id,
@@ -227,7 +242,11 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       track.durationSeconds,
       context?.title,
       context?.type
-    ).catch(() => {});
+    ).catch((err) => {
+      console.error("Playback failed in playTrack:", err);
+      set({ isPlaying: false });
+      stopPlaybackTimer();
+    });
   },
 
   togglePlayPause: () => {
@@ -236,24 +255,41 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       get().playTrack(queue[0]);
       return;
     }
+    if (!currentTrack) {
+      return;
+    }
+
+    if (!isAudioMockActive() && (!currentTrack.filePath || currentTrack.filePath.startsWith("mock://"))) {
+      set({ isPlaying: false });
+      stopPlaybackTimer();
+      return;
+    }
+
     const nextPlaying = !isPlaying;
     set({ isPlaying: nextPlaying });
 
     if (nextPlaying) {
       startPlaybackTimer(get);
-      if (currentTrack) {
-        audioResume().catch(() => {
-          const filePath = currentTrack.filePath || `mock://${currentTrack.id}.mp3`;
-          audioPlayTrack(
+      audioResume()
+        .catch(() => {
+          const filePath = currentTrack.filePath || (isAudioMockActive() ? `mock://${currentTrack.id}.mp3` : "");
+          if (!isAudioMockActive() && (!filePath || filePath.startsWith("mock://"))) {
+            throw new Error("Cannot play demo path in native desktop mode");
+          }
+          return audioPlayTrack(
             currentTrack.id,
             filePath,
             currentTime,
             currentTrack.durationSeconds,
             playbackContext?.title,
             playbackContext?.type
-          ).catch(() => {});
+          );
+        })
+        .catch((err) => {
+          console.error("Playback failed in togglePlayPause:", err);
+          set({ isPlaying: false });
+          stopPlaybackTimer();
         });
-      }
     } else {
       stopPlaybackTimer();
       audioPause().catch(() => {});
@@ -289,6 +325,17 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     }
 
     const nextTrackItem = queue[nextIndex];
+    if (!isAudioMockActive() && (!nextTrackItem.filePath || nextTrackItem.filePath.startsWith("mock://"))) {
+      set({
+        currentIndex: nextIndex,
+        currentTrack: nextTrackItem,
+        currentTime: 0,
+        isPlaying: false,
+      });
+      stopPlaybackTimer();
+      return;
+    }
+
     set({
       currentIndex: nextIndex,
       currentTrack: nextTrackItem,
@@ -297,7 +344,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     });
     startPlaybackTimer(get);
 
-    const filePath = nextTrackItem.filePath || `mock://${nextTrackItem.id}.mp3`;
+    const filePath = nextTrackItem.filePath || (isAudioMockActive() ? `mock://${nextTrackItem.id}.mp3` : "");
     audioPlayTrack(
       nextTrackItem.id,
       filePath,
@@ -305,7 +352,11 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       nextTrackItem.durationSeconds,
       playbackContext?.title,
       playbackContext?.type
-    ).catch(() => {});
+    ).catch((err) => {
+      console.error("Playback failed in nextTrack:", err);
+      set({ isPlaying: false });
+      stopPlaybackTimer();
+    });
   },
 
   previousTrack: () => {
@@ -320,6 +371,17 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
 
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : queue.length - 1;
     const prevTrackItem = queue[prevIndex];
+    if (!isAudioMockActive() && (!prevTrackItem.filePath || prevTrackItem.filePath.startsWith("mock://"))) {
+      set({
+        currentIndex: prevIndex,
+        currentTrack: prevTrackItem,
+        currentTime: 0,
+        isPlaying: false,
+      });
+      stopPlaybackTimer();
+      return;
+    }
+
     set({
       currentIndex: prevIndex,
       currentTrack: prevTrackItem,
@@ -328,7 +390,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     });
     startPlaybackTimer(get);
 
-    const filePath = prevTrackItem.filePath || `mock://${prevTrackItem.id}.mp3`;
+    const filePath = prevTrackItem.filePath || (isAudioMockActive() ? `mock://${prevTrackItem.id}.mp3` : "");
     audioPlayTrack(
       prevTrackItem.id,
       filePath,
@@ -336,7 +398,11 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       prevTrackItem.durationSeconds,
       playbackContext?.title,
       playbackContext?.type
-    ).catch(() => {});
+    ).catch((err) => {
+      console.error("Playback failed in previousTrack:", err);
+      set({ isPlaying: false });
+      stopPlaybackTimer();
+    });
   },
 
   seekTo: (seconds: number) => {
@@ -545,6 +611,17 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     if (index === -1) return;
     const targetItem = queueItems[index];
 
+    if (!isAudioMockActive() && (!targetItem.track.filePath || targetItem.track.filePath.startsWith("mock://"))) {
+      set({
+        currentTrack: targetItem.track,
+        currentIndex: index,
+        isPlaying: false,
+        currentTime: 0,
+      });
+      stopPlaybackTimer();
+      return;
+    }
+
     set({
       currentTrack: targetItem.track,
       currentIndex: index,
@@ -554,7 +631,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
 
     startPlaybackTimer(get);
 
-    const filePath = targetItem.track.filePath || `mock://${targetItem.track.id}.mp3`;
+    const filePath = targetItem.track.filePath || (isAudioMockActive() ? `mock://${targetItem.track.id}.mp3` : "");
     audioPlayTrack(
       targetItem.track.id,
       filePath,
@@ -562,7 +639,11 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       targetItem.track.durationSeconds,
       playbackContext?.title,
       playbackContext?.type
-    ).catch(() => {});
+    ).catch((err) => {
+      console.error("Playback failed in playQueueItem:", err);
+      set({ isPlaying: false });
+      stopPlaybackTimer();
+    });
   },
 
   seekToLyricLine: (timeSeconds: number) => {
@@ -604,6 +685,7 @@ export function initPlayerAudioSync(): () => void {
       state.isPlaying
     ) {
       usePlayerStore.setState({ isPlaying: false });
+      stopPlaybackTimer();
     }
   });
 
@@ -625,7 +707,16 @@ export function initPlayerAudioSync(): () => void {
     usePlayerStore.getState().initializeHomeDiscovery().catch(() => {});
   });
 
-  Promise.all([p1, p2, p3, p4, p5]).then((unlisteners) => {
+  const p6 = listenAudioError((err) => {
+    const fatalCodes = ["FILE_NOT_FOUND", "UNSUPPORTED_FORMAT", "DECODE_ERROR", "DECODER_ERROR", "DEVICE_ERROR"];
+    if (fatalCodes.includes(err.code)) {
+      console.error("Audio engine playback error:", err);
+      usePlayerStore.setState({ isPlaying: false });
+      stopPlaybackTimer();
+    }
+  });
+
+  Promise.all([p1, p2, p3, p4, p5, p6]).then((unlisteners) => {
     audioUnlisteners = unlisteners;
   });
 
