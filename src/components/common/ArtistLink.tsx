@@ -10,7 +10,7 @@ export interface ArtistLinkProps {
 }
 
 const PLACEHOLDER_REGEX = /^(unknown artist|unknown album|unknown|various artists|-|n\/a)$/i;
-const DELIMITER_REGEX = /(\s*(?:feat\.|ft\.|featuring|vs\.|\&|,)\s*)/i;
+const DELIMITER_REGEX = /(\s*(?:feat\.|ft\.|featuring|vs\.|&|,)\s*)/i;
 
 /**
  * Universal interactive link for artist names.
@@ -100,7 +100,11 @@ export function ArtistLink({ name, artistId, className, style }: ArtistLinkProps
   }
 
   // Render split collaboration links preserving delimiter typography
-  let hasAssignedPrimaryId = false;
+  const primaryArtistIndex = tokens.findIndex((token) => {
+    if (!token || DELIMITER_REGEX.test(token)) return false;
+    const tokenTrimmed = token.trim();
+    return Boolean(tokenTrimmed && !PLACEHOLDER_REGEX.test(tokenTrimmed));
+  });
 
   return (
     <span className={className} style={style}>
@@ -127,8 +131,7 @@ export function ArtistLink({ name, artistId, className, style }: ArtistLinkProps
         }
 
         // Bind direct artistId to primary (first) artist only
-        const targetId = !hasAssignedPrimaryId ? artistId : undefined;
-        hasAssignedPrimaryId = true;
+        const targetId = idx === primaryArtistIndex ? artistId : undefined;
 
         return (
           <span
