@@ -26,8 +26,8 @@ export function AlbumLink({
   const { navigateToAlbum } = useEntityNavigation();
   const trimmed = (title || "").trim();
 
-  // AC-9: Generic placeholder tokens render as inert non-clickable text
-  if (!trimmed || PLACEHOLDER_REGEX.test(trimmed)) {
+  // AC-9: Generic placeholder tokens render as inert non-clickable text when no target ID is present
+  if (!trimmed || (!albumId && PLACEHOLDER_REGEX.test(trimmed))) {
     return (
       <span className={className} style={style}>
         {title || ""}
@@ -73,4 +73,3 @@ export function AlbumLink({
     </span>
   );
 }
-

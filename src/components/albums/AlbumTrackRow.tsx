@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { AlbumTrack } from "../../types/album";
 import { useCurrentTrack, useIsPlaying, usePlayerStore } from "../../store/usePlayerStore";
 import { ArtistLink } from "../common/ArtistLink";
+import { TrackRowMenuButton } from "../tagger";
 
 interface AlbumTrackRowProps {
   track: AlbumTrack;
@@ -51,7 +52,7 @@ export function AlbumTrackRow({ track, albumArtistName, onPlay }: AlbumTrackRowP
       onDoubleClick={onPlay}
       style={{
         display: "grid",
-        gridTemplateColumns: "40px 1fr 120px 70px 48px",
+        gridTemplateColumns: "40px 1fr 120px 70px 72px",
         alignItems: "center",
         padding: "8px 12px",
         borderRadius: "8px",
@@ -178,12 +179,13 @@ export function AlbumTrackRow({ track, albumArtistName, onPlay }: AlbumTrackRowP
         {formatTrackDuration(track.duration)}
       </div>
 
-      {/* Col 5: Heart Like Toggle */}
+      {/* Col 5: Heart Like Toggle and Actions Menu */}
       <div
         style={{
           display: "flex",
           justifyContent: "flex-end",
           alignItems: "center",
+          gap: "4px",
         }}
       >
         <button
@@ -215,6 +217,11 @@ export function AlbumTrackRow({ track, albumArtistName, onPlay }: AlbumTrackRowP
             <use href="#heart" />
           </svg>
         </button>
+        <TrackRowMenuButton
+          trackId={track.id}
+          filePath={track.audioUrl}
+          trackTitle={track.title}
+        />
       </div>
     </div>
   );

@@ -720,6 +720,18 @@ taggerSync.subscribe((event, updatedTracks) => {
             }
           : qi;
       }),
+      popularTracks: state.popularTracks.map((t) => {
+        const found = updatedTracks?.find((ut) => ut.id === t.id);
+        return found
+          ? {
+              ...t,
+              title: found.title,
+              artist: found.artist_name,
+              album: found.album_name || t.album,
+              artworkUrl: found.cover_art_path ? formatCoverArtUrl(found.cover_art_path) : t.artworkUrl,
+            }
+          : t;
+      }),
     };
   });
 });

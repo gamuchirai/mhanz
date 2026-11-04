@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useArtistStore, useArtistReleases } from "../../store/useArtistStore";
 import { useAlbumStore } from "../../store/useAlbumStore";
+import { useEntityNavigation } from "../../hooks/useEntityNavigation";
+import { AlbumLink } from "../common/AlbumLink";
 import type { DiscographyFilter, ArtistRelease } from "../../types/artists";
 
 interface ArtistDiscographyProps {
@@ -19,9 +21,13 @@ export function ArtistDiscography({ artistId, onNavigate }: ArtistDiscographyPro
     { id: "single", label: "Singles & EPs" },
   ];
 
+  const { navigateToAlbum } = useEntityNavigation();
+  const currentArtist = useArtistStore((state) => state.artists.find((a) => a.id === artistId));
+
   const handleReleaseClick = (release: ArtistRelease) => {
-    // Activate album and navigate to Albums view (AC-9)
+    // Activate album and navigate to Albums view
     useAlbumStore.getState().setActiveAlbumId(release.id);
+    navigateToAlbum(release.title, release.id, currentArtist?.name);
     onNavigate?.("Albums");
   };
 
@@ -126,6 +132,7 @@ export function ArtistDiscography({ artistId, onNavigate }: ArtistDiscographyPro
             <DiscographyCard
               key={release.id}
               release={release}
+              artistName={currentArtist?.name}
               onClick={() => handleReleaseClick(release)}
             />
           ))}
@@ -137,19 +144,30 @@ export function ArtistDiscography({ artistId, onNavigate }: ArtistDiscographyPro
 
 interface DiscographyCardProps {
   release: ArtistRelease;
+  artistName?: string;
   onClick: () => void;
 }
 
-function DiscographyCard({ release, onClick }: DiscographyCardProps) {
+function DiscographyCard({ release, artistName, onClick }: DiscographyCardProps) {
   const [imageError, setImageError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   const hasImage = Boolean(release.coverUrl) && !imageError;
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <article
+      tabIndex={0}
+      role="article"
       aria-label={`${release.title} (${release.type}, ${release.releaseYear})`}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
@@ -218,7 +236,12 @@ function DiscographyCard({ release, onClick }: DiscographyCardProps) {
           }}
           title={release.title}
         >
-          {release.title}
+          <AlbumLink
+            title={release.title}
+            albumId={release.id}
+            artistName={artistName}
+            className="hover:text-[var(--accent)]"
+          />
         </span>
         <div
           style={{

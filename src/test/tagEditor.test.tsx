@@ -6,6 +6,10 @@ import { useTagEditorStore } from "../store/useTagEditorStore";
 import { useAlbumStore } from "../store/useAlbumStore";
 import { useLibraryStore } from "../store/useLibraryStore";
 import { usePlayerStore } from "../store/usePlayerStore";
+import { useArtistStore } from "../store/useArtistStore";
+import { ArtistPopularTrackRow } from "../components/artists/ArtistPopularTrackRow";
+import { AlbumTrackRow } from "../components/albums/AlbumTrackRow";
+import { TrackTable } from "../components/home/TrackTable";
 import { taggerSync } from "../services/taggerSync";
 import type { TrackDto } from "../types/database";
 import type { Album } from "../types/album";
@@ -359,5 +363,177 @@ describe("Audio Metadata Tag Editor Frontend (Feature 25)", () => {
     const playerTrack = usePlayerStore.getState().currentTrack;
     expect(playerTrack?.title).toBe("Synchronized Track Title");
     expect(playerTrack?.artist).toBe("Synchronized Artist");
+  });
+  it("ArtistPopularTrackRow displays Edit Song Info instead of Copy Song Info and triggers single track editor", async () => {
+    const openSpy = vi.spyOn(useTagEditorStore.getState(), "openTrackEditor");
+    const mockTrack = {
+      id: "amina-pop-1",
+      artistId: "artist-amina-v",
+      artistName: "Amina V",
+      title: "Solitary Horizon",
+      albumId: "album-1",
+      albumTitle: "Timeless Vibrations",
+      coverUrl: "https://example.com/cover.jpg",
+      playCount: 12000,
+      duration: 214,
+      isLiked: true,
+      audioUrl: "/audio/sample-1.mp3",
+    };
+
+    render(
+      <div>
+        <TagEditorModal />
+        <ArtistPopularTrackRow track={mockTrack} rank={1} onPlay={() => {}} />
+      </div>
+    );
+
+    const moreBtn = screen.getByRole("button", { name: /more options for solitary horizon/i });
+    fireEvent.click(moreBtn);
+
+    // Assert "Copy Song Info" is NOT present
+    expect(screen.queryByText(/copy song info/i)).toBeNull();
+
+    // Assert "Edit Song Info" is present
+    const editItem = screen.getByRole("menuitem", { name: /edit song info/i });
+    expect(editItem).toBeDefined();
+
+    await act(async () => {
+      fireEvent.click(editItem);
+    });
+
+    expect(openSpy).toHaveBeenCalledWith("amina-pop-1", "/audio/sample-1.mp3");
+    expect(await screen.findByRole("dialog")).toBeDefined();
+    expect(screen.getByText("Edit Audio Metadata")).toBeDefined();
+  });
+
+  it("AlbumTrackRow displays 3 dots menu with Edit Song Info and triggers single track editor", async () => {
+    const openSpy = vi.spyOn(useTagEditorStore.getState(), "openTrackEditor");
+    const mockAlbumTrack = {
+      id: "alb-trk-1",
+      title: "Desert Mirage",
+      artist: "Dune Walker",
+      album: "Sands of Time",
+      albumId: "album-desert",
+      discNumber: 1,
+      trackNumber: 1,
+      duration: 180,
+      audioUrl: "/audio/desert.mp3",
+    };
+
+    render(
+      <AlbumTrackRow track={mockAlbumTrack} albumArtistName="Dune Walker" onPlay={() => {}} />
+    );
+
+    const moreBtn = screen.getByRole("button", { name: /more options for desert mirage/i });
+    fireEvent.click(moreBtn);
+
+    const editItem = screen.getByRole("menuitem", { name: /edit song info/i });
+    expect(editItem).toBeDefined();
+
+    fireEvent.click(editItem);
+    expect(openSpy).toHaveBeenCalledWith("alb-trk-1", "/audio/desert.mp3");
+  });
+
+  it("TrackTable displays 3 dots menu with Edit Song Info and triggers single track editor", async () => {
+    const openSpy = vi.spyOn(useTagEditorStore.getState(), "openTrackEditor");
+    const mockTrack = {
+      id: "home-trk-1",
+      title: "Sunset Boulevard",
+      artist: "Neon Skyline",
+      album: "City Lights",
+      durationSeconds: 210,
+      artworkUrl: "/covers/city.jpg",
+      playsCount: 4200,
+      isLiked: false,
+      filePath: "C:\\Music\\Sunset.mp3",
+    };
+
+    render(<TrackTable tracks={[mockTrack]} />);
+
+    const moreBtn = screen.getByRole("button", { name: /more options for sunset boulevard/i });
+    fireEvent.click(moreBtn);
+
+    const editItem = screen.getByRole("menuitem", { name: /edit song info/i });
+    expect(editItem).toBeDefined();
+
+    fireEvent.click(editItem);
+    expect(openSpy).toHaveBeenCalledWith("home-trk-1", "C:\\Music\\Sunset.mp3");
+  });
+
+  it("synchronizes audio tag edits to useArtistStore and usePlayerStore popular tracks", () => {
+    const mockTrackDto: TrackDto = {
+      id: "trk-pop-edit-1",
+      file_path: "C:\\Music\\PopEdit.mp3",
+      title: "Updated Popular Track Title",
+      artist_id: "art-1",
+      artist_name: "Updated Popular Artist",
+      album_id: "alb-1",
+      album_name: "Updated Album",
+      album_artist: "Updated Popular Artist",
+      duration: 200,
+      year: 2026,
+      genre: "Synthwave",
+      disc_number: 1,
+      track_number: 1,
+      bitrate: 320,
+      format: "mp3",
+      cover_art_path: "covers/pop.jpg",
+      is_favorite: true,
+      liked_at: 1000,
+      play_count: 50,
+      last_played_at: null,
+      file_modified_at: 2000,
+      file_size_bytes: 4000000,
+      folder_id: "f-1",
+      created_at: 1000,
+      updated_at: 2000,
+    };
+
+    act(() => {
+      useArtistStore.setState({
+        artistPopularTracks: {
+          "art-1": [
+            {
+              id: "trk-pop-edit-1",
+              artistId: "art-1",
+              artistName: "Old Artist",
+              title: "Old Popular Track",
+              albumId: "alb-1",
+              albumTitle: "Old Album",
+              coverUrl: "",
+              playCount: 50,
+              duration: 200,
+            },
+          ],
+        },
+      });
+
+      usePlayerStore.setState({
+        popularTracks: [
+          {
+            id: "trk-pop-edit-1",
+            title: "Old Popular Track",
+            artist: "Old Artist",
+            album: "Old Album",
+            durationSeconds: 200,
+            artworkUrl: "",
+            playsCount: 50,
+            isLiked: false,
+          },
+        ],
+      });
+    });
+
+    act(() => {
+      taggerSync.broadcast({ trackIds: ["trk-pop-edit-1"], albumIds: ["alb-1"] }, [mockTrackDto]);
+    });
+
+    const artistTrack = useArtistStore.getState().artistPopularTracks["art-1"]?.[0];
+    expect(artistTrack?.title).toBe("Updated Popular Track Title");
+    expect(artistTrack?.artistName).toBe("Updated Popular Artist");
+
+    const playerPopular = usePlayerStore.getState().popularTracks[0];
+    expect(playerPopular?.title).toBe("Updated Popular Track Title");
+    expect(playerPopular?.artist).toBe("Updated Popular Artist");
   });
 });

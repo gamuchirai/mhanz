@@ -19,6 +19,7 @@ import {
 import { dbGetArtists, dbGetArtistProfile } from "../services/db";
 import { formatCoverArtUrl, onScanCompleted } from "../services/scanner";
 import { usePlayerStore } from "./usePlayerStore";
+import { taggerSync } from "../services/taggerSync";
 
 /**
  * Maps SQLite ArtistDto to frontend Artist domain model.
@@ -454,3 +455,27 @@ export function useFollowedArtistIds(): string[] {
 export function useIsArtistFollowed(artistId: string): boolean {
   return useArtistStore((state) => state.followedArtistIds.includes(artistId));
 }
+
+// Synchronize audio tag edits for artist popular tracks
+taggerSync.subscribe((event, updatedTracks) => {
+  if (updatedTracks && updatedTracks.length > 0) {
+    useArtistStore.setState((state) => {
+      const updatedPop = { ...state.artistPopularTracks };
+      for (const [artId, tracks] of Object.entries(updatedPop)) {
+        updatedPop[artId] = tracks.map((t) => {
+          const found = updatedTracks.find((ut) => ut.id === t.id);
+          return found
+            ? {
+                ...t,
+                title: found.title,
+                artistName: found.artist_name,
+                albumTitle: found.album_name || t.albumTitle,
+                coverUrl: found.cover_art_path ? formatCoverArtUrl(found.cover_art_path) : t.coverUrl,
+              }
+            : t;
+        });
+      }
+      return { artistPopularTracks: updatedPop };
+    });
+  }
+});

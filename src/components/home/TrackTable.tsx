@@ -4,6 +4,7 @@ import { usePlayerStore } from "../../store/usePlayerStore";
 import { MarqueeText } from "./MarqueeText";
 import { formatDuration } from "../../utils/format";
 import { ArtistLink } from "../common/ArtistLink";
+import { TrackRowMenuButton } from "../tagger";
 
 interface TrackTableProps {
   tracks: Track[];
@@ -146,7 +147,7 @@ function TrackRow({
       onMouseLeave={() => setIsHovered(false)}
       style={{
         display: "grid",
-        gridTemplateColumns: "26px 42px 1fr auto 36px",
+        gridTemplateColumns: "26px 42px 1fr auto 68px",
         alignItems: "center",
         gap: "14px",
         padding: "8px 10px",
@@ -265,35 +266,49 @@ function TrackRow({
         {formatDuration(track.durationSeconds)}
       </span>
 
-      {/* Heart / Like toggle */}
-      <button
-        aria-label={isLiked ? `Unlike ${track.title}` : `Like ${track.title}`}
-        onClick={onToggleLike}
+      {/* Actions: Heart / Like toggle and 3 Dots Menu */}
+      <div
         style={{
-          background: "none",
-          border: 0,
-          padding: "8px",
-          color: isLiked ? "var(--accent)" : "var(--m)",
-          display: "grid",
-          cursor: "pointer",
-          borderRadius: "50%",
-          transition: "transform 0.15s ease, color 0.15s ease",
-          transform: isHovered && isLiked ? "scale(1.15)" : "none",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          gap: "2px",
         }}
       >
-        <svg
-          className="i"
-          width="16"
-          height="16"
-          aria-hidden="true"
+        <button
+          aria-label={isLiked ? `Unlike ${track.title}` : `Like ${track.title}`}
+          onClick={onToggleLike}
           style={{
-            fill: isLiked ? "var(--accent)" : "none",
-            color: isLiked ? "var(--accent)" : "inherit",
+            background: "none",
+            border: 0,
+            padding: "8px",
+            color: isLiked ? "var(--accent)" : "var(--m)",
+            display: "grid",
+            cursor: "pointer",
+            borderRadius: "50%",
+            transition: "transform 0.15s ease, color 0.15s ease",
+            transform: isHovered && isLiked ? "scale(1.15)" : "none",
           }}
         >
-          <use href="#heart" />
-        </svg>
-      </button>
+          <svg
+            className="i"
+            width="16"
+            height="16"
+            aria-hidden="true"
+            style={{
+              fill: isLiked ? "var(--accent)" : "none",
+              color: isLiked ? "var(--accent)" : "inherit",
+            }}
+          >
+            <use href="#heart" />
+          </svg>
+        </button>
+        <TrackRowMenuButton
+          trackId={track.id}
+          filePath={track.filePath}
+          trackTitle={track.title}
+        />
+      </div>
     </div>
   );
 }

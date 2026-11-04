@@ -113,7 +113,7 @@ export function Artists({ onNavigate }: ArtistsPageProps = {}) {
         ) : (
           <>
             <ArtistProfileBanner artist={activeArtist} />
-            <ArtistPopularTracks artistId={activeArtist.id} />
+            <ArtistPopularTracks artistId={activeArtist.id} onNavigate={onNavigate} />
             <ArtistDiscography artistId={activeArtist.id} onNavigate={onNavigate} />
             <ArtistBioCard artist={activeArtist} />
           </>

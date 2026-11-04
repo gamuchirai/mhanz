@@ -54,7 +54,7 @@ export function AlbumTrackList({ album }: AlbumTrackListProps) {
         role="row"
         style={{
           display: "grid",
-          gridTemplateColumns: "40px 1fr 120px 70px 48px",
+          gridTemplateColumns: "40px 1fr 120px 70px 72px",
           alignItems: "center",
           padding: "8px 12px",
           borderBottom: "1px solid rgba(255, 255, 255, 0.08)",

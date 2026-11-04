@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { ArtistPopularTrack } from "../../types/artists";
 import { useCurrentTrack, useIsPlaying, usePlayerStore } from "../../store/usePlayerStore";
+import { useEntityNavigation } from "../../hooks/useEntityNavigation";
+import { useTagEditorStore } from "../../store/useTagEditorStore";
 import { formatDuration } from "../../utils/format";
 import { formatWithCommas } from "../../utils/avatarUtils";
 import { AlbumLink } from "../common/AlbumLink";
@@ -9,13 +11,22 @@ interface ArtistPopularTrackRowProps {
   track: ArtistPopularTrack;
   rank: number;
   onPlay: () => void;
+  onNavigate?: (nav: string) => void;
 }
 
-export function ArtistPopularTrackRow({ track, rank, onPlay }: ArtistPopularTrackRowProps) {
+export function ArtistPopularTrackRow({
+  track,
+  rank,
+  onPlay,
+  onNavigate,
+}: ArtistPopularTrackRowProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuContainerRef = useRef<HTMLDivElement>(null);
+  const openTrackEditor = useTagEditorStore((state) => state.openTrackEditor);
 
+  const { navigateToAlbum } = useEntityNavigation();
   const currentTrack = useCurrentTrack();
   const isGlobalPlaying = useIsPlaying();
   const likedTrackIds = usePlayerStore((state) => state.likedTrackIds);
@@ -36,6 +47,32 @@ export function ArtistPopularTrackRow({ track, rank, onPlay }: ArtistPopularTrac
       toggleLike(track.id);
     }
   };
+
+  const handleNavigateToAlbum = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    navigateToAlbum(track.albumTitle, track.albumId, track.artistName);
+    onNavigate?.("Albums");
+  };
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (menuContainerRef.current && !menuContainerRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsMenuOpen(false);
+      }
+    };
+    window.addEventListener("click", handleOutsideClick);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("click", handleOutsideClick);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMenuOpen]);
 
   const hasImage = Boolean(track.coverUrl) && !imageError;
 
@@ -111,8 +148,12 @@ export function ArtistPopularTrackRow({ track, rank, onPlay }: ArtistPopularTrac
         )}
       </div>
 
-      {/* Column 2: Cover Art Thumbnail */}
-      <div
+      {/* Column 2: Cover Art Thumbnail (Clickable to view album) */}
+      <button
+        type="button"
+        onClick={handleNavigateToAlbum}
+        aria-label={`View album ${track.albumTitle || track.title}`}
+        title={track.albumTitle ? `View album ${track.albumTitle}` : "View album"}
         style={{
           width: "38px",
           height: "38px",
@@ -123,7 +164,11 @@ export function ArtistPopularTrackRow({ track, rank, onPlay }: ArtistPopularTrac
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
+          border: "none",
+          padding: 0,
+          cursor: "pointer",
         }}
+        className="transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
       >
         {hasImage ? (
           <img
@@ -147,7 +192,7 @@ export function ArtistPopularTrackRow({ track, rank, onPlay }: ArtistPopularTrac
             <use href="#disc" />
           </svg>
         )}
-      </div>
+      </button>
 
       {/* Column 3: Title and Album Name */}
       <div
@@ -182,7 +227,12 @@ export function ArtistPopularTrackRow({ track, rank, onPlay }: ArtistPopularTrac
           }}
           title={track.albumTitle}
         >
-          <AlbumLink title={track.albumTitle} albumId={track.albumId} artistName={track.artistName} />
+          <AlbumLink
+            title={track.albumTitle}
+            albumId={track.albumId}
+            artistName={track.artistName}
+            className="hover:text-[var(--accent)]"
+          />
         </span>
       </div>
 
@@ -238,7 +288,10 @@ export function ArtistPopularTrackRow({ track, rank, onPlay }: ArtistPopularTrac
       </div>
 
       {/* Column 7: More Options Button */}
-      <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
+      <div
+        ref={menuContainerRef}
+        style={{ display: "flex", justifyContent: "center", position: "relative" }}
+      >
         <button
           type="button"
           onClick={(e) => {
@@ -309,8 +362,7 @@ export function ArtistPopularTrackRow({ track, rank, onPlay }: ArtistPopularTrac
               type="button"
               role="menuitem"
               onClick={(e) => {
-                e.stopPropagation();
-                navigator.clipboard?.writeText?.(`${track.title} by ${track.artistName}`);
+                handleNavigateToAlbum(e);
                 setIsMenuOpen(false);
               }}
               style={{
@@ -326,7 +378,50 @@ export function ArtistPopularTrackRow({ track, rank, onPlay }: ArtistPopularTrac
               onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
-              Copy Song Info
+              Go to Album
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              aria-label="Edit Song Info"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMenuOpen(false);
+                openTrackEditor(track.id, track.filePath || track.audioUrl);
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "6px 10px",
+                background: "transparent",
+                border: "none",
+                color: "var(--t)",
+                fontSize: "12px",
+                textAlign: "left",
+                borderRadius: "4px",
+                cursor: "pointer",
+                width: "100%",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              <svg
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
+                />
+              </svg>
+              <span>Edit Song Info</span>
             </button>
           </div>
         )}

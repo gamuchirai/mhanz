@@ -10,6 +10,7 @@ import { favoritesSync } from "../services/favoritesSync";
 import { taggerSync } from "../services/taggerSync";
 import { formatCoverArtUrl, onScanCompleted } from "../services/scanner";
 import { usePlayerStore } from "./usePlayerStore";
+import { useArtistStore } from "./useArtistStore";
 
 /**
  * Maps SQLite AlbumDto to frontend Album domain model.
@@ -161,17 +162,21 @@ export const useAlbumStore = create<AlbumStoreState>()((set, get) => ({
       );
 
       // Keep album catalog duration and favorite state synchronized
-      const updatedAlbums = get().albums.map((a) => {
-        if (a.id === albumId) {
-          return {
-            ...a,
-            trackCount: detail.album.track_count,
-            totalDuration: Math.round(detail.album.total_duration),
-            isFavorite: detail.album.is_favorite,
-          };
-        }
-        return a;
-      });
+      const albumExists = get().albums.some((a) => a.id === albumId);
+      const newAlbum = albumExists ? null : mapAlbumDtoToAlbum(detail.album);
+      const updatedAlbums = albumExists
+        ? get().albums.map((a) => {
+            if (a.id === albumId) {
+              return {
+                ...a,
+                trackCount: detail.album.track_count,
+                totalDuration: Math.round(detail.album.total_duration),
+                isFavorite: detail.album.is_favorite,
+              };
+            }
+            return a;
+          })
+        : [...get().albums, newAlbum!];
 
       const nextFavIds = detail.album.is_favorite
         ? Array.from(new Set([...get().favoriteAlbumIds, albumId]))
@@ -537,14 +542,39 @@ export function useAlbumTracks(albumId: string | null): AlbumTrack[] {
   const rawTracks = useAlbumStore((state) => (albumId ? state.albumTracks[albumId] : undefined));
 
   return useMemo(() => {
-    if (!rawTracks) return [];
-    return [...rawTracks].sort((a, b) => {
-      if (a.discNumber !== b.discNumber) {
-        return a.discNumber - b.discNumber;
+    if (rawTracks && rawTracks.length > 0) {
+      return [...rawTracks].sort((a, b) => {
+        if (a.discNumber !== b.discNumber) {
+          return a.discNumber - b.discNumber;
+        }
+        return a.trackNumber - b.trackNumber;
+      });
+    }
+
+    if (albumId) {
+      // Fallback: check if popular tracks in useArtistStore contain tracks for this release
+      const allPopularTracks = Object.values(useArtistStore.getState().artistPopularTracks).flat();
+      const matching = allPopularTracks.filter((t) => t.albumId === albumId);
+      if (matching.length > 0) {
+        return matching.map((t, idx) => ({
+          id: t.id,
+          title: t.title,
+          artist: t.artistName,
+          artistId: t.artistId,
+          album: t.albumTitle,
+          albumId: t.albumId,
+          discNumber: 1,
+          trackNumber: idx + 1,
+          duration: t.duration,
+          coverUrl: t.coverUrl,
+          audioUrl: t.audioUrl || "",
+          isLiked: Boolean(t.isLiked),
+        }));
       }
-      return a.trackNumber - b.trackNumber;
-    });
-  }, [rawTracks]);
+    }
+
+    return [];
+  }, [albumId, rawTracks]);
 }
 
 export function useFavoriteAlbumIds(): string[] {

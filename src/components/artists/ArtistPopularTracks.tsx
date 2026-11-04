@@ -4,9 +4,10 @@ import type { ArtistPopularTrack } from "../../types/artists";
 
 interface ArtistPopularTracksProps {
   artistId: string;
+  onNavigate?: (nav: string) => void;
 }
 
-export function ArtistPopularTracks({ artistId }: ArtistPopularTracksProps) {
+export function ArtistPopularTracks({ artistId, onNavigate }: ArtistPopularTracksProps) {
   const tracks = useArtistPopularTracks(artistId);
   const isPopularExpanded = useArtistStore((state) => state.isPopularExpanded);
   const togglePopularExpanded = useArtistStore((state) => state.togglePopularExpanded);
@@ -128,6 +129,7 @@ export function ArtistPopularTracks({ artistId }: ArtistPopularTracksProps) {
             track={track}
             rank={idx + 1}
             onPlay={() => handlePlayTrack(track, idx)}
+            onNavigate={onNavigate}
           />
         ))}
       </div>
