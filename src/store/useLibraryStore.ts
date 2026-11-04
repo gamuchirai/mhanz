@@ -330,8 +330,8 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
     try {
       const [foldersDto, tracksRes] = await Promise.all([dbGetFolders(), dbGetTracks(0, 500)]);
 
-      if (foldersDto && foldersDto.length > 0) {
-        const convertedTracks: LibraryTrack[] = tracksRes.items.map(mapTrackDtoToLibraryTrack);
+      if (Array.isArray(foldersDto)) {
+        const convertedTracks: LibraryTrack[] = (tracksRes?.items ?? []).map(mapTrackDtoToLibraryTrack);
         const convertedFolders: MusicFolder[] = foldersDto.map((f: FolderDto) => {
           const folderTracks = convertedTracks.filter((t: LibraryTrack) => t.folderId === f.id);
           const totalSize = folderTracks.reduce(
@@ -343,6 +343,10 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
 
         set({
           folders: convertedFolders,
+          selectedFolderId:
+            get().selectedFolderId && convertedFolders.some((f) => f.id === get().selectedFolderId)
+              ? get().selectedFolderId
+              : null,
           tracks: convertedTracks,
         });
       }
