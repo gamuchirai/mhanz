@@ -40,3 +40,16 @@ _Steps derived from spec 0010 acceptance criteria. `/check verify` runs these; `
 ## Additional verification
 * [x] Open the queue drawer, lyrics overlay, and settings dialog with the keyboard → focus moves into each overlay, Tab and Shift+Tab stay within it, and Escape returns focus to the opening control → AC-13
 * AC-13 also covers focus trapping inside each overlay and focus restoration to its opening control, verified by `src/test/overlays.test.tsx`
+
+
+## Verification update: SQLite preferences persistence (Finding P2-F2, updated 2026-11-05)
+### UI / manual
+- [ ] Open Settings modal from sidebar gear button → Audio Output Device section displays Coming Soon badge and notes that system default output is active → AC-12
+- [ ] Change crossfade duration and toggle volume normalisation in Settings modal → Changes persist to SQLite table `player_settings` and survive desktop app restart → AC-12
+
+### Commands
+- [ ] `npx vitest run src/test/settingsPersistence.test.tsx` → All 5 settings persistence and hydration tests pass cleanly → AC-12
+- [ ] `npm run typecheck` → TypeScript compiles with zero type errors across all stores and components → AC-12
+
+### Acceptance criteria coverage
+- AC-12: Desktop SQLite hydration and persistence covered by `src/test/settingsPersistence.test.tsx`, `useSettingsStore.initializeSettings`, and `dbSetSetting`

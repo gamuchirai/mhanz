@@ -11,17 +11,37 @@ export function AudioDeviceSelector() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-      <label
-        style={{
-          fontSize: "12px",
-          fontWeight: 600,
-          letterSpacing: ".06em",
-          color: "var(--m)",
-          textTransform: "uppercase",
-        }}
-      >
-        Audio Output Device
-      </label>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <label
+          style={{
+            fontSize: "12px",
+            fontWeight: 600,
+            letterSpacing: ".06em",
+            color: "var(--m)",
+            textTransform: "uppercase",
+          }}
+        >
+          Audio Output Device
+        </label>
+        <span
+          style={{
+            fontSize: "10px",
+            fontWeight: 600,
+            padding: "2px 8px",
+            borderRadius: "4px",
+            background: "rgba(240, 169, 130, 0.12)",
+            color: "var(--accent)",
+            letterSpacing: "0.04em",
+            textTransform: "uppercase",
+          }}
+        >
+          Coming Soon
+        </span>
+      </div>
+
+      <div style={{ fontSize: "11px", color: "var(--m)", marginBottom: "2px" }}>
+        System default audio output is active. Native device enumeration and routing will connect in an upcoming update.
+      </div>
 
       <div
         role="radiogroup"

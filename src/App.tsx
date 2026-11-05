@@ -20,6 +20,7 @@ import { useLikedSongsStore } from "./store/useLikedSongsStore";
 import { useAlbumStore } from "./store/useAlbumStore";
 import { useArtistStore } from "./store/useArtistStore";
 import { useSearchStore } from "./store/useSearchStore";
+import { useSettingsStore } from "./store/useSettingsStore";
 import {
   sanitizeNavView,
   useNavigationStore,
@@ -74,6 +75,10 @@ export function App() {
 
   useEffect(() => {
     // Hydrate persistent state from SQLite on initial boot
+    useSettingsStore
+      .getState()
+      .initializeSettings()
+      .catch(() => {});
     usePlaylistStore
       .getState()
       .initializePlaylists()

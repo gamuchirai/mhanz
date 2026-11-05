@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { isTauri } from "@tauri-apps/api/core";
 import type {
   AudioDevice,
   FullscreenViewMode,
@@ -6,11 +7,13 @@ import type {
   VisualizerStyle,
 } from "../types/overlays";
 import { defaultUserSettings, mockAudioDevices } from "../data/mockAudioDevices";
+import { dbGetSetting, dbSetSetting } from "../services/db";
 
 const SETTINGS_STORAGE_KEY = "Mutinhimira:settings:v1";
+const SQLITE_SETTINGS_KEY = "app_settings";
 
 /**
- * Validates and sanitizes raw data from local storage against the UserSettings schema.
+ * Validates and sanitizes raw data against the UserSettings schema.
  */
 function sanitizeLoadedSettings(raw: unknown): UserSettings {
   if (!raw || typeof raw !== "object") {
@@ -94,22 +97,33 @@ function loadPersistedSettings(): UserSettings {
 }
 
 /**
- * Writes settings to local storage safely.
+ * Writes settings to local storage safely and synchronizes with SQLite in desktop environments.
  */
 function persistSettings(settings: UserSettings): void {
-  if (typeof window === "undefined" || !window.localStorage) {
-    return;
+  if (typeof window !== "undefined" && window.localStorage) {
+    try {
+      window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+    } catch {
+      // Graceful fallback if storage quota exceeded or disabled
+    }
   }
-  try {
-    window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
-  } catch {
-    // Graceful fallback if storage quota exceeded or disabled
+
+  if (isTauri()) {
+    const serialized = JSON.stringify(settings);
+    dbSetSetting(SQLITE_SETTINGS_KEY, serialized).catch((err) => {
+      console.error("Failed to persist settings to SQLite:", err);
+    });
+    dbSetSetting("volume_normalization", String(settings.volumeNormalization)).catch(() => {});
+    dbSetSetting("crossfade_seconds", String(settings.crossfadeSeconds)).catch(() => {});
+    dbSetSetting("visualizer_style", settings.visualizerStyle).catch(() => {});
   }
 }
 
 interface SettingsState {
   settings: UserSettings;
   availableDevices: AudioDevice[];
+  isHydrated: boolean;
+  initializeSettings: () => Promise<void>;
   setOutputDevice: (deviceId: string) => void;
   setVolumeNormalization: (enabled: boolean) => void;
   setCrossfade: (seconds: number) => void;
@@ -124,6 +138,40 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>()((set, get) => ({
   settings: loadPersistedSettings(),
   availableDevices: mockAudioDevices,
+  isHydrated: false,
+
+  initializeSettings: async () => {
+    if (!isTauri()) {
+      set({ isHydrated: true });
+      return;
+    }
+
+    try {
+      const raw = await dbGetSetting(SQLITE_SETTINGS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const sanitized = sanitizeLoadedSettings(parsed);
+        if (typeof window !== "undefined" && window.localStorage) {
+          try {
+            window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(sanitized));
+          } catch {
+            // Graceful fallback
+          }
+        }
+        set({ settings: sanitized, isHydrated: true });
+      } else {
+        const current = get().settings;
+        await dbSetSetting(SQLITE_SETTINGS_KEY, JSON.stringify(current));
+        await dbSetSetting("volume_normalization", String(current.volumeNormalization));
+        await dbSetSetting("crossfade_seconds", String(current.crossfadeSeconds));
+        await dbSetSetting("visualizer_style", current.visualizerStyle);
+        set({ isHydrated: true });
+      }
+    } catch (err) {
+      console.error("Failed to initialize settings from SQLite:", err);
+      set({ isHydrated: true });
+    }
+  },
 
   setOutputDevice: (deviceId: string) => {
     const deviceExists = get().availableDevices.some((d) => d.id === deviceId);
@@ -243,3 +291,4 @@ export const useFullscreenDefaultView = () =>
   useSettingsStore((state) => state.settings.fullscreenDefaultView);
 export const useFullscreenAutoHideChrome = () =>
   useSettingsStore((state) => state.settings.fullscreenAutoHideChrome);
+export const useIsSettingsHydrated = () => useSettingsStore((state) => state.isHydrated);
