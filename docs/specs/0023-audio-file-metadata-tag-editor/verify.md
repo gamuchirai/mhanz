@@ -1,4 +1,4 @@
-# Verify: Audio file metadata tag editor · spec 0023 · updated 2026-11-03
+# Verify: Audio file metadata tag editor · spec 0023 · updated 2026-11-05
 _Steps derived from spec 0023 acceptance criteria. `/check verify` runs these; `/test` locks the durable ones._
 
 ## UI and manual
@@ -19,7 +19,13 @@ _Steps derived from spec 0023 acceptance criteria. `/check verify` runs these; `
 - [x] `npm test` → verify full Vitest frontend suite executes with zero failures → AC-2, AC-3, AC-4, AC-5, AC-11
 - [x] `cargo test` → verify complete Rust backend test suite passes → AC-1, AC-5, AC-6, AC-7, AC-8, AC-10
 - [x] `npm run typecheck` → verify TypeScript compilation passes cleanly → AC-1, AC-2, AC-3, AC-4, AC-11
-- [ ] `npm run lint` → verify ESLint check passes with zero errors → AC-2, AC-3, AC-4
+- [x] `npm run lint` → verify ESLint check passes with zero errors → AC-2, AC-3, AC-4
+
+## Verification notes
+- `cargo test` ran from `src-tauri` and passed all 38 tests, including all 7 tagger tests.
+- `npm test` passed all 314 tests across 29 files. The focused tag editor test file passed all 13 tests.
+- `npm run typecheck` and `npm run build` passed. `npm run lint` reported zero errors and two warnings outside the tag editor.
+- The remaining UI steps that write real audio files, use native file dialogs, simulate external file locks, or preserve live playback still need a native app run with disposable audio copies. They were not tested against files in your library.
 
 ## Acceptance criteria coverage
 - AC-1 (Physical tag probing on modal launch): covered by UI modal launch test, `cargo test tagger::tests::test_lofty_tag_operations`, and `npm test src/test/tagEditor.test.tsx`

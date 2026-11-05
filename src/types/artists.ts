@@ -36,6 +36,7 @@ export interface ArtistPopularTrack {
   duration: number; // in seconds
   isLiked?: boolean;
   audioUrl?: string;
+  filePath?: string;
 }
 
 export interface ArtistRelease {

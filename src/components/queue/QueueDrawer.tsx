@@ -1,18 +1,24 @@
+import { useRef } from "react";
 import { useOverlayStore } from "../../store/useOverlayStore";
 import { usePlayerStore, useUpcomingQueue } from "../../store/usePlayerStore";
+import { useModalFocusTrap } from "../../hooks/useModalFocusTrap";
 import { QueueNowPlayingCard } from "./QueueNowPlayingCard";
 import { QueueTrackList } from "./QueueTrackList";
 
 export function QueueDrawer() {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const closeOverlay = useOverlayStore((state) => state.closeOverlay);
   const upcomingQueue = useUpcomingQueue();
   const clearUpcomingQueue = usePlayerStore((state) => state.clearUpcomingQueue);
+  useModalFocusTrap(dialogRef);
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-label="Playback queue drawer"
+      tabIndex={-1}
       style={{
         position: "fixed",
         top: 0,

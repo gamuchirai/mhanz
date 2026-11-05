@@ -311,23 +311,61 @@ describe("Queue, Lyrics, and Settings Overlays", () => {
     render(<App />);
 
     // Open settings modal
-    fireEvent.click(screen.getByLabelText("Open audio preferences settings"));
+    const settingsTrigger = screen.getByLabelText("Open audio preferences settings");
+    settingsTrigger.focus();
+    fireEvent.click(settingsTrigger);
     expect(useOverlayStore.getState().activeOverlay).toBe("settings");
+
+    const closeSettings = screen.getByLabelText("Close settings");
+    const doneButton = screen.getByText("Done");
+    expect(document.activeElement).toBe(closeSettings);
+
+    fireEvent.keyDown(closeSettings, { key: "Tab", shiftKey: true });
+    expect(document.activeElement).toBe(doneButton);
+
+    fireEvent.keyDown(doneButton, { key: "Tab" });
+    expect(document.activeElement).toBe(closeSettings);
 
     // Press Escape key
     fireEvent.keyDown(window, { key: "Escape" });
     expect(useOverlayStore.getState().activeOverlay).toBe("none");
+    expect(document.activeElement).toBe(settingsTrigger);
     expect(
       screen.queryByRole("dialog", { name: "Audio preferences settings" })
     ).not.toBeInTheDocument();
 
     // Open queue drawer
-    fireEvent.click(screen.getByLabelText("Toggle playback queue drawer"));
+    const queueTrigger = screen.getByLabelText("Toggle playback queue drawer");
+    queueTrigger.focus();
+    fireEvent.click(queueTrigger);
     expect(useOverlayStore.getState().activeOverlay).toBe("queue");
+
+    const queueDialog = screen.getByRole("dialog", { name: "Playback queue drawer" });
+    const queueButtons = queueDialog.querySelectorAll("button");
+    expect(queueDialog.contains(document.activeElement)).toBe(true);
+    fireEvent.keyDown(document.activeElement!, { key: "Tab", shiftKey: true });
+    expect(document.activeElement).toBe(queueButtons[queueButtons.length - 1]);
 
     // Press Escape key
     fireEvent.keyDown(window, { key: "Escape" });
     expect(useOverlayStore.getState().activeOverlay).toBe("none");
+    expect(document.activeElement).toBe(queueTrigger);
     expect(screen.queryByLabelText("Playback queue drawer")).not.toBeInTheDocument();
+
+    const lyricsTrigger = screen.getByLabelText("Toggle lyrics overlay");
+    lyricsTrigger.focus();
+    fireEvent.click(lyricsTrigger);
+    const lyricsDialog = screen.getByRole("dialog", { name: "Lyrics overlay" });
+    const lyricsFocusableElements = lyricsDialog.querySelectorAll<HTMLElement>(
+      "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
+    );
+    expect(lyricsDialog.contains(document.activeElement)).toBe(true);
+    fireEvent.keyDown(lyricsFocusableElements[lyricsFocusableElements.length - 1], {
+      key: "Tab",
+    });
+    expect(document.activeElement).toBe(lyricsFocusableElements[0]);
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(document.activeElement).toBe(lyricsTrigger);
   });
 });

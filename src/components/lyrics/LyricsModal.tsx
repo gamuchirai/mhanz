@@ -4,6 +4,7 @@ import { useOverlayStore } from "../../store/useOverlayStore";
 import { useSettingsStore } from "../../store/useSettingsStore";
 import { useLyricsStore } from "../../store/useLyricsStore";
 import { getLyricsForTrack } from "../../data/mockLyrics";
+import { useModalFocusTrap } from "../../hooks/useModalFocusTrap";
 import { LyricsLineRow } from "./LyricsLineRow";
 import { EmptyLyricsState } from "./EmptyLyricsState";
 import { ArtistLink } from "../common/ArtistLink";
@@ -24,10 +25,12 @@ export function LyricsModal() {
   } = useLyricsStore();
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
   const isUserScrollingRef = useRef<boolean>(false);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [activeElement, setActiveElement] = useState<HTMLButtonElement | null>(null);
+  useModalFocusTrap(dialogRef);
 
   // Trigger reactive fetch on track switch
   useEffect(() => {
@@ -127,9 +130,11 @@ export function LyricsModal() {
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-label="Lyrics overlay"
+      tabIndex={-1}
       style={{
         position: "fixed",
         inset: 0,

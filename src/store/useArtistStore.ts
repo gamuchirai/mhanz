@@ -62,6 +62,7 @@ export function mapTrackDtoToArtistPopularTrack(t: TrackDto): ArtistPopularTrack
     duration: Math.round(t.duration),
     isLiked: t.is_favorite,
     audioUrl: t.file_path,
+    filePath: t.file_path,
   };
 }
 
@@ -457,7 +458,7 @@ export function useIsArtistFollowed(artistId: string): boolean {
 }
 
 // Synchronize audio tag edits for artist popular tracks
-taggerSync.subscribe((event, updatedTracks) => {
+taggerSync.subscribe((_event, updatedTracks) => {
   if (updatedTracks && updatedTracks.length > 0) {
     useArtistStore.setState((state) => {
       const updatedPop = { ...state.artistPopularTracks };

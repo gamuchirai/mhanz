@@ -1,15 +1,19 @@
+import { useRef } from "react";
 import { useOverlayStore } from "../../store/useOverlayStore";
 import { useSettingsStore, useUserSettings } from "../../store/useSettingsStore";
+import { useModalFocusTrap } from "../../hooks/useModalFocusTrap";
 import { AudioDeviceSelector } from "./AudioDeviceSelector";
 import { CrossfadeSlider } from "./CrossfadeSlider";
 import { VisualizerPicker } from "./VisualizerPicker";
 
 export function SettingsModal() {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const closeOverlay = useOverlayStore((state) => state.closeOverlay);
   const settings = useUserSettings();
   const setVolumeNormalization = useSettingsStore((state) => state.setVolumeNormalization);
   const setNotificationsEnabled = useSettingsStore((state) => state.setNotificationsEnabled);
   const resetToDefaults = useSettingsStore((state) => state.resetToDefaults);
+  useModalFocusTrap(dialogRef);
 
   return (
     <div
@@ -29,9 +33,11 @@ export function SettingsModal() {
       }}
     >
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label="Audio preferences settings"
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "100%",
