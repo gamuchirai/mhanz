@@ -15,10 +15,7 @@ import type {
   SaveTrackTagsDto,
 } from "../types/tagger";
 import { initialLibraryTracks } from "../data/libraryFixtures";
-import { initialAlbumTracks } from "../data/mockAlbums";
-import { initialArtistPopularTracks } from "../data/artistFixtures";
-import { popularTracksList } from "../data/homeFixtures";
-import { initialLikedTracks } from "../data/likedFixtures";
+
 import { taggerSync } from "./taggerSync";
 
 // In memory fallback store for tests and mock environments

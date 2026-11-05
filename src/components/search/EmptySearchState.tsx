@@ -3,6 +3,7 @@ import { useSearchStore } from "../../store/useSearchStore";
 
 export function EmptySearchState() {
   const query = useSearchStore((state) => state.query);
+  const error = useSearchStore((state) => state.error);
   const clearSearch = useSearchStore((state) => state.clearSearch);
   const selectGenre = useSearchStore((state) => state.selectGenre);
 
@@ -11,7 +12,7 @@ export function EmptySearchState() {
   return (
     <div
       role="region"
-      aria-label="No search results"
+      aria-label={error ? "Search failure state" : "No search results"}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -20,7 +21,7 @@ export function EmptySearchState() {
         padding: "60px 24px",
         textAlign: "center",
         background: "rgba(24, 17, 15, 0.4)",
-        border: "1px dashed var(--l)",
+        border: error ? "1px solid rgba(239, 68, 68, 0.3)" : "1px dashed var(--l)",
         borderRadius: "16px",
         margin: "12px 0",
       }}
@@ -30,8 +31,8 @@ export function EmptySearchState() {
           width: "56px",
           height: "56px",
           borderRadius: "50%",
-          background: "rgba(240, 169, 130, 0.1)",
-          color: "var(--accent)",
+          background: error ? "rgba(239, 68, 68, 0.1)" : "rgba(240, 169, 130, 0.1)",
+          color: error ? "#ef4444" : "var(--accent)",
           display: "grid",
           placeItems: "center",
           marginBottom: "16px",
@@ -50,7 +51,7 @@ export function EmptySearchState() {
           margin: "0 0 8px 0",
         }}
       >
-        No results found for &ldquo;{query}&rdquo;
+        {error ? "Search failed" : `No results found for “${query}”`}
       </h3>
 
       <p
@@ -62,8 +63,9 @@ export function EmptySearchState() {
           lineHeight: "1.5",
         }}
       >
-        Check for typos, try broader keywords, or search for artist names and albums. You can also
-        explore popular genres below.
+        {error
+          ? `Could not complete search due to a database error (${error}). Try searching again or explore popular genres below.`
+          : "Check for typos, try broader keywords, or search for artist names and albums. You can also explore popular genres below."}
       </p>
 
       {/* Quick Jump Buttons to Top Genres */}

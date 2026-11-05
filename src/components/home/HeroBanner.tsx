@@ -1,4 +1,4 @@
-import { useState, useEffect, type MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
 import { ShowcaseItem } from "../../types/discovery";
 import { AlbumLink } from "../common/AlbumLink";
 import { usePlayerStore } from "../../store/usePlayerStore";
@@ -15,7 +15,7 @@ export function HeroBanner({ item }: HeroBannerProps) {
   const toggleLike = usePlayerStore((state) => state.toggleLike);
   const likedTrackIds = usePlayerStore((state) => state.likedTrackIds);
 
-  const [imageError, setImageError] = useState(false);
+  const [failedBannerImg, setFailedBannerImg] = useState<string | null>(null);
 
   const track = item.track;
   const trackId = track?.id ?? item.targetId;
@@ -25,9 +25,9 @@ export function HeroBanner({ item }: HeroBannerProps) {
 
   const bannerImg = track?.artworkUrl || item.bannerImageUrl;
 
-  useEffect(() => {
-    setImageError(false);
-  }, [bannerImg]);
+  const isImageError = Boolean(bannerImg && failedBannerImg === bannerImg);
+
+
 
   const handlePlayClick = () => {
     if (isCurrentHeroTrack) {
@@ -83,11 +83,11 @@ export function HeroBanner({ item }: HeroBannerProps) {
           boxShadow: "0 24px 60px rgba(0,0,0,.55)",
         }}
       >
-        {!imageError && bannerImg ? (
+        {!isImageError && bannerImg ? (
           <img
             src={bannerImg}
             alt={item.headline}
-            onError={() => setImageError(true)}
+            onError={() => setFailedBannerImg(bannerImg)}
             style={{
               width: "100%",
               height: "100%",

@@ -6,7 +6,7 @@ import { useTagEditorStore } from "../store/useTagEditorStore";
 import { useAlbumStore } from "../store/useAlbumStore";
 import { useLibraryStore } from "../store/useLibraryStore";
 import { usePlayerStore } from "../store/usePlayerStore";
-import { useArtistStore } from "../store/useArtistStore";
+import { mapTrackDtoToArtistPopularTrack, useArtistStore } from "../store/useArtistStore";
 import { ArtistPopularTrackRow } from "../components/artists/ArtistPopularTrackRow";
 import { AlbumTrackRow } from "../components/albums/AlbumTrackRow";
 import { TrackTable } from "../components/home/TrackTable";
@@ -26,6 +26,41 @@ describe("Audio Metadata Tag Editor Frontend (Feature 25)", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("preserves the physical audio file path for artist track editing (AC-2)", () => {
+    const trackDto: TrackDto = {
+      id: "artist-track-1",
+      file_path: "C:\\Music\\artist-track.mp3",
+      title: "Artist Track",
+      artist_id: "artist-1",
+      artist_name: "Artist Name",
+      album_id: "album-1",
+      album_name: "Album Name",
+      album_artist: "Artist Name",
+      duration: 214,
+      year: 2024,
+      genre: "Rock",
+      disc_number: 1,
+      track_number: 1,
+      bitrate: 320,
+      format: "mp3",
+      cover_art_path: null,
+      is_favorite: false,
+      liked_at: null,
+      play_count: 0,
+      last_played_at: null,
+      file_modified_at: 1000,
+      file_size_bytes: 4096,
+      folder_id: "folder-1",
+      created_at: 1000,
+      updated_at: 1000,
+    };
+
+    const artistTrack = mapTrackDtoToArtistPopularTrack(trackDto);
+
+    expect(artistTrack.filePath).toBe(trackDto.file_path);
+    expect(artistTrack.audioUrl).toBe(trackDto.file_path);
   });
 
   it("opens single track tag editor modal and populates probed fields (AC-1, AC-2)", async () => {

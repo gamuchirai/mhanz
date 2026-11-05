@@ -5,7 +5,7 @@ import type { Track } from "../types/discovery";
 import type { TrackDto } from "../types/database";
 import { initialLikedTracks } from "../data/likedFixtures";
 import { findCatalogTrackById } from "../data/playlistFixtures";
-import { dbGetTracks } from "../services/db";
+import { dbGetAllTracks } from "../services/db";
 import { favoritesSync } from "../services/favoritesSync";
 import { usePlayerStore } from "./usePlayerStore";
 import { useLibraryStore } from "./useLibraryStore";
@@ -154,12 +154,12 @@ export const useLikedSongsStore = create<LikedSongsState>()((set, get) => ({
     set({ isLoading: true });
     try {
       if (isTauri()) {
-        const result = await dbGetTracks(0, 500, {
+        const items = await dbGetAllTracks({
           is_favorite: true,
           sort_by: "liked_at",
           sort_direction: "desc",
         });
-        const mapped = result.items.map(mapTrackDtoToLikedTrack);
+        const mapped = items.map(mapTrackDtoToLikedTrack);
         set({ tracks: mapped, isLoaded: true, isLoading: false });
       } else {
         set({ tracks: initialLikedTracks, isLoaded: true, isLoading: false });

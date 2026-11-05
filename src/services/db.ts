@@ -66,6 +66,35 @@ export async function dbGetTracks(
 }
 
 /**
+ * Retrieves all tracks matching an optional filter across all database pages.
+ */
+export async function dbGetAllTracks(
+  filter?: TrackFilterDto,
+  pageSize = 500
+): Promise<TrackDto[]> {
+  const firstPage = await dbGetTracks(0, pageSize, filter);
+  const items = [...(firstPage?.items ?? [])];
+  const total = firstPage?.total ?? items.length;
+  const limit = firstPage?.limit && firstPage.limit > 0 ? firstPage.limit : pageSize;
+
+  if (total > items.length && limit > 0) {
+    const totalPages = Math.ceil(total / limit);
+    const remainingPromises: Promise<PaginatedTracksDto>[] = [];
+    for (let p = 1; p < totalPages; p++) {
+      remainingPromises.push(dbGetTracks(p, limit, filter));
+    }
+    const remainingPages = await Promise.all(remainingPromises);
+    for (const pageRes of remainingPages) {
+      if (pageRes?.items && pageRes.items.length > 0) {
+        items.push(...pageRes.items);
+      }
+    }
+  }
+
+  return items;
+}
+
+/**
  * Retrieves a single track by its primary key identifier.
  */
 export async function dbGetTrackById(id: string): Promise<TrackDto | null> {

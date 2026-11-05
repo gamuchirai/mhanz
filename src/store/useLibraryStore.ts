@@ -17,7 +17,7 @@ import {
   scannerCancelScan,
   scannerScanFolder,
 } from "../services/scanner";
-import { dbAddFolder, dbGetFolders, dbGetTracks, dbRemoveFolder } from "../services/db";
+import { dbAddFolder, dbGetFolders, dbGetAllTracks, dbRemoveFolder } from "../services/db";
 import { favoritesSync } from "../services/favoritesSync";
 import { taggerSync } from "../services/taggerSync";
 
@@ -328,10 +328,10 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
 
   refreshFromDatabase: async () => {
     try {
-      const [foldersDto, tracksRes] = await Promise.all([dbGetFolders(), dbGetTracks(0, 500)]);
+      const [foldersDto, tracksDto] = await Promise.all([dbGetFolders(), dbGetAllTracks()]);
 
-      if (foldersDto && foldersDto.length > 0) {
-        const convertedTracks: LibraryTrack[] = tracksRes.items.map(mapTrackDtoToLibraryTrack);
+      if (Array.isArray(foldersDto)) {
+        const convertedTracks: LibraryTrack[] = (tracksDto ?? []).map(mapTrackDtoToLibraryTrack);
         const convertedFolders: MusicFolder[] = foldersDto.map((f: FolderDto) => {
           const folderTracks = convertedTracks.filter((t: LibraryTrack) => t.folderId === f.id);
           const totalSize = folderTracks.reduce(
@@ -343,6 +343,10 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
 
         set({
           folders: convertedFolders,
+          selectedFolderId:
+            get().selectedFolderId && convertedFolders.some((f) => f.id === get().selectedFolderId)
+              ? get().selectedFolderId
+              : null,
           tracks: convertedTracks,
         });
       }
