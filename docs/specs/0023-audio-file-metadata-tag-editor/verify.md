@@ -2,7 +2,7 @@
 _Steps derived from spec 0023 acceptance criteria. `/check verify` runs these; `/test` locks the durable ones._
 
 ## UI and manual
-- [ ] Right click a track row in Your Library → select "Edit metadata" → verify modal opens showing probed physical tags including title, artist, album, genre, year, track number, disc number, and cover art → AC-1, AC-2, AC-5
+- [x] Right click a track row in Your Library → select "Edit metadata" → verify modal opens showing probed physical tags including title, artist, album, genre, year, track number, disc number, and cover art → AC-1, AC-2, AC-5
 - [ ] Edit the track title, artist name, and year in the modal and save → verify modal closes, table row updates immediately via event, audio file on disk contains modified tags via Lofty, and Search view displays updated song → AC-1, AC-2, AC-6, AC-8, AC-9, AC-11
 - [ ] Replace cover art by clicking the image frame and selecting a PNG or JPG file via native file dialog → save changes → verify track thumbnail updates and cached image exists in local cache directory → AC-5, AC-6, AC-8, AC-11
 - [x] Drag and drop an image file onto the cover art frame in the tag editor modal → verify image preview updates immediately before saving → AC-5
