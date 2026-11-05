@@ -18,7 +18,7 @@ _Steps derived from spec 0010 acceptance criteria. `/check verify` runs these; `
 
 ## Commands
 - [x] `npm test` → All 313 tests in 29 files pass cleanly across all modules → AC-1 through AC-13
-- [ ] `npx tsc --noEmit` → TypeScript strictly compiles with zero type errors → AC-1 through AC-13
+- [x] `npx tsc --noEmit` → TypeScript strictly compiles with zero type errors → AC-1 through AC-13
 - [ ] `npm run build` → Production bundle builds cleanly in under 2 seconds → AC-1 through AC-13
 - [x] `npm run lint` → ESLint reports zero errors and six existing warnings across all codebase files → AC-1 through AC-13
 
@@ -44,12 +44,12 @@ _Steps derived from spec 0010 acceptance criteria. `/check verify` runs these; `
 
 ## Verification update: SQLite preferences persistence (Finding P2-F2, updated 2026-11-05)
 ### UI / manual
-- [ ] Open Settings modal from sidebar gear button → Audio Output Device section displays Coming Soon badge and notes that system default output is active → AC-12
-- [ ] Change crossfade duration and toggle volume normalisation in Settings modal → Changes persist to SQLite table `player_settings` and survive desktop app restart → AC-12
+- [x] Open Settings modal from sidebar gear button → Audio Output Device section displays Coming Soon badge and notes that system default output is active → AC-12
+- [x] Change crossfade duration and toggle volume normalisation in Settings modal → Changes persist to SQLite table `player_settings` and survive desktop app restart → AC-12
 
 ### Commands
-- [ ] `npx vitest run src/test/settingsPersistence.test.tsx` → All 5 settings persistence and hydration tests pass cleanly → AC-12
-- [ ] `npm run typecheck` → TypeScript compiles with zero type errors across all stores and components → AC-12
+- [x] `npx vitest run src/test/settingsPersistence.test.tsx` → All 5 settings persistence and hydration tests pass cleanly → AC-12
+- [x] `npm run typecheck` → TypeScript compiles with zero type errors across all stores and components → AC-12
 
 ### Acceptance criteria coverage
 - AC-12: Desktop SQLite hydration and persistence covered by `src/test/settingsPersistence.test.tsx`, `useSettingsStore.initializeSettings`, and `dbSetSetting`
