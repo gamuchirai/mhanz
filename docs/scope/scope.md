@@ -35,7 +35,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 22  | Local file lyrics parser and metadata extraction | Phase 2    | done        |
 | 23  | Home listening history and popular tracks persistence | Phase 2    | done |
 | 24  | Universal album and artist navigation links | Phase 2    | done        |
-| 25  | Audio file metadata tag editor     | Phase 2    | in-progress |
+| 25  | Audio file metadata tag editor     | Phase 2    | done        |
 
 
 ## Foundations
@@ -426,7 +426,7 @@ spec [0024](../specs/0024-universal-album-artist-navigation-links/index.md)
         code in `src/hooks/useEntityNavigation.ts`, `src/components/common/`, `src/test/navigationLinks.test.tsx`
 - [x] Verify it: `/check verify universal album and artist navigation links`
 - [x] Test it: `/test universal album and artist navigation links`
-### 25. Audio file metadata tag editor · in-progress
+### 25. Audio file metadata tag editor · done
 
 Allow users to edit physical audio tags on disk and sync changes to SQLite, with support for title, artist, album, genre, year, track number, disc number, and cover art.
 **Done when:** users can open an edit modal from track context menus, save changes to file tags via Lofty, update the SQLite database atomically, and see immediate UI updates without playback lock conflicts.
