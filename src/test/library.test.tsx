@@ -42,7 +42,29 @@ describe("Your Library and Folder Browser Screen", () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.useRealTimers();
+  });
+
+  it("starts the library scanner at app startup and releases listeners on unmount", async () => {
+    const unsubscribe = vi.fn();
+    const initScanner = vi.spyOn(useLibraryStore.getState(), "initScanner");
+    initScanner.mockImplementation(async () => {
+      return unsubscribe;
+    });
+
+    const { unmount } = render(<App />);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(initScanner).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole("link", { name: /your library/i }));
+    expect(initScanner).toHaveBeenCalledTimes(1);
+
+    unmount();
+    expect(unsubscribe).toHaveBeenCalledOnce();
   });
 
   it("renders library summary header with track count, duration, folders, and actions (AC-1)", () => {
