@@ -378,16 +378,22 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
       await get().refreshFromDatabase();
     });
 
-    if (isTauri()) {
-      await get().refreshFromDatabase();
-    }
-
-    set({ isInitialized: true });
-
-    return () => {
+    // Return cleanup function before attempting data refresh to guarantee cleanup even on error
+    const cleanup = () => {
       if (typeof unlistenProgress === "function") unlistenProgress();
       if (typeof unlistenCompleted === "function") unlistenCompleted();
     };
+
+    try {
+      if (isTauri()) {
+        await get().refreshFromDatabase();
+      }
+      set({ isInitialized: true });
+    } catch (err) {
+      console.error("Failed to initialize library scanner:", err);
+    }
+
+    return cleanup;
   },
 }));
 
