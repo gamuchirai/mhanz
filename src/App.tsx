@@ -21,6 +21,7 @@ import { useAlbumStore } from "./store/useAlbumStore";
 import { useArtistStore } from "./store/useArtistStore";
 import { useSearchStore } from "./store/useSearchStore";
 import { useSettingsStore } from "./store/useSettingsStore";
+import { useLibraryStore } from "./store/useLibraryStore";
 import {
   sanitizeNavView,
   useNavigationStore,
@@ -74,6 +75,9 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+    let unsubscribeScanner: (() => void) | undefined;
+
     // Hydrate persistent state from SQLite on initial boot
     useSettingsStore
       .getState()
@@ -95,6 +99,19 @@ export function App() {
       .getState()
       .initializeArtists()
       .catch(() => {});
+    useLibraryStore
+      .getState()
+      .initScanner()
+      .then((unsubscribe) => {
+        if (isMounted) {
+          unsubscribeScanner = unsubscribe;
+        } else {
+          unsubscribe();
+        }
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to initialize library scanner:", error);
+      });
 
     async function testBackend() {
       try {
@@ -105,6 +122,11 @@ export function App() {
       }
     }
     testBackend();
+
+    return () => {
+      isMounted = false;
+      unsubscribeScanner?.();
+    };
   }, []);
 
   const handleNavigate = (view: string) => {
