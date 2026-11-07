@@ -22,7 +22,6 @@ interface MockMediaControlsState {
   forceMock: boolean;
   actionListeners: Set<ActionEventListener>;
 }
-
 const mockState: MockMediaControlsState = {
   metadata: null,
   status: "stopped",

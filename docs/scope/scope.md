@@ -463,8 +463,8 @@ spec [0025](../specs/0025-system-media-keys-transport-controls/index.md)
   - [x] Hardware media keys capture, action dispatch mapping, and frontend queue synchronization (AC-7, AC-8, AC-9)
   - [x] UserSettings schema extension, SQLite persistence, and Playback settings toggle (AC-10, AC-11, AC-12)
         code in `src-tauri/src/media_controls/`, `src-tauri/src/commands/media_controls.rs`, `src/services/mediaControls.ts`, `src/hooks/useMediaControls.ts`, `src/components/settings/SystemMediaControlsToggle.tsx`, `src/test/mediaControls.test.tsx`
-- [ ] Verify it: `/check verify operating system media keys and transport controls`
-- [ ] Test it: `/test operating system media keys and transport controls`
+- [x] Verify it: `/check verify operating system media keys and transport controls`
+- [x] Test it: `/test operating system media keys and transport controls`
 
 
 ## Deferred

@@ -13,19 +13,19 @@ Steps derived from spec 0025 acceptance criteria. `/check verify` runs these; `/
 * [ ] Drag or click timeline scrubber in Windows volume flyout -> Song playback seeks to the selected position in Mutinhimira -> AC-7, AC-8
 * [ ] Play a track with WebP artwork or missing artwork -> Windows media flyout renders the bundled Mutinhimira PNG application icon fallback cleanly without crashing -> AC-4
 * [ ] Stop playback and clear the playback queue -> Windows media controls detach and clear active song metadata cleanly -> AC-6
-* [ ] Open Settings modal from sidebar gear icon, navigate to Playback section, and inspect System Media Controls toggle -> Switch is present, enabled by default, and reflects `systemMediaControlsEnabled` -> AC-10, AC-11
-* [ ] Turn off System Media Controls toggle in Settings modal -> Mutinhimira detaches operating system media controls and stops responding to global media keys -> AC-11, AC-12
+* [x] Open Settings modal from sidebar gear icon, navigate to Playback section, and inspect System Media Controls toggle -> Switch is present, enabled by default, and reflects `systemMediaControlsEnabled` -> AC-10, AC-11
+* [x] Turn off System Media Controls toggle in Settings modal -> Mutinhimira detaches operating system media controls and stops responding to global media keys -> AC-11, AC-12
 * [ ] Turn System Media Controls toggle back on in Settings modal while a song is playing -> Controls reattach immediately and restore metadata to the Windows flyout -> AC-11, AC-12
 * [ ] Restart Mutinhimira desktop application -> User preference for System Media Controls persists across restarts via SQLite `app_settings` -> AC-10
 * [ ] Close Mutinhimira desktop application -> Windows media controls detach on application exit and leave no lingering phantom controls -> AC-6
 
 ## Commands
 
-* [ ] `npm test` -> All test suites pass cleanly with MediaControlsService mock active -> AC-9
-* [ ] `npx vitest run src/test/mediaControls.test.tsx` -> Unit tests for media controls service and store event handling pass cleanly -> AC-8, AC-9
-* [ ] `cargo test` -> Rust unit and integration tests compile and pass cleanly -> AC-1, AC-2, AC-3, AC-4, AC-5
-* [ ] `npm run typecheck` -> TypeScript compiles with zero type errors across all stores and components -> AC-8, AC-10
-* [ ] `npm run lint` -> ESLint runs clean with zero errors across the codebase -> AC-8, AC-10
+* [x] `npm test` -> All test suites pass cleanly with MediaControlsService mock active -> AC-9
+* [x] `npx vitest run src/test/mediaControls.test.tsx` -> Unit tests for media controls service and store event handling pass cleanly -> AC-8, AC-9
+* [x] `cargo test` -> Rust unit and integration tests compile and pass cleanly -> AC-1, AC-2, AC-3, AC-4, AC-5
+* [x] `npm run typecheck` -> TypeScript compiles with zero type errors across all stores and components -> AC-8, AC-10
+* [x] `npm run lint` -> ESLint runs clean with zero errors across the codebase -> AC-8, AC-10
 
 ## Acceptance criteria coverage
 

@@ -42,6 +42,7 @@ const mockTrackB: Track = {
 describe("Operating System Media Keys and Transport Controls (Feature 26)", () => {
   beforeEach(() => {
     setForceMediaControlsMock(true);
+    getMockMediaControlsState().actionListeners.clear();
     usePlayerStore.setState({
       queue: [mockTrackA, mockTrackB],
       currentIndex: 0,
@@ -235,5 +236,120 @@ describe("Operating System Media Keys and Transport Controls (Feature 26)", () =
     expect(useSettingsStore.getState().settings.systemMediaControlsEnabled).toBe(true);
     expect(toggle.getAttribute("aria-checked")).toBe("true");
     expect(getMockMediaControlsState().isEnabled).toBe(true);
+  });
+
+  it("throttles rapid consecutive toggle actions within 150ms bounce window (AC-7, AC-8)", async () => {
+    const { unmount } = renderHook(() => useMediaControls());
+    await Promise.resolve();
+
+    // First toggle switches isPlaying from false to true
+    act(() => {
+      simulateMediaControlsAction({ action: "toggle" });
+    });
+    expect(usePlayerStore.getState().isPlaying).toBe(true);
+
+    // Rapid second toggle within 150ms should be suppressed by the throttle guard
+    act(() => {
+      simulateMediaControlsAction({ action: "toggle" });
+    });
+    expect(usePlayerStore.getState().isPlaying).toBe(true);
+
+    unmount();
+  });
+
+  it("clamps negative relative seek to zero seconds without underflow (AC-7, AC-8)", async () => {
+    const { unmount } = renderHook(() => useMediaControls());
+    await Promise.resolve();
+
+    act(() => {
+      usePlayerStore.setState({ currentTime: 5 });
+    });
+
+    // Seeking relative by -20s from 5s should clamp cleanly to 0s
+    act(() => {
+      simulateMediaControlsAction({ action: "seek_relative", position_seconds: -20 });
+    });
+    expect(usePlayerStore.getState().currentTime).toBe(0);
+
+    unmount();
+  });
+
+  it("handles unknown action names and empty queue actions gracefully (AC-7, AC-8)", async () => {
+    const { unmount } = renderHook(() => useMediaControls());
+    await Promise.resolve();
+
+    act(() => {
+      usePlayerStore.setState({
+        queue: [],
+        currentTrack: null,
+        isPlaying: false,
+        currentTime: 0,
+      });
+    });
+
+    expect(() => {
+      act(() => {
+        simulateMediaControlsAction({ action: "unknown_hardware_signal" });
+        simulateMediaControlsAction({ action: "next" });
+        simulateMediaControlsAction({ action: "previous" });
+        simulateMediaControlsAction({ action: "seek" });
+      });
+    }).not.toThrow();
+
+    unmount();
+  });
+
+  it("unregisters action listener on unmount and prevents lingering action dispatch (AC-8)", async () => {
+    const { unmount } = renderHook(() => useMediaControls());
+    await Promise.resolve();
+
+    unmount();
+
+    act(() => {
+      usePlayerStore.setState({ isPlaying: false });
+      simulateMediaControlsAction({ action: "play" });
+    });
+
+    // Since hook unmounted and unlisten ran, player store remains paused
+    expect(usePlayerStore.getState().isPlaying).toBe(false);
+  });
+
+  it("catches errors in faulty action listeners without crashing other handlers (AC-8, AC-9)", () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const faultyListener = vi.fn().mockImplementation(() => {
+      throw new Error("Simulated listener crash");
+    });
+    const healthyListener = vi.fn();
+
+    const mock = getMockMediaControlsState();
+    mock.actionListeners.add(faultyListener);
+    mock.actionListeners.add(healthyListener);
+
+    expect(() => {
+      simulateMediaControlsAction({ action: "play" });
+    }).not.toThrow();
+
+    expect(faultyListener).toHaveBeenCalled();
+    expect(healthyListener).toHaveBeenCalled();
+    expect(consoleSpy).toHaveBeenCalled();
+
+    mock.actionListeners.delete(faultyListener);
+    mock.actionListeners.delete(healthyListener);
+    consoleSpy.mockRestore();
+  });
+
+  it("verifies accessible attributes and semantic markup on SystemMediaControlsToggle (AC-10, AC-11)", () => {
+    render(<SystemMediaControlsToggle />);
+
+    const toggle = screen.getByRole("switch", { name: /toggle system media controls/i });
+    expect(toggle.tagName.toLowerCase()).toBe("button");
+    expect(toggle).toHaveAttribute("role", "switch");
+    expect(toggle).toHaveAttribute("aria-checked", "true");
+    expect(toggle).toHaveAccessibleName("Toggle system media controls");
+
+    expect(screen.getByText("System Media Controls")).toBeInTheDocument();
+    expect(
+      screen.getByText("Enables keyboard media keys and Windows volume flyout playback controls")
+    ).toBeInTheDocument();
   });
 });

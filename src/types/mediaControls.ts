@@ -9,7 +9,6 @@ export interface MediaMetadataDto {
   album?: string;
   duration_seconds?: number;
 }
-
 export type MediaPlaybackStatusDto = "playing" | "paused" | "stopped";
 
 export interface MediaControlActionEvent {
