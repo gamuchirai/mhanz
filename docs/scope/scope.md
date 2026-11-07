@@ -481,7 +481,7 @@ spec [0026](../specs/0026-gapless-track-transitions/index.md)
   - [x] Boundary events, skip notice, monitor thread rework, and store wiring for the lookahead list (AC-2, AC-4, AC-5, AC-8)
   - [x] Seek restaging, manual navigation rules, repeat modes, and encoder delay trimming (AC-6, AC-7, AC-9)
         code in `src-tauri/src/audio/engine.rs`, `src-tauri/src/audio/models.rs`, `src-tauri/src/commands/audio.rs`, `src/services/audio.ts`, `src/store/usePlayerStore.ts`, `src/store/useToastStore.ts`, `src/components/common/ToastContainer.tsx`, `src/test/gaplessPlayback.test.tsx`
-- [ ] Verify it: `/check verify gapless track transitions`
+- [x] Verify it: `/check verify gapless track transitions`
 - [ ] Test it: `/test gapless track transitions`
 
 
