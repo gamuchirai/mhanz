@@ -8,6 +8,7 @@ import type {
 } from "../types/overlays";
 import { defaultUserSettings, mockAudioDevices } from "../data/mockAudioDevices";
 import { dbGetSetting, dbSetSetting } from "../services/db";
+import { mediaControlsSetEnabled } from "../services/mediaControls";
 
 const SETTINGS_STORAGE_KEY = "Mutinhimira:settings:v1";
 const SQLITE_SETTINGS_KEY = "app_settings";
@@ -60,6 +61,11 @@ function sanitizeLoadedSettings(raw: unknown): UserSettings {
       ? obj.fullscreenDefaultView
       : defaultUserSettings.fullscreenDefaultView;
 
+  const systemMediaControlsEnabled =
+    typeof obj.systemMediaControlsEnabled === "boolean"
+      ? obj.systemMediaControlsEnabled
+      : defaultUserSettings.systemMediaControlsEnabled;
+
   const fullscreenAutoHideChrome =
     typeof obj.fullscreenAutoHideChrome === "boolean"
       ? obj.fullscreenAutoHideChrome
@@ -75,6 +81,7 @@ function sanitizeLoadedSettings(raw: unknown): UserSettings {
     lyricsFontSize,
     fullscreenDefaultView,
     fullscreenAutoHideChrome,
+    systemMediaControlsEnabled,
     updatedAt: typeof obj.updatedAt === "number" ? obj.updatedAt : Date.now(),
   };
 }
@@ -132,6 +139,7 @@ interface SettingsState {
   setLyricsFontSize: (size: "small" | "medium" | "large") => void;
   setFullscreenDefaultView: (mode: FullscreenViewMode) => void;
   setFullscreenAutoHideChrome: (enabled: boolean) => void;
+  setSystemMediaControlsEnabled: (enabled: boolean) => void;
   resetToDefaults: () => void;
 }
 
@@ -158,6 +166,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
             // Graceful fallback
           }
         }
+        mediaControlsSetEnabled(sanitized.systemMediaControlsEnabled).catch(() => {});
         set({ settings: sanitized, isHydrated: true });
       } else {
         const current = get().settings;
@@ -260,6 +269,19 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     });
   },
 
+  setSystemMediaControlsEnabled: (enabled: boolean) => {
+    set((state) => {
+      const next: UserSettings = {
+        ...state.settings,
+        systemMediaControlsEnabled: enabled,
+        updatedAt: Date.now(),
+      };
+      persistSettings(next);
+      mediaControlsSetEnabled(enabled).catch(() => {});
+      return { settings: next };
+    });
+  },
+
   setFullscreenAutoHideChrome: (enabled: boolean) => {
     set((state) => {
       const next: UserSettings = {
@@ -278,6 +300,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       updatedAt: Date.now(),
     };
     persistSettings(next);
+    mediaControlsSetEnabled(defaultUserSettings.systemMediaControlsEnabled).catch(() => {});
     set({ settings: next });
   },
 }));
@@ -292,3 +315,5 @@ export const useFullscreenDefaultView = () =>
 export const useFullscreenAutoHideChrome = () =>
   useSettingsStore((state) => state.settings.fullscreenAutoHideChrome);
 export const useIsSettingsHydrated = () => useSettingsStore((state) => state.isHydrated);
+export const useSystemMediaControlsEnabled = () =>
+  useSettingsStore((state) => state.settings.systemMediaControlsEnabled);

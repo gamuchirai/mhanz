@@ -35,6 +35,11 @@ import {
 import { favoritesSync } from "../services/favoritesSync";
 import { taggerSync } from "../services/taggerSync";
 import { formatCoverArtUrl, onScanCompleted } from "../services/scanner";
+import {
+  mediaControlsClear,
+  mediaControlsSetMetadata,
+  mediaControlsSetPlaybackStatus,
+} from "../services/mediaControls";
 
 let queueIdCounter = 0;
 function createUniqueQueueId(prefix = "queue"): string {
@@ -411,6 +416,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     const clamped = Math.max(0, Math.min(seconds, currentTrack.durationSeconds));
     set({ currentTime: clamped });
     audioSeek(clamped).catch(() => {});
+    mediaControlsSetPlaybackStatus(get().isPlaying ? "playing" : "paused", clamped).catch(() => {});
   },
 
   setVolume: (vol: number) => {
@@ -652,6 +658,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
     const clamped = Math.max(0, Math.min(timeSeconds, currentTrack.durationSeconds));
     set({ currentTime: clamped });
     audioSeek(clamped).catch(() => {});
+    mediaControlsSetPlaybackStatus(get().isPlaying ? "playing" : "paused", clamped).catch(() => {});
   },
 }));
 
@@ -825,6 +832,36 @@ taggerSync.subscribe((event, updatedTracks) => {
       }),
     };
   });
+});
+
+// Synchronize operating system media controls and Windows SMTC with player state (AC-3, AC-5, AC-6)
+usePlayerStore.subscribe((state, prevState) => {
+  if (state.currentTrack?.id !== prevState.currentTrack?.id) {
+    if (state.currentTrack) {
+      mediaControlsSetMetadata({
+        track_id: state.currentTrack.id,
+        title: state.currentTrack.title,
+        artist: state.currentTrack.artist,
+        album: state.currentTrack.album,
+        duration_seconds: state.currentTrack.durationSeconds,
+      }).catch(() => {});
+      mediaControlsSetPlaybackStatus(
+        state.isPlaying ? "playing" : "paused",
+        state.currentTime
+      ).catch(() => {});
+    } else {
+      mediaControlsClear().catch(() => {});
+    }
+  } else if (state.isPlaying !== prevState.isPlaying) {
+    if (state.currentTrack) {
+      mediaControlsSetPlaybackStatus(
+        state.isPlaying ? "playing" : "paused",
+        state.currentTime
+      ).catch(() => {});
+    } else {
+      mediaControlsClear().catch(() => {});
+    }
+  }
 });
 
 // Typed selector hooks for performance optimization

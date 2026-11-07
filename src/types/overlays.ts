@@ -66,6 +66,7 @@ export interface UserSettings {
   lyricsFontSize: "small" | "medium" | "large";
   fullscreenDefaultView: FullscreenViewMode;
   fullscreenAutoHideChrome: boolean;
+  systemMediaControlsEnabled: boolean;
   updatedAt: number;
 }
 

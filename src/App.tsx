@@ -22,12 +22,14 @@ import { useArtistStore } from "./store/useArtistStore";
 import { useSearchStore } from "./store/useSearchStore";
 import { useSettingsStore } from "./store/useSettingsStore";
 import { useLibraryStore } from "./store/useLibraryStore";
+import { useMediaControls } from "./hooks/useMediaControls";
 import {
   sanitizeNavView,
   useNavigationStore,
 } from "./store/useNavigationStore";
 
 export function App() {
+  useMediaControls();
   const currentNav = useNavigationStore((state) => state.current);
   const activeNav = currentNav.view;
   const navigate = useNavigationStore((state) => state.navigate);

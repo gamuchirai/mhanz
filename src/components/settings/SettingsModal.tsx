@@ -5,6 +5,7 @@ import { useModalFocusTrap } from "../../hooks/useModalFocusTrap";
 import { AudioDeviceSelector } from "./AudioDeviceSelector";
 import { CrossfadeSlider } from "./CrossfadeSlider";
 import { VisualizerPicker } from "./VisualizerPicker";
+import { SystemMediaControlsToggle } from "./SystemMediaControlsToggle";
 
 export function SettingsModal() {
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -12,6 +13,7 @@ export function SettingsModal() {
   const settings = useUserSettings();
   const setVolumeNormalization = useSettingsStore((state) => state.setVolumeNormalization);
   const setNotificationsEnabled = useSettingsStore((state) => state.setNotificationsEnabled);
+
   const resetToDefaults = useSettingsStore((state) => state.resetToDefaults);
   useModalFocusTrap(dialogRef);
 
@@ -179,6 +181,8 @@ export function SettingsModal() {
           {/* Visualizer Picker */}
           <VisualizerPicker />
 
+          <SystemMediaControlsToggle />
+
           {/* Desktop Notifications Toggle */}
           <div
             style={{
@@ -232,6 +236,7 @@ export function SettingsModal() {
             </button>
           </div>
         </div>
+
 
         {/* Footer Actions */}
         <div

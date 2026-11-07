@@ -47,5 +47,6 @@ export const defaultUserSettings: UserSettings = {
   lyricsFontSize: "medium",
   fullscreenDefaultView: "artwork",
   fullscreenAutoHideChrome: true,
+  systemMediaControlsEnabled: true,
   updatedAt: Date.now(),
 };

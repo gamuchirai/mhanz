@@ -8,6 +8,7 @@ pub mod audio;
 pub mod commands;
 pub mod db;
 pub mod lyrics;
+pub mod media_controls;
 pub mod scanner;
 pub mod tagger;
 
@@ -37,6 +38,14 @@ pub fn run() {
             audio_engine.set_db_manager(db_mgr_arc.clone());
 
             let scanner_manager = Arc::new(scanner::ScannerManager::new());
+            let media_controls_mgr =
+                Arc::new(media_controls::MediaControlsManager::new(app_data_dir.clone()));
+            media_controls_mgr.set_app_handle(app.handle().clone());
+            media_controls_mgr.set_db_manager(db_mgr_arc.clone());
+            if let Some(main_window) = app.get_webview_window("main") {
+                media_controls_mgr.init_with_window(&main_window);
+            }
+            app.manage(media_controls::MediaControlsState(media_controls_mgr));
 
             app.manage(db::DbState(db_mgr_arc));
             app.manage(audio::AudioState::new(audio_engine));
@@ -88,7 +97,20 @@ pub fn run() {
             commands::tagger::tag_editor_probe_file,
             commands::tagger::tag_editor_save_track,
             commands::tagger::tag_editor_save_batch,
+            commands::media_controls::media_controls_set_metadata,
+            commands::media_controls::media_controls_set_playback_status,
+            commands::media_controls::media_controls_set_enabled,
+            commands::media_controls::media_controls_clear,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app_handle, event| {
+            if let tauri::RunEvent::Exit = event {
+                if let Some(state) = app_handle.try_state::<media_controls::MediaControlsState>() {
+                    let _ = state.clear();
+                    state.detach();
+                }
+            }
+        });
+
 }
