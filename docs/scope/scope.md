@@ -473,7 +473,7 @@ spec [0025](../specs/0025-system-media-keys-transport-controls/index.md)
 Let songs flow straight into the next one with no audible silence, for albums, live recordings, and classical movements, including manual Next and Previous and repeat modes.
 **Done when:** playing a continuous album shows no audible gap between tracks, a broken next file is skipped with a short notice, and repeat one and repeat all loop without a gap.
 
-spec [0026](../specs/0026-gapless-track-transitions.md)
+spec [0026](../specs/0026-gapless-track-transitions/index.md)
 
 - [x] Design it (spec): `/architect core audio playback engine: seamless gapless track transitions`
 - [x] Build it: `/develop gapless track transitions`
