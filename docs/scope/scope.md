@@ -36,6 +36,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 23  | Home listening history and popular tracks persistence | Phase 2    | done |
 | 24  | Universal album and artist navigation links | Phase 2    | done        |
 | 25  | Audio file metadata tag editor     | Phase 2    | done        |
+| 26  | Operating system media keys and transport controls | Phase 3 | in-progress |
 
 
 ## Foundations
@@ -446,13 +447,32 @@ spec [0023](../specs/0023-audio-file-metadata-tag-editor/index.md)
 
 
 
+## Phase 3: Operating system integration
+
+### 26. Operating system media keys and transport controls · in-progress · Journey
+
+Let you control playback through Windows system media controls, media keys, and global shortcuts. Start with Windows, with other desktop platforms as a later expansion.
+**Done when:** Windows media controls show the current track and playback state, and media keys and global shortcuts control play, pause, previous track, and next track while keeping playback state in sync.
+
+spec [0025](../specs/0025-system-media-keys-transport-controls/index.md)
+
+- [x] Design it (spec): `/architect operating system media keys and transport controls`
+- [x] Build it: `/develop operating system media keys and transport controls`
+  - [x] Native souvlaki integration, Windows SMTC bindings, and background message handling (AC-1, AC-2, AC-6)
+  - [x] Track metadata synchronization, SQLite cover art resolution, and PNG fallback (AC-3, AC-4, AC-5)
+  - [x] Hardware media keys capture, action dispatch mapping, and frontend queue synchronization (AC-7, AC-8, AC-9)
+  - [x] UserSettings schema extension, SQLite persistence, and Playback settings toggle (AC-10, AC-11, AC-12)
+        code in `src-tauri/src/media_controls/`, `src-tauri/src/commands/media_controls.rs`, `src/services/mediaControls.ts`, `src/hooks/useMediaControls.ts`, `src/components/settings/SystemMediaControlsToggle.tsx`, `src/test/mediaControls.test.tsx`
+- [ ] Verify it: `/check verify operating system media keys and transport controls`
+- [ ] Test it: `/test operating system media keys and transport controls`
+
+
 ## Deferred
 
 Out of scope for the current build pass, kept so the plan stays honest.
 
 - **Synchronized lyrics online fetch**: fetch and display timed lyrics from online lyrics providers · needs a decision
 - **Audio equalizer**: multi band graphic equalizer and audio DSP filters in the Rodio pipeline · needs a decision
-- **Operating system media keys**: integrate Windows system media transport controls and global shortcut keys · needs a decision
 - **Mini player overlay**: compact picture in picture floating widget for background desktop listening · needs a decision
 
 ## Legend
