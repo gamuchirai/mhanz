@@ -23,8 +23,13 @@ import {
   listenAudioHistoryRecorded,
   listenAudioPosition,
   listenAudioStateChanged,
+  listenAudioTrackChanged,
   listenAudioTrackEnded,
+  listenAudioTrackSkipped,
+  audioSetNextTrack,
 } from "../services/audio";
+import { useToastStore } from "./useToastStore";
+import type { NextTrackCandidate } from "../types/audio";
 import {
   dbClearPlaybackHistory,
   dbGetPopularTracks,
@@ -90,6 +95,8 @@ interface PlayerState {
   clearRecentPlays: () => void;
   loadSampleHistory: () => void;
   tickTimer: () => void;
+  queueGeneration: number;
+  syncUpcomingTracks: () => void;
 
   // Queue manipulation extensions
   addToQueue: (track: Track) => void;
@@ -143,6 +150,42 @@ sampleTracks.forEach((t) => {
   }
 });
 
+function computeUpcomingCandidates(
+  queue: Track[],
+  currentIndex: number,
+  repeatMode: "off" | "all" | "one",
+  _isShuffle: boolean,
+  currentTrack: Track | null
+): NextTrackCandidate[] {
+  if (queue.length === 0) return [];
+
+  if (repeatMode === "one" && currentTrack) {
+    const fp = currentTrack.filePath || (isAudioMockActive() ? `mock://${currentTrack.id}.mp3` : "");
+    return [{ track_id: currentTrack.id, file_path: fp }];
+  }
+
+  const candidates: NextTrackCandidate[] = [];
+  const countToFetch = Math.min(3, queue.length);
+
+  for (let offset = 1; offset <= countToFetch; offset++) {
+    let nextIdx = currentIndex + offset;
+    if (nextIdx >= queue.length) {
+      if (repeatMode === "all") {
+        nextIdx = nextIdx % queue.length;
+      } else {
+        break;
+      }
+    }
+    const t = queue[nextIdx];
+    if (t) {
+      const fp = t.filePath || (isAudioMockActive() ? `mock://${t.id}.mp3` : "");
+      candidates.push({ track_id: t.id, file_path: fp });
+    }
+  }
+
+  return candidates;
+}
+
 const initialQueueTracks = popularTracksList;
 const initialQueueItems = convertTracksToQueueItems(initialQueueTracks);
 
@@ -164,6 +207,15 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
   libraryTrackCount: isTauri() ? 0 : sampleTracks.length,
   isHomeInitialized: !isTauri(),
   playbackContext: null,
+  queueGeneration: 0,
+
+  syncUpcomingTracks: () => {
+    const { queue, currentIndex, repeatMode, isShuffle, currentTrack, queueGeneration } = get();
+    const nextGen = queueGeneration + 1;
+    set({ queueGeneration: nextGen });
+    const candidates = computeUpcomingCandidates(queue, currentIndex, repeatMode, isShuffle, currentTrack);
+    audioSetNextTrack(candidates, nextGen).catch(() => {});
+  },
 
   initializeHomeDiscovery: async () => {
     if (!isTauri()) {
@@ -247,7 +299,11 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       track.durationSeconds,
       context?.title,
       context?.type
-    ).catch((err) => {
+    )
+      .then(() => {
+        get().syncUpcomingTracks();
+      })
+      .catch((err) => {
       console.error("Playback failed in playTrack:", err);
       set({ isPlaying: false });
       stopPlaybackTimer();
@@ -357,7 +413,11 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       nextTrackItem.durationSeconds,
       playbackContext?.title,
       playbackContext?.type
-    ).catch((err) => {
+    )
+      .then(() => {
+        get().syncUpcomingTracks();
+      })
+      .catch((err) => {
       console.error("Playback failed in nextTrack:", err);
       set({ isPlaying: false });
       stopPlaybackTimer();
@@ -403,7 +463,11 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       prevTrackItem.durationSeconds,
       playbackContext?.title,
       playbackContext?.type
-    ).catch((err) => {
+    )
+      .then(() => {
+        get().syncUpcomingTracks();
+      })
+      .catch((err) => {
       console.error("Playback failed in previousTrack:", err);
       set({ isPlaying: false });
       stopPlaybackTimer();
@@ -433,6 +497,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
 
   toggleShuffle: () => {
     set((state) => ({ isShuffle: !state.isShuffle }));
+    get().syncUpcomingTracks();
   },
 
   toggleRepeat: () => {
@@ -444,6 +509,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       };
       return { repeatMode: transitions[state.repeatMode] };
     });
+    get().syncUpcomingTracks();
   },
 
   toggleLike: (trackId: string) => {
@@ -493,6 +559,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       queue: [...state.queue, track],
       queueItems: [...state.queueItems, newItem],
     }));
+    get().syncUpcomingTracks();
   },
 
   playNext: (track: Track) => {
@@ -514,6 +581,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
         queueItems: nextQueueItems,
       };
     });
+    get().syncUpcomingTracks();
   },
 
   removeFromQueue: (queueId: string) => {
@@ -547,6 +615,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
         currentTrack: nextCurrentTrack,
       };
     });
+    get().syncUpcomingTracks();
   },
 
   reorderQueue: (sourceIndex: number, destIndex: number) => {
@@ -584,6 +653,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
         currentIndex: nextIndex,
       };
     });
+    get().syncUpcomingTracks();
   },
 
   reorderUpcomingQueue: (sourceUpcomingIndex: number, destUpcomingIndex: number) => {
@@ -609,6 +679,7 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
         currentIndex: 0,
       };
     });
+    get().syncUpcomingTracks();
   },
 
   playQueueItem: (queueId: string) => {
@@ -645,7 +716,11 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
       targetItem.track.durationSeconds,
       playbackContext?.title,
       playbackContext?.type
-    ).catch((err) => {
+    )
+      .then(() => {
+        get().syncUpcomingTracks();
+      })
+      .catch((err) => {
       console.error("Playback failed in playQueueItem:", err);
       set({ isPlaying: false });
       stopPlaybackTimer();
@@ -723,7 +798,27 @@ export function initPlayerAudioSync(): () => void {
     }
   });
 
-  Promise.all([p1, p2, p3, p4, p5, p6]).then((unlisteners) => {
+  const p7 = listenAudioTrackChanged((event) => {
+    const state = usePlayerStore.getState();
+    const foundIndex = state.queue.findIndex((t) => t.id === event.track_id);
+    if (foundIndex !== -1) {
+      const nextTrack = state.queue[foundIndex];
+      usePlayerStore.setState({
+        currentTrack: nextTrack,
+        currentIndex: foundIndex,
+        currentTime: 0,
+        isPlaying: true,
+      });
+      startPlaybackTimer(usePlayerStore.getState);
+      usePlayerStore.getState().syncUpcomingTracks();
+    }
+  });
+
+  const p8 = listenAudioTrackSkipped(() => {
+    useToastStore.getState().addToast("Track could not be decoded and was skipped", 5000, "warning");
+  });
+
+  Promise.all([p1, p2, p3, p4, p5, p6, p7, p8]).then((unlisteners) => {
     audioUnlisteners = unlisteners;
   });
 

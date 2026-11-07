@@ -88,6 +88,7 @@ pub fn run() {
             commands::audio::audio_set_volume,
             commands::audio::audio_set_muted,
             commands::audio::audio_get_state,
+            commands::audio::audio_set_next_track,
             commands::scanner::scanner_scan_folder,
             commands::scanner::scanner_cancel_scan,
             commands::scanner::scanner_get_scan_status,

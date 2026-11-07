@@ -37,6 +37,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 24  | Universal album and artist navigation links | Phase 2    | done        |
 | 25  | Audio file metadata tag editor     | Phase 2    | done        |
 | 26  | Operating system media keys and transport controls | Phase 3 | in-progress |
+| 27  | Gapless track transitions          | Phase 2    | in-progress |
 
 
 ## Foundations
@@ -465,6 +466,23 @@ spec [0025](../specs/0025-system-media-keys-transport-controls/index.md)
         code in `src-tauri/src/media_controls/`, `src-tauri/src/commands/media_controls.rs`, `src/services/mediaControls.ts`, `src/hooks/useMediaControls.ts`, `src/components/settings/SystemMediaControlsToggle.tsx`, `src/test/mediaControls.test.tsx`
 - [x] Verify it: `/check verify operating system media keys and transport controls`
 - [x] Test it: `/test operating system media keys and transport controls`
+
+
+### 27. Gapless track transitions · in-progress · Facade
+
+Let songs flow straight into the next one with no audible silence, for albums, live recordings, and classical movements, including manual Next and Previous and repeat modes.
+**Done when:** playing a continuous album shows no audible gap between tracks, a broken next file is skipped with a short notice, and repeat one and repeat all loop without a gap.
+
+spec [0026](../specs/0026-gapless-track-transitions.md)
+
+- [x] Design it (spec): `/architect core audio playback engine: seamless gapless track transitions`
+- [x] Build it: `/develop gapless track transitions`
+  - [x] Staged next track, queue generation counter, and output format conversion in the engine (AC-1, AC-3, AC-10)
+  - [x] Boundary events, skip notice, monitor thread rework, and store wiring for the lookahead list (AC-2, AC-4, AC-5, AC-8)
+  - [x] Seek restaging, manual navigation rules, repeat modes, and encoder delay trimming (AC-6, AC-7, AC-9)
+        code in `src-tauri/src/audio/engine.rs`, `src-tauri/src/audio/models.rs`, `src-tauri/src/commands/audio.rs`, `src/services/audio.ts`, `src/store/usePlayerStore.ts`, `src/store/useToastStore.ts`, `src/components/common/ToastContainer.tsx`, `src/test/gaplessPlayback.test.tsx`
+- [ ] Verify it: `/check verify gapless track transitions`
+- [ ] Test it: `/test gapless track transitions`
 
 
 ## Deferred

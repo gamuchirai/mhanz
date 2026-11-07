@@ -35,9 +35,28 @@ export interface AudioErrorDto {
   track_id?: string | null;
 }
 
+export interface NextTrackCandidate {
+  track_id: string;
+  file_path: string;
+}
+
+export interface AudioTrackChangedDto {
+  track_id: string;
+  duration_seconds: number;
+  queue_generation: number;
+}
+
+export interface AudioTrackSkippedDto {
+  failed_track_id: string;
+  reason_code: string;
+  following_track_id?: string | null;
+}
+
 export interface AudioEngineListeners {
   onPosition?: (pos: AudioPositionDto) => void;
   onStateChanged?: (state: AudioPlaybackStateDto) => void;
   onTrackEnded?: (event: AudioTrackEndedDto) => void;
+  onTrackChanged?: (event: AudioTrackChangedDto) => void;
+  onTrackSkipped?: (event: AudioTrackSkippedDto) => void;
   onError?: (error: AudioErrorDto) => void;
 }

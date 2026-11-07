@@ -6,7 +6,8 @@ use std::io::Write;
 use super::engine::AudioEngine;
 use super::error::AudioError;
 use super::models::{
-    AudioPlaybackState, AudioPlaybackStateDto, AudioPositionDto, AudioTrackEndedDto, PlaybackStatus,
+    AudioPlaybackState, AudioPlaybackStateDto, AudioPositionDto, AudioTrackChangedDto,
+    AudioTrackEndedDto, AudioTrackSkippedDto, NextTrackCandidate, PlaybackStatus,
 };
 
 #[test]
@@ -84,7 +85,7 @@ fn test_audio_error_codes() {
 
 #[test]
 fn test_file_path_validation() {
-    // Non-existent path
+    // Non existent path
     let non_existent = AudioEngine::validate_file_path("C:/path/to/non_existent_file.mp3");
     assert!(non_existent.is_err());
     match non_existent {
@@ -195,4 +196,135 @@ fn test_audio_engine_reload_guard() {
     assert!(!engine
         .is_reloading
         .load(std::sync::atomic::Ordering::SeqCst));
+}
+
+#[test]
+fn test_gapless_models_serialization() {
+    let candidate = NextTrackCandidate {
+        track_id: "trk-456".to_string(),
+        file_path: "C:/music/next.mp3".to_string(),
+    };
+    let json_cand = serde_json::to_string(&candidate).expect("Serialization failed");
+    assert!(json_cand.contains("trk-456"));
+
+    let changed = AudioTrackChangedDto {
+        track_id: "trk-456".to_string(),
+        duration_seconds: 195.5,
+        queue_generation: 4,
+    };
+    let json_changed = serde_json::to_string(&changed).expect("Serialization failed");
+    assert!(json_changed.contains("trk-456"));
+    assert!(json_changed.contains("195.5"));
+
+    let skipped = AudioTrackSkippedDto {
+        failed_track_id: "trk-corrupt".to_string(),
+        reason_code: "DECODE_ERROR".to_string(),
+        following_track_id: Some("trk-valid".to_string()),
+    };
+    let json_skipped = serde_json::to_string(&skipped).expect("Serialization failed");
+    assert!(json_skipped.contains("DECODE_ERROR"));
+    assert!(json_skipped.contains("trk-valid"));
+}
+
+#[test]
+fn test_track_boundary_source() {
+    use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+    use std::sync::Arc;
+    use rodio::source::Source;
+
+    struct DummySource {
+        samples: Vec<i16>,
+        index: usize,
+    }
+
+    impl Iterator for DummySource {
+        type Item = i16;
+        fn next(&mut self) -> Option<Self::Item> {
+            if self.index < self.samples.len() {
+                let s = self.samples[self.index];
+                self.index += 1;
+                Some(s)
+            } else {
+                None
+            }
+        }
+    }
+
+    impl Source for DummySource {
+        fn current_frame_len(&self) -> Option<usize> {
+            Some(self.samples.len() - self.index)
+        }
+        fn channels(&self) -> u16 {
+            2
+        }
+        fn sample_rate(&self) -> u32 {
+            44100
+        }
+        fn total_duration(&self) -> Option<std::time::Duration> {
+            Some(std::time::Duration::from_millis(100))
+        }
+    }
+
+    let dummy = DummySource {
+        samples: vec![10, 20, 30, 40],
+        index: 0,
+    };
+
+    let samples_played = Arc::new(AtomicU64::new(0));
+    let started = Arc::new(AtomicBool::new(false));
+    let ended = Arc::new(AtomicBool::new(false));
+
+    let mut boundary = super::engine::TrackBoundarySource::new(
+        dummy,
+        "trk-boundary-test".to_string(),
+        0.1,
+        1,
+        samples_played.clone(),
+        started.clone(),
+        ended.clone(),
+    );
+
+    assert_eq!(boundary.channels(), 2);
+    assert_eq!(boundary.sample_rate(), 44100);
+    assert!(!started.load(Ordering::SeqCst));
+    assert!(!ended.load(Ordering::SeqCst));
+
+    // First sample triggers started flag and increments counter
+    let first = boundary.next();
+    assert_eq!(first, Some(10));
+    assert!(started.load(Ordering::SeqCst));
+    assert_eq!(samples_played.load(Ordering::SeqCst), 1);
+
+    // Remaining samples
+    assert_eq!(boundary.next(), Some(20));
+    assert_eq!(boundary.next(), Some(30));
+    assert_eq!(boundary.next(), Some(40));
+    assert_eq!(samples_played.load(Ordering::SeqCst), 4);
+    assert!(!ended.load(Ordering::SeqCst));
+
+    // Exhaustion triggers ended flag
+    assert_eq!(boundary.next(), None);
+    assert!(ended.load(Ordering::SeqCst));
+}
+
+#[test]
+fn test_audio_set_next_track_generation() {
+    let engine = AudioEngine::new();
+
+    let candidate_1 = NextTrackCandidate {
+        track_id: "trk-gen-1".to_string(),
+        file_path: "C:/music/track1.mp3".to_string(),
+    };
+    let candidate_2 = NextTrackCandidate {
+        track_id: "trk-gen-2".to_string(),
+        file_path: "C:/music/track2.mp3".to_string(),
+    };
+
+    // Staging with generation 5 succeeds
+    let res = engine.set_next_track(vec![candidate_1], 5);
+    assert!(res.is_ok());
+
+    // Staging with older generation 3 is ignored (AC-10)
+    let res_stale = engine.set_next_track(vec![candidate_2], 3);
+    assert!(res_stale.is_ok());
 }
