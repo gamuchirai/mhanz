@@ -327,4 +327,80 @@ fn test_audio_set_next_track_generation() {
     // Staging with older generation 3 is ignored (AC-10)
     let res_stale = engine.set_next_track(vec![candidate_2], 3);
     assert!(res_stale.is_ok());
+
+    // Staging with newer generation and empty candidate list succeeds (clears staged candidate)
+    let res_clear = engine.set_next_track(vec![], 6);
+    assert!(res_clear.is_ok());
+}
+
+#[test]
+fn test_track_boundary_source_mono() {
+    use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+    use std::sync::Arc;
+    use rodio::source::Source;
+
+    struct MonoDummySource {
+        samples: Vec<i16>,
+        index: usize,
+    }
+
+    impl Iterator for MonoDummySource {
+        type Item = i16;
+        fn next(&mut self) -> Option<Self::Item> {
+            if self.index < self.samples.len() {
+                let s = self.samples[self.index];
+                self.index += 1;
+                Some(s)
+            } else {
+                None
+            }
+        }
+    }
+
+    impl Source for MonoDummySource {
+        fn current_frame_len(&self) -> Option<usize> {
+            Some(self.samples.len() - self.index)
+        }
+        fn channels(&self) -> u16 {
+            1
+        }
+        fn sample_rate(&self) -> u32 {
+            22050
+        }
+        fn total_duration(&self) -> Option<std::time::Duration> {
+            Some(std::time::Duration::from_millis(50))
+        }
+    }
+
+    let dummy = MonoDummySource {
+        samples: vec![5, 15, 25],
+        index: 0,
+    };
+
+    let samples_played = Arc::new(AtomicU64::new(0));
+    let started = Arc::new(AtomicBool::new(false));
+    let ended = Arc::new(AtomicBool::new(false));
+
+    let mut boundary = super::engine::TrackBoundarySource::new(
+        dummy,
+        "trk-mono".to_string(),
+        0.05,
+        2,
+        samples_played.clone(),
+        started.clone(),
+        ended.clone(),
+    );
+
+    assert_eq!(boundary.channels(), 1);
+    assert_eq!(boundary.sample_rate(), 22050);
+
+    assert_eq!(boundary.next(), Some(5));
+    assert!(started.load(Ordering::SeqCst));
+    assert_eq!(boundary.next(), Some(15));
+    assert_eq!(boundary.next(), Some(25));
+    assert_eq!(samples_played.load(Ordering::SeqCst), 3);
+    assert!(!ended.load(Ordering::SeqCst));
+
+    assert_eq!(boundary.next(), None);
+    assert!(ended.load(Ordering::SeqCst));
 }

@@ -232,4 +232,73 @@ describe("Gapless Track Transitions (Feature 27)", () => {
     });
     expect(usePlayerStore.getState().queueGeneration).toBeGreaterThan(genBeforeAdd);
   });
+
+  it("updates position via seekTo and preserves playing state (AC-6)", async () => {
+    await act(async () => {
+      usePlayerStore.getState().playTrack(testTracks[0], testTracks);
+    });
+
+    expect(usePlayerStore.getState().isPlaying).toBe(true);
+
+    // Seek to 175s (within the 10s lookahead window of 180s track)
+    act(() => {
+      usePlayerStore.getState().seekTo(175);
+    });
+
+    expect(usePlayerStore.getState().currentTime).toBe(175);
+    expect(usePlayerStore.getState().isPlaying).toBe(true);
+  });
+
+  it("restages lookahead candidates and updates generation on manual nextTrack call (AC-9, AC-10)", async () => {
+    await act(async () => {
+      usePlayerStore.getState().playTrack(testTracks[0], testTracks);
+    });
+
+    const genBeforeNext = usePlayerStore.getState().queueGeneration;
+
+    await act(async () => {
+      usePlayerStore.getState().nextTrack();
+    });
+
+    expect(usePlayerStore.getState().currentIndex).toBe(1);
+    expect(usePlayerStore.getState().currentTrack?.id).toBe("track-gapless-2");
+    expect(usePlayerStore.getState().queueGeneration).toBeGreaterThan(genBeforeNext);
+  });
+
+  it("restages lookahead candidates and updates generation on manual previousTrack call (AC-9, AC-10)", async () => {
+    await act(async () => {
+      usePlayerStore.getState().playTrack(testTracks[1], testTracks);
+    });
+
+    const genBeforePrev = usePlayerStore.getState().queueGeneration;
+
+    await act(async () => {
+      usePlayerStore.getState().previousTrack();
+    });
+
+    expect(usePlayerStore.getState().currentIndex).toBe(0);
+    expect(usePlayerStore.getState().currentTrack?.id).toBe("track-gapless-1");
+    expect(usePlayerStore.getState().queueGeneration).toBeGreaterThan(genBeforePrev);
+  });
+
+  it("handles single-track queue with repeat-one seamlessly (AC-7)", async () => {
+    const singleQueue = [testTracks[0]];
+
+    await act(async () => {
+      usePlayerStore.setState({ repeatMode: "one" });
+      usePlayerStore.getState().playTrack(singleQueue[0], singleQueue);
+    });
+
+    expect(usePlayerStore.getState().isPlaying).toBe(true);
+    expect(usePlayerStore.getState().currentTrack?.id).toBe("track-gapless-1");
+
+    // Advance through the entire track duration
+    await act(async () => {
+      vi.advanceTimersByTime(180500);
+    });
+
+    // Loops back to track 1
+    expect(usePlayerStore.getState().currentTrack?.id).toBe("track-gapless-1");
+    expect(usePlayerStore.getState().isPlaying).toBe(true);
+  });
 });
