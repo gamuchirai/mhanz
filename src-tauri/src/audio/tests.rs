@@ -227,6 +227,63 @@ fn test_gapless_models_serialization() {
 }
 
 #[test]
+fn test_track_boundary_source_forwards_seek() {
+    use rodio::source::{SeekError, Source};
+    use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+    use std::sync::{Arc, Mutex};
+    use std::time::Duration;
+
+    struct SeekableSource {
+        seeked_to: Arc<Mutex<Option<Duration>>>,
+    }
+
+    impl Iterator for SeekableSource {
+        type Item = i16;
+        fn next(&mut self) -> Option<Self::Item> {
+            Some(0)
+        }
+    }
+
+    impl Source for SeekableSource {
+        fn current_frame_len(&self) -> Option<usize> {
+            None
+        }
+        fn channels(&self) -> u16 {
+            2
+        }
+        fn sample_rate(&self) -> u32 {
+            1000
+        }
+        fn total_duration(&self) -> Option<Duration> {
+            Some(Duration::from_secs(10))
+        }
+        fn try_seek(&mut self, pos: Duration) -> Result<(), SeekError> {
+            *self.seeked_to.lock().unwrap() = Some(pos);
+            Ok(())
+        }
+    }
+
+    let seeked_to = Arc::new(Mutex::new(None));
+    let samples_played = Arc::new(AtomicU64::new(0));
+    let mut source = super::engine::TrackBoundarySource::new(
+        SeekableSource {
+            seeked_to: seeked_to.clone(),
+        },
+        "trk-seek".to_string(),
+        10.0,
+        1,
+        samples_played.clone(),
+        Arc::new(AtomicBool::new(false)),
+        Arc::new(AtomicBool::new(false)),
+    );
+
+    source.try_seek(Duration::from_secs(2)).expect("seek should be forwarded");
+
+    assert_eq!(*seeked_to.lock().unwrap(), Some(Duration::from_secs(2)));
+    assert_eq!(samples_played.load(Ordering::SeqCst), 4000);
+}
+
+#[test]
 fn test_track_boundary_source() {
     use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
     use std::sync::Arc;

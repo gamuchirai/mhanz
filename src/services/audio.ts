@@ -26,6 +26,8 @@ type TrackSkippedListener = (event: AudioTrackSkippedDto) => void;
 type ErrorListener = (error: AudioErrorDto) => void;
 type HistoryListener = (item: PlayHistoryItemDto) => void;
 
+const MOCK_DEFAULT_DURATION_SECONDS = 180.0;
+
 interface MockEngineState {
   state: AudioPlaybackStateDto;
   timerHandle: ReturnType<typeof setInterval> | null;
@@ -171,16 +173,17 @@ function startMockTimer(): void {
       }
 
       if (transitionedCandidate) {
-        // Gapless track change
+        // Gapless track change; candidates carry no duration, so use the mock default.
         mockEngine.state.track_id = transitionedCandidate.track_id;
         mockEngine.state.file_path = transitionedCandidate.file_path;
+        mockEngine.state.duration_seconds = MOCK_DEFAULT_DURATION_SECONDS;
         mockEngine.state.position_seconds = 0;
         mockEngine.milestoneRecorded = false;
 
         notifyStateChanged({ ...mockEngine.state });
         notifyTrackChanged({
           track_id: transitionedCandidate.track_id,
-          duration_seconds: dur,
+          duration_seconds: MOCK_DEFAULT_DURATION_SECONDS,
           queue_generation: mockEngine.queueGeneration,
         });
         return;
@@ -258,7 +261,7 @@ export async function audioPlayTrack(
     }
 
     const startPos = Math.max(0, startPosition ?? 0);
-    const duration = Math.max(0, durationHint ?? 180.0);
+    const duration = Math.max(0, durationHint ?? MOCK_DEFAULT_DURATION_SECONDS);
 
     mockEngine.milestoneRecorded = false;
     mockEngine.state = {

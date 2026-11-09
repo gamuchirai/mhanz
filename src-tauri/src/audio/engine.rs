@@ -1,6 +1,7 @@
 //! Core audio playback engine utilizing Rodio with Symphonia decoders,
 //! supporting gapless track transitions, background pre staging, and boundary tracking.
 
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
@@ -9,7 +10,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
-use rodio::source::UniformSourceIterator;
+use rodio::source::{SeekError, UniformSourceIterator};
 use rodio::{Decoder, OutputStream, OutputStreamHandle, Sink, Source};
 use tauri::{AppHandle, Emitter};
 
@@ -121,6 +122,14 @@ where
     fn total_duration(&self) -> Option<Duration> {
         self.total_duration
     }
+
+    /// Forwards seeks to the wrapped source and keeps progress counters in sync.
+    fn try_seek(&mut self, pos: Duration) -> Result<(), SeekError> {
+        self.inner.try_seek(pos)?;
+        let played = (pos.as_secs_f64() * self.sample_rate as f64 * self.channels as f64) as u64;
+        self.samples_played.store(played, Ordering::SeqCst);
+        Ok(())
+    }
 }
 
 /// Metadata describing an active or queued boundary track.
@@ -162,6 +171,10 @@ pub struct AudioEngineInner {
     pub staged_track_meta: Option<TrackPlaybackMetadata>,
     pub output_sample_rate: u32,
     pub output_channels: u16,
+    /// Candidates that failed to stage during the current queue generation; skipped on retry.
+    pub failed_candidate_ids: HashSet<String>,
+    /// Bumped whenever the sink is replaced, so in-flight staging jobs can detect they are stale.
+    pub stage_epoch: u64,
 }
 
 /// Native desktop audio engine orchestrating Rodio playback, background progress,
@@ -222,6 +235,8 @@ impl AudioEngine {
             staged_track_meta: None,
             output_sample_rate: 44100,
             output_channels: 2,
+            failed_candidate_ids: HashSet::new(),
+            stage_epoch: 0,
         }));
 
         Self {
@@ -378,8 +393,12 @@ impl AudioEngine {
             return Ok(());
         }
 
+        let previous_generation = inner.queue_generation;
         inner.queue_generation = queue_generation;
         inner.lookahead = lookahead;
+        if queue_generation > previous_generation {
+            inner.failed_candidate_ids.clear();
+        }
 
         // Invalidate staged slot if it no longer matches the first candidate
         if let Some(ref staged) = inner.staged_track_meta {
@@ -403,9 +422,10 @@ impl AudioEngine {
                         let fp = inner.state.file_path.clone();
                         let ctx_t = inner.state.context_title.clone();
                         let ctx_ty = inner.state.context_type.clone();
+                        let keep_paused = inner.state.status != PlaybackStatus::Playing;
                         drop(inner);
                         if let (Some(t), Some(f)) = (tid, fp) {
-                            let _ = self.play_track_internal(t, f, Some(cur_pos), ctx_t, ctx_ty, false);
+                            let _ = self.play_track_internal(t, f, Some(cur_pos), ctx_t, ctx_ty, keep_paused);
                         }
                         return Ok(());
                     }
@@ -452,6 +472,8 @@ impl AudioEngine {
         }
 
         let lookahead = inner.lookahead.clone();
+        let failed_ids = inner.failed_candidate_ids.clone();
+        let stage_epoch = inner.stage_epoch;
         let queue_generation = inner.queue_generation;
         let output_channels = inner.output_channels;
         let output_sample_rate = inner.output_sample_rate;
@@ -467,12 +489,18 @@ impl AudioEngine {
                 TrackBoundarySource<UniformSourceIterator<Decoder<BufReader<File>>, i16>>,
             )> = None;
 
+            let mut newly_failed: Vec<String> = Vec::new();
+
             for (idx, candidate) in lookahead.iter().enumerate() {
+                if failed_ids.contains(&candidate.track_id) {
+                    continue;
+                }
                 let next_following_id = lookahead.get(idx + 1).map(|c| c.track_id.clone());
 
                 let canonical_path = match Self::validate_file_path(&candidate.file_path) {
                     Ok(p) => p,
                     Err(err) => {
+                        newly_failed.push(candidate.track_id.clone());
                         engine.emit_track_skipped(&candidate.track_id, err.code(), next_following_id);
                         continue;
                     }
@@ -482,6 +510,7 @@ impl AudioEngine {
                     Ok(f) => f,
                     Err(err) => {
                         let audio_err = AudioError::FileNotFound(err.to_string());
+                        newly_failed.push(candidate.track_id.clone());
                         engine.emit_track_skipped(&candidate.track_id, audio_err.code(), next_following_id);
                         continue;
                     }
@@ -492,6 +521,7 @@ impl AudioEngine {
                     Ok(d) => d,
                     Err(err) => {
                         let audio_err = AudioError::DecodeError(err.to_string());
+                        newly_failed.push(candidate.track_id.clone());
                         engine.emit_track_skipped(&candidate.track_id, audio_err.code(), next_following_id);
                         continue;
                     }
@@ -540,9 +570,14 @@ impl AudioEngine {
                 break;
             }
 
+            if let Ok(mut inner) = engine.inner.lock() {
+                inner.failed_candidate_ids.extend(newly_failed);
+            }
+
             if let Some((meta, boundary_source)) = staged_result {
                 if let Ok(mut inner) = engine.inner.lock() {
                     if inner.queue_generation == queue_generation
+                        && inner.stage_epoch == stage_epoch
                         && inner.state.status == PlaybackStatus::Playing
                         && inner.staged_track_meta.is_none()
                     {
@@ -619,6 +654,7 @@ impl AudioEngine {
         };
 
         // Stop prior sink
+        inner.stage_epoch += 1;
         if let Some(old_sink) = inner.sink.take() {
             old_sink.stop();
         }
@@ -743,6 +779,8 @@ impl AudioEngine {
                 if let Some(ref sink) = inner.sink {
                     if sink.len() > 1 {
                         sink.skip_one();
+                        // Fast path hands off to a playing track; resume the sink in case it was paused.
+                        sink.play();
                         let new_active = inner.staged_track_meta.take().unwrap();
                         inner.active_track_meta = Some(new_active.clone());
                         inner.state.track_id = Some(new_active.track_id.clone());
@@ -852,9 +890,8 @@ impl AudioEngine {
         if let Some(sink) = inner.sink.take() {
             sink.stop();
         }
+        inner.stage_epoch += 1;
         inner.state.status = PlaybackStatus::Stopped;
-        inner.state.position_seconds = 0.0;
-        inner.active_track_meta = None;
         inner.staged_track_meta = None;
 
         let dto = AudioPlaybackStateDto::from(&inner.state);
