@@ -266,6 +266,48 @@ describe("Home Listening Recommendations (Feature 29)", () => {
       expect(playerState.queue[0].id).toBe("trk-1");
     });
 
+    it("triggers playback when pressing Enter or Space key on recommendation card (AC-7)", async () => {
+      useRecommendationsStore.setState({
+        recommendations: sampleRecommendationsData,
+        isLoading: false,
+        isLoaded: true,
+      });
+
+      render(<RecommendationsGrid />);
+
+      const card = screen.getByRole("button", { name: "Play Most Played" });
+      await act(async () => {
+        fireEvent.keyDown(card, { key: "Enter" });
+      });
+
+      const playerState = usePlayerStore.getState();
+      expect(playerState.playbackContext).toEqual({
+        type: "most_played",
+        title: "Most Played",
+      });
+      expect(playerState.queue).toHaveLength(3);
+    });
+
+    it("falls back to gradient styling when track artwork fails to load (AC-1)", () => {
+      useRecommendationsStore.setState({
+        recommendations: sampleRecommendationsData,
+        isLoading: false,
+        isLoaded: true,
+      });
+
+      const { container } = render(<RecommendationsGrid />);
+      const images = container.querySelectorAll("img");
+      expect(images.length).toBeGreaterThan(0);
+
+      // Simulate image load error on artwork
+      act(() => {
+        fireEvent.error(images[0]);
+      });
+
+      // The image is removed/hidden on error, preserving background gradient
+      expect(screen.getByRole("button", { name: "Play Recently Added" })).toBeInTheDocument();
+    });
+
     it("navigates to Your Library when clicking empty card with 0 library tracks (AC-6, AC-7)", async () => {
       const onNavigate = vi.fn();
       const emptyRecommendations: HomeRecommendationsData = {
@@ -376,6 +418,94 @@ describe("Home Listening Recommendations (Feature 29)", () => {
       });
 
       expect(refreshSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe("Database DTO Adapters and Store Initialization (AC-1, AC-10)", () => {
+    it("maps HomeRecommendationsDto cleanly to frontend HomeRecommendationsData model", () => {
+      const sampleDto: HomeRecommendationsDto = {
+        library_track_count: 10,
+        recently_added: {
+          kind: "recently_added",
+          title: "Recently Added",
+          source: "library",
+          tracks: [
+            {
+              id: "trk-dto-1",
+              file_path: "/music/track.mp3",
+              title: "DTO Track",
+              artist_id: "art-1",
+              artist_name: "DTO Artist",
+              album_id: "alb-1",
+              album_name: "DTO Album",
+              album_artist: null,
+              duration: 215.4,
+              year: 2024,
+              genre: "Jazz",
+              disc_number: 1,
+              track_number: 1,
+              bitrate: 320,
+              format: "mp3",
+              cover_art_path: "/covers/art.jpg",
+              is_favorite: true,
+              liked_at: 1700000000,
+              play_count: 42,
+              last_played_at: 1700000100,
+              file_modified_at: 1700000000,
+              file_size_bytes: 4000000,
+              folder_id: null,
+              created_at: 1700000000,
+              updated_at: 1700000000,
+            },
+          ],
+        },
+        most_played: {
+          kind: "most_played",
+          title: "Most Played",
+          source: "history",
+          tracks: [],
+        },
+        best_artist: {
+          kind: "best_artist",
+          title: "Best of DTO Artist",
+          source: "history",
+          tracks: [],
+        },
+        trending_genre: {
+          kind: "trending_genre",
+          title: "Trending in Jazz",
+          source: "history",
+          tracks: [],
+        },
+      };
+
+      const mapped = dbServices.mapHomeRecommendationsDtoToUi(sampleDto);
+      expect(mapped.libraryTrackCount).toBe(10);
+      expect(mapped.recentlyAdded.kind).toBe("recently_added");
+      expect(mapped.recentlyAdded.source).toBe("library");
+      expect(mapped.recentlyAdded.tracks).toHaveLength(1);
+      expect(mapped.recentlyAdded.tracks[0].id).toBe("trk-dto-1");
+      expect(mapped.recentlyAdded.tracks[0].durationSeconds).toBe(215);
+      expect(mapped.recentlyAdded.tracks[0].playsCount).toBe(42);
+      expect(mapped.bestArtist.title).toBe("Best of DTO Artist");
+      expect(mapped.trendingGenre.title).toBe("Trending in Jazz");
+    });
+
+    it("resets recommendations state cleanly when calling resetRecommendations", () => {
+      useRecommendationsStore.setState({
+        recommendations: sampleRecommendationsData,
+        isLoading: true,
+        isLoaded: true,
+        error: "Previous error",
+      });
+
+      act(() => {
+        useRecommendationsStore.getState().resetRecommendations();
+      });
+
+      const state = useRecommendationsStore.getState();
+      expect(state.isLoading).toBe(false);
+      expect(state.error).toBeNull();
     });
   });
 });

@@ -482,7 +482,7 @@ spec [0028](../specs/0028-home-listening-recommendations/index.md)
   - [x] Queue replacement and playback context wiring on play and card clicks (AC-7)
         code in `src-tauri/src/db/history_repo.rs`, `src-tauri/src/commands/db.rs`, `src/services/db.ts`, `src/store/useRecommendationsStore.ts`, `src/components/home/RecommendationsGrid.tsx`, `src/pages/Home.tsx`, `src/test/homeRecommendations.test.tsx`
 - [x] Verify it: `/check verify home listening recommendations`
-- [ ] Test it: `/test home listening recommendations`
+- [x] Test it: `/test home listening recommendations`
 
 ### 30. Live audio visualizer · done
 
