@@ -39,7 +39,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 26  | Operating system media keys and transport controls | Phase 3 | in-progress |
 | 27  | Gapless track transitions          | Phase 2    | in-progress |
 | 28  | Playlist and saved collection hydration | Phase 2 | done        |
-| 29  | Home listening recommendations     | Phase 2    | in-progress |
+| 29  | Home listening recommendations     | Phase 2    | done        |
 | 30  | Live audio visualizer              | Phase 2    | done        |
 
 
@@ -466,7 +466,7 @@ spec [0027](../specs/0027-playlist-and-saved-collection-hydration/index.md)
 - [x] Verify it: `/check verify playlist and saved collection hydration`
 - [x] Test it: `/test playlist and saved collection hydration`
 
-### 29. Home listening recommendations · in-progress
+### 29. Home listening recommendations · done
 
 Provide four dynamic recommendation collections on Home (Recently Added, Most Played, Best of an Artist, Trending Genre) based on SQLite history and library tracks.
 **Done when:** Home shows the four generated collections with skeletons while loading, ranking rules and time cutoffs are computed via a single aggregate SQLite query, empty history falls back to library tracks with From your library labels, and listening history is pruned after 30 days by age.
