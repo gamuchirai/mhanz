@@ -110,6 +110,12 @@ impl DbState {
             .with_conn(|conn| history_repo::get_popular_tracks(conn, limit))
     }
 
+    /// Queries four dynamic home recommendation collections computed from history and library tracks (AC-1, AC-10).
+    pub fn get_home_recommendations(&self) -> Result<HomeRecommendationsDto, DatabaseError> {
+        self.0
+            .with_conn(|conn| history_repo::get_home_recommendations(conn))
+    }
+
     /// Clears all playback history entries.
     pub fn clear_playback_history(&self) -> Result<(), DatabaseError> {
         self.0.with_conn(history_repo::clear_history)

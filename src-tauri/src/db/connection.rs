@@ -82,6 +82,7 @@ impl DatabaseManager {
             .map_err(|err| DatabaseError::migration_failed(err.to_string()))?;
 
         super::seeding::seed_default_playlists_if_empty(&mut conn)?;
+        let _ = super::history_repo::prune_history_by_age(&mut conn);
 
         Ok(Self {
             conn: Mutex::new(conn),
@@ -163,6 +164,7 @@ impl DatabaseManager {
             .map_err(|err| DatabaseError::migration_failed(err.to_string()))?;
 
         super::seeding::seed_default_playlists_if_empty(&mut conn)?;
+        let _ = super::history_repo::prune_history_by_age(&mut conn);
 
         Ok(conn)
     }

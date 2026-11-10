@@ -1,4 +1,4 @@
-import { CuratedCard, PlayHistoryItem, ShowcaseItem, Track } from "../types/discovery";
+import { CuratedCard, HomeRecommendationsData, PlayHistoryItem, ShowcaseItem, Track } from "../types/discovery";
 
 export const sampleTracks: Track[] = [
   {
@@ -222,3 +222,32 @@ export const popularTracksList: Track[] = [
   sampleTracks[3],
   sampleTracks[4],
 ];
+
+export const initialRecommendations: HomeRecommendationsData = {
+  libraryTrackCount: sampleTracks.length,
+  recentlyAdded: {
+    kind: "recently_added",
+    title: "Recently Added",
+    source: "library",
+    tracks: sampleTracks.slice(0, 10),
+  },
+  mostPlayed: {
+    kind: "most_played",
+    title: "Most Played",
+    source: "history",
+    tracks: sampleTracks.slice(0, 10),
+  },
+  bestArtist: {
+    kind: "best_artist",
+    title: "Best of Aiden Vale",
+    source: "history",
+    tracks: sampleTracks.filter((t) => t.artist === "Aiden Vale"),
+  },
+  trendingGenre: {
+    kind: "trending_genre",
+    title: "Trending in Indie Pop",
+    source: "history",
+    tracks: sampleTracks.filter((t) => t.genre === "Indie Pop"),
+  },
+};
+

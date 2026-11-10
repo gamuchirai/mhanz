@@ -176,6 +176,30 @@ export interface PlayHistoryItemDto {
   track: TrackDto;
 }
 
+export type HomeRecommendationKindDto =
+  | "recently_added"
+  | "most_played"
+  | "best_artist"
+  | "trending_genre";
+
+export type HomeRecommendationSourceDto = "history" | "library" | "none";
+
+export interface HomeRecommendationCollectionDto {
+  kind: HomeRecommendationKindDto;
+  title: string;
+  source: HomeRecommendationSourceDto;
+  tracks: TrackDto[];
+}
+
+export interface HomeRecommendationsDto {
+  library_track_count: number;
+  recently_added: HomeRecommendationCollectionDto;
+  most_played: HomeRecommendationCollectionDto;
+  best_artist: HomeRecommendationCollectionDto;
+  trending_genre: HomeRecommendationCollectionDto;
+}
+
+
 
 export interface LyricLineDto {
   id: string;

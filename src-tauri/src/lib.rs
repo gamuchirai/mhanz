@@ -81,6 +81,7 @@ pub fn run() {
             commands::db::db_get_recent_plays,
             commands::db::db_get_popular_tracks,
             commands::db::db_clear_playback_history,
+            commands::db::db_get_home_recommendations,
             commands::audio::audio_play_track,
             commands::audio::audio_pause,
             commands::audio::audio_resume,
