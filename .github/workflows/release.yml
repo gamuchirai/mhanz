@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows installer
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Tauri app (NSIS + MSI)
+        run: npm run tauri build
+        env:
+          # Tauri signs bundles when these secrets are present.
+          # Leave them unset for unsigned dev builds, set them in
+          # GitHub → Settings → Secrets for signed production builds.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+      - name: Collect installer artifacts
+        id: artifacts
+        shell: pwsh
+        run: |
+          $msi  = Get-ChildItem src-tauri/target/release/bundle/msi/*.msi  -ErrorAction SilentlyContinue | Select-Object -First 1
+          $nsis = Get-ChildItem src-tauri/target/release/bundle/nsis/*.exe  -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($msi)  { echo "msi=$($msi.FullName)"   >> $env:GITHUB_OUTPUT }
+          if ($nsis) { echo "nsis=$($nsis.FullName)"  >> $env:GITHUB_OUTPUT }
+
+      - name: Upload MSI to release
+        if: steps.artifacts.outputs.msi != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.artifacts.outputs.msi }}
+          generate_release_notes: true
+
+      - name: Upload NSIS setup.exe to release
+        if: steps.artifacts.outputs.nsis != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.artifacts.outputs.nsis }}
+          generate_release_notes: true
+
