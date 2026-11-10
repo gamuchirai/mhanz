@@ -253,4 +253,3 @@ pub async fn db_get_home_recommendations(
 ) -> Result<HomeRecommendationsDto, DatabaseError> {
     state.get_home_recommendations()
 }
-

@@ -230,7 +230,9 @@ pub fn clear_history(conn: &mut Connection) -> Result<(), DatabaseError> {
 
 /// Computes four dynamic home recommendation collections (Recently Added, Most Played,
 /// Best of an Artist, Trending Genre) based on SQLite history and library tracks.
-pub fn get_home_recommendations(conn: &Connection) -> Result<HomeRecommendationsDto, DatabaseError> {
+pub fn get_home_recommendations(
+    conn: &Connection,
+) -> Result<HomeRecommendationsDto, DatabaseError> {
     // 1. Capture UTC Unix time in seconds once and calculate 30 day cutoff (AC-5, AC-9)
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -371,8 +373,12 @@ pub fn get_home_recommendations(conn: &Connection) -> Result<HomeRecommendations
                     "SELECT {} FROM tracks t WHERE t.artist_id = ?1 ORDER BY t.play_count DESC, t.title ASC, t.id ASC LIMIT 30",
                     track_select_sql
                 );
-                let mut stmt = conn.prepare(&trk_sql).map_err(|err| DatabaseError::query_failed(err.to_string()))?;
-                let rows = stmt.query_map(params![aid], track_repo::map_track_row).map_err(|err| DatabaseError::query_failed(err.to_string()))?;
+                let mut stmt = conn
+                    .prepare(&trk_sql)
+                    .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
+                let rows = stmt
+                    .query_map(params![aid], track_repo::map_track_row)
+                    .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
                 let mut trks = Vec::new();
                 for r in rows {
                     trks.push(r.map_err(|err| DatabaseError::query_failed(err.to_string()))?);
@@ -388,8 +394,12 @@ pub fn get_home_recommendations(conn: &Connection) -> Result<HomeRecommendations
                     "SELECT {} FROM tracks t WHERE (t.artist_id IS NULL OR trim(t.artist_id) = '') AND lower(trim(t.artist_name)) = ?1 ORDER BY t.play_count DESC, t.title ASC, t.id ASC LIMIT 30",
                     track_select_sql
                 );
-                let mut stmt = conn.prepare(&trk_sql).map_err(|err| DatabaseError::query_failed(err.to_string()))?;
-                let rows = stmt.query_map(params![norm_name], track_repo::map_track_row).map_err(|err| DatabaseError::query_failed(err.to_string()))?;
+                let mut stmt = conn
+                    .prepare(&trk_sql)
+                    .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
+                let rows = stmt
+                    .query_map(params![norm_name], track_repo::map_track_row)
+                    .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
                 let mut trks = Vec::new();
                 for r in rows {
                     trks.push(r.map_err(|err| DatabaseError::query_failed(err.to_string()))?);
@@ -444,8 +454,12 @@ pub fn get_home_recommendations(conn: &Connection) -> Result<HomeRecommendations
                         "SELECT {} FROM tracks t WHERE t.artist_id = ?1 ORDER BY t.play_count DESC, t.title ASC, t.id ASC LIMIT 30",
                         track_select_sql
                     );
-                    let mut stmt = conn.prepare(&trk_sql).map_err(|err| DatabaseError::query_failed(err.to_string()))?;
-                    let rows = stmt.query_map(params![aid], track_repo::map_track_row).map_err(|err| DatabaseError::query_failed(err.to_string()))?;
+                    let mut stmt = conn
+                        .prepare(&trk_sql)
+                        .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
+                    let rows = stmt
+                        .query_map(params![aid], track_repo::map_track_row)
+                        .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
                     let mut trks = Vec::new();
                     for r in rows {
                         trks.push(r.map_err(|err| DatabaseError::query_failed(err.to_string()))?);
@@ -453,16 +467,20 @@ pub fn get_home_recommendations(conn: &Connection) -> Result<HomeRecommendations
                     (name, trks)
                 } else {
                     let disp_sql = "SELECT t.artist_name FROM tracks t WHERE (t.artist_id IS NULL OR trim(t.artist_id) = '') AND lower(trim(t.artist_name)) = ?1 ORDER BY t.play_count DESC, t.title ASC, t.id ASC LIMIT 1";
-                    let name: String = conn
-                        .query_row(disp_sql, params![norm_name], |r| r.get(0))
-                        .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
+                    let name: String =
+                        conn.query_row(disp_sql, params![norm_name], |r| r.get(0))
+                            .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
 
                     let trk_sql = format!(
                         "SELECT {} FROM tracks t WHERE (t.artist_id IS NULL OR trim(t.artist_id) = '') AND lower(trim(t.artist_name)) = ?1 ORDER BY t.play_count DESC, t.title ASC, t.id ASC LIMIT 30",
                         track_select_sql
                     );
-                    let mut stmt = conn.prepare(&trk_sql).map_err(|err| DatabaseError::query_failed(err.to_string()))?;
-                    let rows = stmt.query_map(params![norm_name], track_repo::map_track_row).map_err(|err| DatabaseError::query_failed(err.to_string()))?;
+                    let mut stmt = conn
+                        .prepare(&trk_sql)
+                        .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
+                    let rows = stmt
+                        .query_map(params![norm_name], track_repo::map_track_row)
+                        .map_err(|err| DatabaseError::query_failed(err.to_string()))?;
                     let mut trks = Vec::new();
                     for r in rows {
                         trks.push(r.map_err(|err| DatabaseError::query_failed(err.to_string()))?);
@@ -1006,9 +1024,15 @@ mod tests {
         assert_eq!(recs.library_track_count, 3);
 
         // 1. Recently Added: newest first (track C created_at now - 10, then B now - 50, then A now - 100)
-        assert_eq!(recs.recently_added.kind, HomeRecommendationKind::RecentlyAdded);
+        assert_eq!(
+            recs.recently_added.kind,
+            HomeRecommendationKind::RecentlyAdded
+        );
         assert_eq!(recs.recently_added.title, "Recently Added");
-        assert_eq!(recs.recently_added.source, HomeRecommendationSource::Library);
+        assert_eq!(
+            recs.recently_added.source,
+            HomeRecommendationSource::Library
+        );
         assert_eq!(recs.recently_added.tracks.len(), 3);
         assert_eq!(recs.recently_added.tracks[0].id, "trk-rec-c");
         assert_eq!(recs.recently_added.tracks[1].id, "trk-rec-b");
@@ -1032,23 +1056,42 @@ mod tests {
         assert_eq!(recs.best_artist.tracks[1].id, "trk-rec-b");
 
         // 4. Trending Genre: Jazz has 2 qualifying plays in 30 days, Mbira has 1 -> Jazz wins! Formatted title: "Trending in Jazz"
-        assert_eq!(recs.trending_genre.kind, HomeRecommendationKind::TrendingGenre);
+        assert_eq!(
+            recs.trending_genre.kind,
+            HomeRecommendationKind::TrendingGenre
+        );
         assert_eq!(recs.trending_genre.title, "Trending in Jazz");
-        assert_eq!(recs.trending_genre.source, HomeRecommendationSource::History);
+        assert_eq!(
+            recs.trending_genre.source,
+            HomeRecommendationSource::History
+        );
         assert_eq!(recs.trending_genre.tracks.len(), 1);
         assert_eq!(recs.trending_genre.tracks[0].id, "trk-rec-a");
 
         // Clear history and verify fallback behavior (AC-6)
         clear_history(conn).unwrap();
         // Set all play counts to 0 to test pure library fallback
-        conn.execute("UPDATE tracks SET play_count = 0", []).unwrap();
+        conn.execute("UPDATE tracks SET play_count = 0", [])
+            .unwrap();
 
         let fallback_recs = get_home_recommendations(conn).expect("Fallback queried");
-        assert_eq!(fallback_recs.recently_added.source, HomeRecommendationSource::Library);
-        assert_eq!(fallback_recs.most_played.source, HomeRecommendationSource::Library);
-        assert_eq!(fallback_recs.best_artist.source, HomeRecommendationSource::Library);
+        assert_eq!(
+            fallback_recs.recently_added.source,
+            HomeRecommendationSource::Library
+        );
+        assert_eq!(
+            fallback_recs.most_played.source,
+            HomeRecommendationSource::Library
+        );
+        assert_eq!(
+            fallback_recs.best_artist.source,
+            HomeRecommendationSource::Library
+        );
         assert_eq!(fallback_recs.best_artist.title, "Best of Oliver Mtukudzi"); // Oliver has 2 tracks vs Chiwoniso 1
-        assert_eq!(fallback_recs.trending_genre.source, HomeRecommendationSource::Library);
+        assert_eq!(
+            fallback_recs.trending_genre.source,
+            HomeRecommendationSource::Library
+        );
         assert_eq!(fallback_recs.trending_genre.title, "Trending in Jazz"); // Jazz has 2 tracks vs Mbira 1
     }
 

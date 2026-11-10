@@ -421,4 +421,3 @@ pub struct HomeRecommendationsDto {
     pub best_artist: HomeRecommendationCollection,
     pub trending_genre: HomeRecommendationCollection,
 }
-

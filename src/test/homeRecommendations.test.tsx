@@ -10,7 +10,6 @@ import { useToastStore } from "../store/useToastStore";
 import * as dbServices from "../services/db";
 import type {
   HomeRecommendationsData,
-  HomeRecommendationCollection,
   Track,
 } from "../types/discovery";
 import type { HomeRecommendationsDto } from "../types/database";
