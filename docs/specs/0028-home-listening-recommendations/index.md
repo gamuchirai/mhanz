@@ -1,7 +1,7 @@
 # 0028. Home listening recommendations
 
 **Date**: 2026-11-09
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 
@@ -144,11 +144,11 @@ Not applicable. No new environment variables, feature flags, or credentials are 
 
 ## Build plan
 
-1. Add the four recommendation card shells, loading and empty states, retry UI, and source labels with typed preview results, satisfies **AC-1**, **AC-6**, **AC-10**
-2. Implement the aggregate read only repository query and typed DTO with formatted titles and library fallback track selection, satisfies **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-6**
-3. Add 30 day age pruning to the history recording command and app startup, preserving milestone rules and clear history behavior, satisfies **AC-5**, **AC-9**
-4. Add the Tauri command and TypeScript service, then hydrate and refresh Home on entry, history recording, scan completion, and successful history clear, satisfies **AC-8**, **AC-10**
-5. Wire queue playback and context values from card play buttons and card body clicks, then cover ranking, empty data, errors, and refreshes with tests, satisfies **AC-7**
+- [x] 1. Add the four recommendation card shells, loading and empty states, retry UI, and source labels with typed preview results, satisfies **AC-1**, **AC-6**, **AC-10**
+- [x] 2. Implement the aggregate read only repository query and typed DTO with formatted titles and library fallback track selection, satisfies **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-6**
+- [x] 3. Add 30 day age pruning to the history recording command and app startup, preserving milestone rules and clear history behavior, satisfies **AC-5**, **AC-9**
+- [x] 4. Add the Tauri command and TypeScript service, then hydrate and refresh Home on entry, history recording, scan completion, and successful history clear, satisfies **AC-8**, **AC-10**
+- [x] 5. Wire queue playback and context values from card play buttons and card body clicks, then cover ranking, empty data, errors, and refreshes with tests, satisfies **AC-7**
 
 ## Consequences
 

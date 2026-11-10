@@ -383,3 +383,42 @@ pub struct LyricLineDto {
     /// Cleaned lyric text for this line.
     pub text: String,
 }
+
+/// Kind identifier for generated home recommendations.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum HomeRecommendationKind {
+    RecentlyAdded,
+    MostPlayed,
+    BestArtist,
+    TrendingGenre,
+}
+
+/// Data provenance indicator for a generated recommendation collection.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum HomeRecommendationSource {
+    History,
+    Library,
+    None,
+}
+
+/// Single generated home recommendation collection.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct HomeRecommendationCollection {
+    pub kind: HomeRecommendationKind,
+    pub title: String,
+    pub source: HomeRecommendationSource,
+    pub tracks: Vec<TrackDto>,
+}
+
+/// Aggregate home recommendations payload returned by the database.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct HomeRecommendationsDto {
+    pub library_track_count: u64,
+    pub recently_added: HomeRecommendationCollection,
+    pub most_played: HomeRecommendationCollection,
+    pub best_artist: HomeRecommendationCollection,
+    pub trending_genre: HomeRecommendationCollection,
+}
+

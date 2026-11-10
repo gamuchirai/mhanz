@@ -474,12 +474,13 @@ Provide four dynamic recommendation collections on Home (Recently Added, Most Pl
 spec [0028](../specs/0028-home-listening-recommendations/index.md)
 
 - [x] Design it (spec): `/architect home listening recommendations`
-- [ ] Build it: `/develop home listening recommendations`
-  - [ ] Recommendation card shells, loading skeletons, retry states, and source labels (AC-1, AC-6, AC-10)
-  - [ ] Aggregate SQLite read query for the four rankings, formatted titles, and library fallback tracks (AC-2, AC-3, AC-4, AC-5, AC-6)
-  - [ ] 30 day history age pruning on history recording and startup maintenance (AC-5, AC-9)
-  - [ ] Home recommendation hydration and event driven refresh on history record, scan complete, and history clear (AC-8, AC-10)
-  - [ ] Queue replacement and playback context wiring on play and card clicks (AC-7)
+- [x] Build it: `/develop home listening recommendations`
+  - [x] Recommendation card shells, loading skeletons, retry states, and source labels (AC-1, AC-6, AC-10)
+  - [x] Aggregate SQLite read query for the four rankings, formatted titles, and library fallback tracks (AC-2, AC-3, AC-4, AC-5, AC-6)
+  - [x] 30 day history age pruning on history recording and startup maintenance (AC-5, AC-9)
+  - [x] Home recommendation hydration and event driven refresh on history record, scan complete, and history clear (AC-8, AC-10)
+  - [x] Queue replacement and playback context wiring on play and card clicks (AC-7)
+        code in `src-tauri/src/db/history_repo.rs`, `src-tauri/src/commands/db.rs`, `src/services/db.ts`, `src/store/useRecommendationsStore.ts`, `src/components/home/RecommendationsGrid.tsx`, `src/pages/Home.tsx`, `src/test/homeRecommendations.test.tsx`
 - [ ] Verify it: `/check verify home listening recommendations`
 - [ ] Test it: `/test home listening recommendations`
 

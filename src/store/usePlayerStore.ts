@@ -45,6 +45,7 @@ import {
   mediaControlsSetMetadata,
   mediaControlsSetPlaybackStatus,
 } from "../services/mediaControls";
+import { useRecommendationsStore } from "./useRecommendationsStore";
 
 let queueIdCounter = 0;
 function createUniqueQueueId(prefix = "queue"): string {
@@ -110,13 +111,33 @@ interface PlayerState {
 
   // Playback context
   playbackContext: {
-    type: "playlist" | "album" | "artist" | "liked" | "library" | "unknown";
+    type:
+      | "playlist"
+      | "album"
+      | "artist"
+      | "liked"
+      | "library"
+      | "unknown"
+      | "recently_added"
+      | "most_played"
+      | "best_artist"
+      | "trending_genre";
     id?: string;
     title?: string;
   } | null;
   setPlaybackContext: (
     context: {
-      type: "playlist" | "album" | "artist" | "liked" | "library" | "unknown";
+      type:
+        | "playlist"
+        | "album"
+        | "artist"
+        | "liked"
+        | "library"
+        | "unknown"
+        | "recently_added"
+        | "most_played"
+        | "best_artist"
+        | "trending_genre";
       id?: string;
       title?: string;
     } | null
@@ -526,9 +547,13 @@ export const usePlayerStore = create<PlayerState>()((set, get) => ({
   clearRecentPlays: () => {
     set({ recentPlays: [] });
     if (isTauri()) {
-      dbClearPlaybackHistory().catch((err) => {
-        console.error("Failed to clear playback history in SQLite:", err);
-      });
+      dbClearPlaybackHistory()
+        .then(() => {
+          useRecommendationsStore.getState().refreshRecommendations().catch(() => {});
+        })
+        .catch((err) => {
+          console.error("Failed to clear playback history in SQLite:", err);
+        });
     }
   },
 
@@ -782,11 +807,13 @@ export function initPlayerAudioSync(): () => void {
           usePlayerStore.setState({ popularTracks: popular });
         })
         .catch(() => {});
+      useRecommendationsStore.getState().refreshRecommendations().catch(() => {});
     }
   });
 
   const p5 = onScanCompleted(() => {
     usePlayerStore.getState().initializeHomeDiscovery().catch(() => {});
+    useRecommendationsStore.getState().refreshRecommendations().catch(() => {});
   });
 
   const p6 = listenAudioError((err) => {

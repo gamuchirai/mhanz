@@ -4,8 +4,9 @@ use tauri::State;
 
 use crate::db::{
     AlbumDetailDto, AlbumDto, AlbumFavoriteResultDto, ArtistDto, ArtistProfileDto, DatabaseError,
-    DatabaseStatusDto, DbState, FolderDto, PaginatedTracksDto, PlayHistoryItemDto,
-    PlaylistDetailDto, PlaylistDto, PlaylistInputDto, SearchResultsDto, TrackDto, TrackFilterDto,
+    DatabaseStatusDto, DbState, FolderDto, HomeRecommendationsDto, PaginatedTracksDto,
+    PlayHistoryItemDto, PlaylistDetailDto, PlaylistDto, PlaylistInputDto, SearchResultsDto,
+    TrackDto, TrackFilterDto,
 };
 
 /// Queries database health, migration schema version, and record statistics.
@@ -244,3 +245,12 @@ pub async fn db_get_popular_tracks(
 pub async fn db_clear_playback_history(state: State<'_, DbState>) -> Result<(), DatabaseError> {
     state.clear_playback_history()
 }
+
+/// Computes four dynamic home recommendation collections from SQLite history and library tracks (AC-1, AC-10).
+#[tauri::command]
+pub async fn db_get_home_recommendations(
+    state: State<'_, DbState>,
+) -> Result<HomeRecommendationsDto, DatabaseError> {
+    state.get_home_recommendations()
+}
+

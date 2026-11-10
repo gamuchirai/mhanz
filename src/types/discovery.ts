@@ -54,3 +54,27 @@ export interface PlayHistoryItem {
   playedAtTimestamp: number;
   contextTitle: string;
 }
+
+export type HomeRecommendationKind =
+  | "recently_added"
+  | "most_played"
+  | "best_artist"
+  | "trending_genre";
+
+export type HomeRecommendationSource = "history" | "library" | "none";
+
+export interface HomeRecommendationCollection {
+  kind: HomeRecommendationKind;
+  title: string;
+  source: HomeRecommendationSource;
+  tracks: Track[];
+}
+
+export interface HomeRecommendationsData {
+  libraryTrackCount: number;
+  recentlyAdded: HomeRecommendationCollection;
+  mostPlayed: HomeRecommendationCollection;
+  bestArtist: HomeRecommendationCollection;
+  trendingGenre: HomeRecommendationCollection;
+}
+

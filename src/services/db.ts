@@ -21,8 +21,15 @@ import type {
   TrackDto,
   TrackFilterDto,
   PlayHistoryItemDto,
+  HomeRecommendationCollectionDto,
+  HomeRecommendationsDto,
 } from "../types/database";
-import type { Track, PlayHistoryItem } from "../types/discovery";
+import type {
+  Track,
+  PlayHistoryItem,
+  HomeRecommendationCollection,
+  HomeRecommendationsData,
+} from "../types/discovery";
 import { formatCoverArtUrl } from "./scanner";
 import type { AlbumCard, ArtistCard, GenreCard, PlaylistCard, SearchResults } from "../types/search";
 
@@ -400,3 +407,44 @@ export async function dbGetPopularTracks(limit?: number): Promise<Track[]> {
 export async function dbClearPlaybackHistory(): Promise<void> {
   return invoke<void>("db_clear_playback_history");
 }
+
+/**
+ * Adapts database HomeRecommendationCollectionDto to UI HomeRecommendationCollection.
+ */
+export function mapHomeRecommendationCollectionDtoToUi(
+  dto: HomeRecommendationCollectionDto
+): HomeRecommendationCollection {
+  return {
+    kind: dto.kind,
+    title: dto.title,
+    source: dto.source,
+    tracks: dto.tracks.map(mapTrackDtoToUi),
+  };
+}
+
+/**
+ * Adapts database HomeRecommendationsDto to UI HomeRecommendationsData.
+ */
+export function mapHomeRecommendationsDtoToUi(
+  dto: HomeRecommendationsDto
+): HomeRecommendationsData {
+  return {
+    libraryTrackCount: dto.library_track_count,
+    recentlyAdded: mapHomeRecommendationCollectionDtoToUi(dto.recently_added),
+    mostPlayed: mapHomeRecommendationCollectionDtoToUi(dto.most_played),
+    bestArtist: mapHomeRecommendationCollectionDtoToUi(dto.best_artist),
+    trendingGenre: mapHomeRecommendationCollectionDtoToUi(dto.trending_genre),
+  };
+}
+
+/**
+ * Queries aggregate home recommendations computed from history and library tracks.
+ */
+export async function dbGetHomeRecommendations(): Promise<HomeRecommendationsData> {
+  const dto = await invoke<HomeRecommendationsDto>("db_get_home_recommendations");
+  if (!dto) {
+    throw new Error("No recommendations returned from database");
+  }
+  return mapHomeRecommendationsDtoToUi(dto);
+}
+

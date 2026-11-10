@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 import { HeroBanner } from "../components/home/HeroBanner";
 import { CuratedGrid } from "../components/home/CuratedGrid";
+import { RecommendationsGrid } from "../components/home/RecommendationsGrid";
 import { RecentCarousel } from "../components/home/RecentCarousel";
 import { TrackTable } from "../components/home/TrackTable";
 import {
@@ -13,6 +14,7 @@ import {
 } from "../store/usePlayerStore";
 import { usePlaylistStore } from "../store/usePlaylistStore";
 import { useAlbumStore } from "../store/useAlbumStore";
+import { useRecommendationsStore } from "../store/useRecommendationsStore";
 import { showcaseItem } from "../data/homeFixtures";
 import type { ShowcaseItem } from "../types/discovery";
 
@@ -36,6 +38,10 @@ export function Home({ onNavigate }: HomeProps = {}) {
     const aStore = useAlbumStore.getState();
     if (!aStore.isLoaded && !aStore.isLoading) {
       aStore.initializeAlbums().catch(() => {});
+    }
+    const rStore = useRecommendationsStore.getState();
+    if (!rStore.isLoaded && !rStore.isLoading) {
+      rStore.initializeRecommendations().catch(() => {});
     }
   }, [initializeHomeDiscovery]);
 
@@ -70,6 +76,9 @@ export function Home({ onNavigate }: HomeProps = {}) {
     >
       {/* Hero Featured Showcase */}
       <HeroBanner item={heroItem} />
+
+      {/* Based on Your Listening Section (AC-1) */}
+      <RecommendationsGrid onNavigate={onNavigate} />
 
       {/* Your Collections Section */}
       <CuratedGrid cards={collectionsCards} title="Your Collections" onNavigate={onNavigate} />
