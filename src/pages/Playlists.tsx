@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import {
   useActivePlaylist,
+  useIsPlaylistDetailLoading,
+  usePlaylistDetailError,
   usePlaylistStore,
   usePlaylistTracksByPlaylistId,
 } from "../store/usePlaylistStore";
@@ -16,6 +18,8 @@ import { DeletePlaylistDialog } from "../components/playlists/DeletePlaylistDial
 export function Playlists() {
   const activePlaylist = useActivePlaylist();
   const entries = usePlaylistTracksByPlaylistId(activePlaylist ? activePlaylist.id : null);
+  const isDetailLoading = useIsPlaylistDetailLoading();
+  const detailError = usePlaylistDetailError();
 
   useEffect(() => {
     if (activePlaylist?.id) {
@@ -41,7 +45,72 @@ export function Playlists() {
       ) : (
         <>
           <PlaylistDetailBanner playlist={activePlaylist} />
-          {entries.length === 0 ? (
+          {isDetailLoading && entries.length === 0 ? (
+            <div
+              role="region"
+              aria-label="Loading playlist songs"
+              className="flex flex-col gap-3 w-full animate-pulse my-4"
+            >
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    height: "48px",
+                    borderRadius: "8px",
+                    background: "rgba(255, 255, 255, 0.03)",
+                  }}
+                />
+              ))}
+            </div>
+          ) : detailError && entries.length === 0 ? (
+            <div
+              role="alert"
+              aria-label="Playlist detail error"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "12px",
+                padding: "48px 24px",
+                textAlign: "center",
+                background: "rgba(239, 68, 68, 0.05)",
+                borderRadius: "16px",
+                border: "1px dashed rgba(239, 68, 68, 0.25)",
+                margin: "12px 0",
+              }}
+            >
+              <div style={{ color: "#ff6b6b", fontSize: "15px", fontWeight: 600 }}>
+                Failed to load playlist songs
+              </div>
+              <p style={{ margin: 0, fontSize: "13px", color: "var(--m)" }}>
+                {detailError}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  usePlaylistStore
+                    .getState()
+                    .loadPlaylistDetails(activePlaylist.id)
+                    .catch(() => {});
+                }}
+                aria-label="Retry loading playlist songs"
+                style={{
+                  marginTop: "6px",
+                  padding: "8px 20px",
+                  borderRadius: "20px",
+                  background: "var(--accent)",
+                  color: "#18110f",
+                  border: 0,
+                  fontWeight: 600,
+                  fontSize: "13px",
+                  cursor: "pointer",
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          ) : entries.length === 0 ? (
             <PlaylistEmptyState />
           ) : (
             <PlaylistSongTable playlist={activePlaylist} />

@@ -8,8 +8,9 @@ interface PlaylistCardProps {
 
 export function PlaylistCard({ playlist }: PlaylistCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isPlayingLoading, setIsPlayingLoading] = useState(false);
   const trackEntries = usePlaylistTracksByPlaylistId(playlist.id);
-  const trackCount = trackEntries.length;
+  const trackCount = playlist.trackCount !== undefined ? playlist.trackCount : trackEntries.length;
 
   const setActivePlaylistId = usePlaylistStore((state) => state.setActivePlaylistId);
   const playPlaylist = usePlaylistStore((state) => state.playPlaylist);
@@ -18,9 +19,15 @@ export function PlaylistCard({ playlist }: PlaylistCardProps) {
     setActivePlaylistId(playlist.id);
   };
 
-  const handlePlayClick = (e: React.MouseEvent) => {
+  const handlePlayClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    playPlaylist(playlist.id, 0);
+    if (trackCount === 0 || isPlayingLoading) return;
+    setIsPlayingLoading(true);
+    try {
+      await playPlaylist(playlist.id, 0);
+    } finally {
+      setIsPlayingLoading(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -113,8 +120,16 @@ export function PlaylistCard({ playlist }: PlaylistCardProps) {
         <button
           type="button"
           onClick={handlePlayClick}
-          aria-label={`Play ${playlist.title}`}
-          disabled={trackCount === 0}
+          aria-label={
+            trackCount === 0
+              ? `Play disabled, ${playlist.title} has no tracks`
+              : isPlayingLoading
+                ? `Loading ${playlist.title}`
+                : `Play ${playlist.title}`
+          }
+          title={trackCount === 0 ? "Tracks must be added first" : `Play ${playlist.title}`}
+          disabled={trackCount === 0 || isPlayingLoading}
+          aria-disabled={trackCount === 0 || isPlayingLoading}
           style={{
             position: "absolute",
             right: "12px",
@@ -128,16 +143,31 @@ export function PlaylistCard({ playlist }: PlaylistCardProps) {
             display: "grid",
             placeItems: "center",
             boxShadow: "0 8px 16px rgba(0,0,0,0.4)",
-            cursor: trackCount === 0 ? "not-allowed" : "pointer",
-            opacity: isHovered ? 1 : 0,
-            transform: isHovered ? "translateY(0) scale(1)" : "translateY(8px) scale(0.9)",
+            cursor: trackCount === 0 || isPlayingLoading ? "not-allowed" : "pointer",
+            opacity: isHovered || isPlayingLoading ? 1 : 0,
+            transform: isHovered || isPlayingLoading ? "translateY(0) scale(1)" : "translateY(8px) scale(0.9)",
             transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-            pointerEvents: isHovered ? "auto" : "none",
+            pointerEvents: isHovered || isPlayingLoading ? "auto" : "none",
           }}
         >
-          <svg className="i" width="20" height="20" aria-hidden="true">
-            <use href="#play" />
-          </svg>
+          {isPlayingLoading ? (
+            <span
+              style={{
+                width: "18px",
+                height: "18px",
+                border: "2px solid #18110f",
+                borderTopColor: "transparent",
+                borderRadius: "50%",
+                display: "inline-block",
+                animation: "spin 0.8s linear infinite",
+              }}
+              aria-hidden="true"
+            />
+          ) : (
+            <svg className="i" width="20" height="20" aria-hidden="true">
+              <use href="#play" />
+            </svg>
+          )}
         </button>
       </div>
 

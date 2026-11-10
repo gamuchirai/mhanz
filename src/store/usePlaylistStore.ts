@@ -29,6 +29,7 @@ import { favoritesSync } from "../services/favoritesSync";
 import { formatCoverArtUrl } from "../services/scanner";
 import { usePlayerStore } from "./usePlayerStore";
 import { useLibraryStore } from "./useLibraryStore";
+import { useToastStore } from "./useToastStore";
 
 export interface PlaylistState {
   playlists: Playlist[];
@@ -42,6 +43,9 @@ export interface PlaylistState {
   isDeleteDialogOpen: boolean;
   isLoaded: boolean;
   isLoading: boolean;
+  error: string | null;
+  isDetailLoading: boolean;
+  detailError: string | null;
 
   initializePlaylists: () => Promise<void>;
   loadPlaylistDetails: (playlistId: string) => Promise<void>;
@@ -98,6 +102,7 @@ export function mapPlaylistDtoToPlaylist(dto: PlaylistDto): Playlist {
     coverGradient: dto.gradient_preset || MIDNIGHT_GRADIENT_PRESETS[0].gradient,
     coverUrl: dto.cover_art_path || undefined,
     isCurated: Boolean(dto.is_curated),
+    trackCount: dto.track_count,
     createdAt: dto.created_at
       ? new Date(dto.created_at * 1000).toISOString()
       : new Date().toISOString(),
@@ -200,28 +205,41 @@ export const usePlaylistStore = create<PlaylistState>()((set, get) => ({
   isDeleteDialogOpen: false,
   isLoaded: false,
   isLoading: false,
+  error: null,
+  isDetailLoading: false,
+  detailError: null,
 
   initializePlaylists: async () => {
-    set({ isLoading: true });
+    if (get().isLoading) return;
+    set({ isLoading: true, error: null });
     try {
       if (isTauri()) {
-        const dtos = await dbGetPlaylists();
+        const dtos = (await dbGetPlaylists()) || [];
         const mapped = dtos.map(mapPlaylistDtoToPlaylist);
-        set({ playlists: mapped, isLoaded: true, isLoading: false });
+        set({ playlists: mapped, isLoaded: true, isLoading: false, error: null });
       } else {
-        set({ playlists: initialPlaylists, isLoaded: true, isLoading: false });
+        set({ playlists: initialPlaylists, isLoaded: true, isLoading: false, error: null });
       }
     } catch (err) {
       console.warn("Failed to initialize playlists from database:", err);
-      set({ isLoading: false });
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      if (isTauri()) {
+        set({ playlists: [], error: errorMsg, isLoaded: true, isLoading: false });
+      } else {
+        set({ error: errorMsg, isLoaded: true, isLoading: false });
+      }
     }
   },
 
   loadPlaylistDetails: async (playlistId: string) => {
     if (!isTauri()) return;
+    set({ isDetailLoading: true, detailError: null });
     try {
       const details = await dbGetPlaylistDetails(playlistId);
-      if (!details) return;
+      if (!details) {
+        set({ isDetailLoading: false });
+        return;
+      }
       const mappedEntries: PlaylistTrackEntry[] = details.tracks.map((item) => {
         const trk = mapTrackDtoToTrack(item.track);
         cacheTrack(trk);
@@ -237,13 +255,25 @@ export const usePlaylistStore = create<PlaylistState>()((set, get) => ({
       });
 
       set((state) => ({
+        isDetailLoading: false,
+        detailError: null,
         playlistTracks: {
           ...state.playlistTracks,
           [playlistId]: mappedEntries,
         },
       }));
     } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
       console.warn(`Failed to load details for playlist ${playlistId}:`, err);
+      set((state) => ({
+        isDetailLoading: false,
+        detailError: errorMsg,
+        playlistTracks: {
+          ...state.playlistTracks,
+          [playlistId]: [],
+        },
+      }));
+      throw err;
     }
   },
 
@@ -535,8 +565,24 @@ export const usePlaylistStore = create<PlaylistState>()((set, get) => ({
     set({ isDeleteDialogOpen: open });
   },
 
-  playPlaylist: (playlistId: string, startIndex = 0) => {
-    const entries = get().playlistTracks[playlistId] ?? [];
+  playPlaylist: async (playlistId: string, startIndex = 0) => {
+    let entries = get().playlistTracks[playlistId] ?? [];
+    if (entries.length === 0 && isTauri()) {
+      try {
+        await get().loadPlaylistDetails(playlistId);
+        entries = get().playlistTracks[playlistId] ?? [];
+      } catch (err) {
+        console.warn(`Failed to load playlist details before playback:`, err);
+        useToastStore
+          .getState()
+          .addToast(
+            `Failed to load playlist tracks: ${err instanceof Error ? err.message : String(err)}`,
+            5000,
+            "error"
+          );
+        return;
+      }
+    }
     if (entries.length === 0) return;
 
     const playlist = get().playlists.find((p) => p.id === playlistId);
@@ -621,3 +667,6 @@ export const useIsAddSongsDrawerOpen = () =>
 export const useIsDeleteDialogOpen = () => usePlaylistStore((state) => state.isDeleteDialogOpen);
 export const useIsPlaylistsLoaded = () => usePlaylistStore((state) => state.isLoaded);
 export const useIsPlaylistsLoading = () => usePlaylistStore((state) => state.isLoading);
+export const usePlaylistError = () => usePlaylistStore((state) => state.error);
+export const useIsPlaylistDetailLoading = () => usePlaylistStore((state) => state.isDetailLoading);
+export const usePlaylistDetailError = () => usePlaylistStore((state) => state.detailError);

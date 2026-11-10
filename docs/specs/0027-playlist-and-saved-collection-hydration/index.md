@@ -1,7 +1,7 @@
 # 0027. Playlist and saved collection hydration
 
 **Date**: 2026-11-09
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 
@@ -100,10 +100,10 @@ Not applicable. No new environment variables, feature flags, or credentials are 
 
 The project uses a Facade approach. The visible UI states and controls come first, then connect existing SQLite services and store actions.
 
-1. Add loading skeletons, empty guidance, inline error retry cards, and accessible explanations for unsupported controls in playlist and Home collection views, satisfies **AC-1**, **AC-3**, **AC-5**
-2. Connect Home Your Collections section to existing playlist and album store data, enforcing sequential layout and the six card limit, satisfies **AC-2**
-3. Wire See all navigation, album navigation, playlist detail navigation, and playlist playback with async track loading and empty track guards, satisfies **AC-4**
-4. Update stores to clear fixtures on Tauri database errors and add Vitest coverage for error handling, partial load resilience, and navigation actions, satisfies **AC-1**, **AC-2**, **AC-3**, **AC-4**, **AC-5**
+- [x] 1. Add loading skeletons, empty guidance, inline error retry cards, and accessible explanations for unsupported controls in playlist and Home collection views, satisfies **AC-1**, **AC-3**, **AC-5**
+- [x] 2. Connect Home Your Collections section to existing playlist and album store data, enforcing sequential layout and the six card limit, satisfies **AC-2**
+- [x] 3. Wire See all navigation, album navigation, playlist detail navigation, and playlist playback with async track loading and empty track guards, satisfies **AC-4**
+- [x] 4. Update stores to clear fixtures on Tauri database errors and add Vitest coverage for error handling, partial load resilience, and navigation actions, satisfies **AC-1**, **AC-2**, **AC-3**, **AC-4**, **AC-5**
 
 ## Consequences
 

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { isTauri } from "@tauri-apps/api/core";
 import { HeroBanner } from "../components/home/HeroBanner";
 import { CuratedGrid } from "../components/home/CuratedGrid";
 import { RecentCarousel } from "../components/home/RecentCarousel";
@@ -10,6 +11,8 @@ import {
   usePopularTracks,
   useRecentPlays,
 } from "../store/usePlayerStore";
+import { usePlaylistStore } from "../store/usePlaylistStore";
+import { useAlbumStore } from "../store/useAlbumStore";
 import { showcaseItem } from "../data/homeFixtures";
 import type { ShowcaseItem } from "../types/discovery";
 
@@ -26,6 +29,14 @@ export function Home({ onNavigate }: HomeProps = {}) {
 
   useEffect(() => {
     initializeHomeDiscovery().catch(() => {});
+    const pStore = usePlaylistStore.getState();
+    if (!pStore.isLoaded && !pStore.isLoading) {
+      pStore.initializePlaylists().catch(() => {});
+    }
+    const aStore = useAlbumStore.getState();
+    if (!aStore.isLoaded && !aStore.isLoading) {
+      aStore.initializeAlbums().catch(() => {});
+    }
   }, [initializeHomeDiscovery]);
 
   const topTrack = popularTracks[0];
@@ -45,6 +56,12 @@ export function Home({ onNavigate }: HomeProps = {}) {
       }
     : showcaseItem;
 
+  const collectionsCards = isTauri()
+    ? undefined
+    : curatedCollections.length > 0
+      ? curatedCollections
+      : undefined;
+
   return (
     <main
       role="main"
@@ -54,8 +71,8 @@ export function Home({ onNavigate }: HomeProps = {}) {
       {/* Hero Featured Showcase */}
       <HeroBanner item={heroItem} />
 
-      {/* Curated Grid Section */}
-      <CuratedGrid cards={curatedCollections} onNavigate={onNavigate} />
+      {/* Your Collections Section */}
+      <CuratedGrid cards={collectionsCards} title="Your Collections" onNavigate={onNavigate} />
 
       {/* Recently Played and Popular Tracks Section */}
       <section className="grid grid-cols-[1fr_360px] max-xl:grid-cols-1 gap-12 max-lg:gap-8">
