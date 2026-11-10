@@ -29,6 +29,7 @@ walkdir = "2"
 rayon = "1.10"
 sha2 = "0.10"
 souvlaki = "0.7"
+rustfft = "6"
 
 [profile.release]
 codegen-units = 1

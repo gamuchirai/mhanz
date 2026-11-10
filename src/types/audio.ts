@@ -60,3 +60,21 @@ export interface AudioEngineListeners {
   onTrackSkipped?: (event: AudioTrackSkippedDto) => void;
   onError?: (error: AudioErrorDto) => void;
 }
+
+/**
+ * A single spectrum analysis frame streamed from the native engine.
+ * Contains 32 normalized mono frequency bands (0.0 to 1.0).
+ */
+export interface SpectrumFrame {
+  /** Active track identifier this frame belongs to. */
+  track_id: string;
+  /** Monotonic timestamp in milliseconds from engine start. */
+  timestamp_ms: number;
+  /** Engine-wide frame counter; UI rejects frames with sequence not greater than the last accepted. */
+  sequence: number;
+  /** 32 normalized frequency band magnitudes, each clamped to 0.0–1.0. */
+  bands: number[];
+}
+
+/** Visualizer stream health state. */
+export type VisualizerStreamState = "starting" | "active" | "unavailable";

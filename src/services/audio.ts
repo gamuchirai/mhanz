@@ -4,7 +4,7 @@
  * with a high-fidelity browser/test mock fallback.
  */
 
-import { invoke, isTauri } from "@tauri-apps/api/core";
+import { invoke, isTauri, Channel } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import type {
   AudioErrorDto,
@@ -14,6 +14,7 @@ import type {
   AudioTrackEndedDto,
   AudioTrackSkippedDto,
   NextTrackCandidate,
+  SpectrumFrame,
 } from "../types/audio";
 import type { PlayHistoryItemDto } from "../types/database";
 
@@ -31,6 +32,9 @@ const MOCK_DEFAULT_DURATION_SECONDS = 180.0;
 interface MockEngineState {
   state: AudioPlaybackStateDto;
   timerHandle: ReturnType<typeof setInterval> | null;
+  visualizerTimerHandle: ReturnType<typeof setInterval> | null;
+  visualizerChannel: Channel<SpectrumFrame> | null;
+  visualizerSequence: number;
   forceMock: boolean;
   milestoneRecorded: boolean;
   lookahead: NextTrackCandidate[];
@@ -57,6 +61,9 @@ const mockEngine: MockEngineState = {
     context_type: null,
   },
   timerHandle: null,
+  visualizerTimerHandle: null,
+  visualizerChannel: null,
+  visualizerSequence: 0,
   forceMock: false,
   milestoneRecorded: false,
   lookahead: [],
@@ -566,10 +573,81 @@ export async function listenAudioHistoryRecorded(
 }
 
 /**
+ * Starts streaming live spectrum analysis frames through a typed Channel (AC-2).
+ */
+export async function startSpectrumAnalysis(
+  channel: Channel<SpectrumFrame>
+): Promise<void> {
+  if (isAudioMockActive()) {
+    if (mockEngine.visualizerTimerHandle) {
+      clearInterval(mockEngine.visualizerTimerHandle);
+      mockEngine.visualizerTimerHandle = null;
+    }
+    mockEngine.visualizerChannel = channel;
+    mockEngine.visualizerTimerHandle = setInterval(() => {
+      if (!mockEngine.visualizerChannel) return;
+      const isPlaying = mockEngine.state.status === "playing";
+      const isMuted = mockEngine.state.is_muted;
+      const vol = isMuted ? 0 : mockEngine.state.volume;
+
+      const bands = new Array(32).fill(0).map((_, i) => {
+        if (!isPlaying || vol === 0) return 0;
+        const base = Math.sin(Date.now() * 0.005 + i * 0.3) * 0.5 + 0.5;
+        return Math.max(0, Math.min(1, base * vol));
+      });
+
+      mockEngine.visualizerSequence += 1;
+      const frame: SpectrumFrame = {
+        track_id: mockEngine.state.track_id ?? "mock-track",
+        timestamp_ms: Date.now(),
+        sequence: mockEngine.visualizerSequence,
+        bands,
+      };
+
+      try {
+        const chan = mockEngine.visualizerChannel as any;
+        if (typeof chan.onmessage === "function") {
+          chan.onmessage(frame);
+        } else if (typeof chan.send === "function") {
+          chan.send(frame);
+        }
+      } catch {
+        // channel closed or unsupported in mock
+      }
+    }, 50); // ~20 fps
+    return;
+  }
+
+  return invoke<void>("start_spectrum_analysis", { channel });
+}
+
+/**
+ * Halts live spectrum analysis streaming and ends the Channel (AC-2).
+ */
+export async function stopSpectrumAnalysis(): Promise<void> {
+  if (isAudioMockActive()) {
+    if (mockEngine.visualizerTimerHandle) {
+      clearInterval(mockEngine.visualizerTimerHandle);
+      mockEngine.visualizerTimerHandle = null;
+    }
+    mockEngine.visualizerChannel = null;
+    return;
+  }
+
+  return invoke<void>("stop_spectrum_analysis");
+}
+
+/**
  * Helper to reset mock state for clean test assertions.
  */
 export function resetAudioMock(): void {
   stopMockTimer();
+  if (mockEngine.visualizerTimerHandle) {
+    clearInterval(mockEngine.visualizerTimerHandle);
+    mockEngine.visualizerTimerHandle = null;
+  }
+  mockEngine.visualizerChannel = null;
+  mockEngine.visualizerSequence = 0;
   mockEngine.state = {
     track_id: null,
     file_path: null,

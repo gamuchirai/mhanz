@@ -12,8 +12,8 @@ use souvlaki::{
 };
 use tauri::{AppHandle, Emitter, WebviewWindow};
 
-use crate::db::DatabaseManager;
 use super::models::{MediaControlActionEvent, MediaMetadataDto, MediaPlaybackStatusDto};
+use crate::db::DatabaseManager;
 
 const BUNDLED_ICON_BYTES: &[u8] = include_bytes!("../../icons/icon.png");
 

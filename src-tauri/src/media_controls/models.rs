@@ -28,4 +28,3 @@ pub struct MediaControlActionEvent {
     pub action: String,
     pub position_seconds: Option<f64>,
 }
-

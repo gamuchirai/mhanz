@@ -3,6 +3,8 @@
 **Date**: 2026-11-01
 **Status**: Accepted
 
+**Retention policy update**: Feature 22 shipped with a cap of approximately 1,000 rows. The target for feature 28 is to retain raw records for at least 30 days, then prune older rows by age. The new policy is not active until [spec 0027](../0027-remaining-ui-hydration-and-action-wiring/index.md) is built.
+
 ## Summary
 
 This specification defines the persistence architecture connecting the Home and discovery screen in Mutinhimira to local SQLite storage. Following the Facade build approach, it replaces static prototype fixtures in the recently played carousel, popular tracks list, and hero showcase banner with authentic data from the listener's local music collection. A dedicated listening history table records playback sessions when tracks pass an audio playback milestone of thirty seconds or half duration, while popular songs are selected from SQLite play counts with graceful backfill. A background event emitted by the native audio engine keeps the user interface synchronized in real time without polling, maintaining an instant and responsive desktop experience.
@@ -23,7 +25,7 @@ This specification defines the persistence architecture connecting the Home and 
 
 - **AC-1**: SQLite schema migration V005 creates the `listening_history` table with columns `id` (primary key text), `track_id` (foreign key text referencing `tracks(id)` with `ON DELETE CASCADE`), `played_at` (integer timestamp), `context_title` (nullable text), and `context_type` (nullable text), alongside indices on `played_at DESC` and `track_id`.
 - **AC-2**: SQLite schema migration V005 creates an index `idx_tracks_play_count` on `tracks(play_count DESC, title ASC)` to accelerate popular track queries.
-- **AC-3**: Rust backend repository provides `get_recent_plays(limit)` returning distinct recent tracks deduplicated by track identifier, ordered by most recent `played_at` descending, with batch pruning keeping the table bounded to approximately 1000 entries.
+- **AC-3**: Rust backend repository provides `get_recent_plays(limit)` returning distinct recent tracks deduplicated by track identifier and ordered by most recent `played_at` descending. The shipped feature prunes to approximately 1,000 entries. The feature 28 target retains raw entries for at least 30 days, then prunes older entries by age.
 - **AC-4**: Rust backend repository provides `get_popular_tracks(limit)` defaulting to 10 tracks, returning songs with `play_count > 0` ordered by `play_count DESC, title ASC`, backfilling remaining slots from unplayed tracks (`play_count = 0`) ordered by `is_favorite DESC, liked_at DESC NULLS LAST, created_at DESC`.
 - **AC-5**: The audio playback progress monitor records a listening history entry and increments track play count only upon reaching the playback milestone (thirty seconds of audio or half duration), protected by a session latch to prevent duplicate writes during seeks, executed asynchronously without holding audio mutex locks.
 - **AC-6**: When a playback milestone is reached and persisted to SQLite, the backend emits a Tauri window event `audio:history-recorded` containing the newly recorded play history item data transfer object.
@@ -40,7 +42,7 @@ This specification defines the persistence architecture connecting the Home and 
 
 **Chosen option**: Option 1: Dedicated SQLite listening history table with milestone playback recording, sliding window retention, and reactive event synchronization.
 
-Implement a dedicated `listening_history` relational table in SQLite migration V005, recording playback events automatically when the audio engine reaches thirty seconds or half duration. Rust backend repositories expose fast queries for deduplicated recent plays and top played tracks with graceful backfill. Playback context is passed to the audio engine upon track play. A Tauri event `audio:history-recorded` notifies `usePlayerStore` to prepend new history items reactively. The Home page components connect directly to hydrated store state, displaying real local music metrics with contextual empty states and dynamic showcase banner.
+Implement a dedicated `listening_history` relational table in SQLite migration V005, recording playback events automatically when the audio engine reaches thirty seconds or half duration. Feature 22 shipped with row count pruning. Feature 28 changes the target to age based pruning that retains at least 30 days for local genre recommendations. Rust backend repositories expose fast queries for deduplicated recent plays and top played tracks with graceful backfill. Playback context is passed to the audio engine upon track play. A Tauri event `audio:history-recorded` notifies `usePlayerStore` to prepend new history items reactively. The Home page components connect directly to hydrated store state, displaying real local music metrics with contextual empty states and dynamic showcase banner.
 
 **Implementation skills**: `tauri-v2` (`nodnarbnitram/claude-code-extensions`, `.agents/skills/tauri-v2/`) · `zustand` (`pedronauck/skills`, `.agents/skills/zustand/`) · `rust-best-practices` (`apollographql/skills`, `.agents/skills/rust-best-practices/`) · `vercel-react-best-practices` (`vercel-labs/agent-skills`, `.agents/skills/vercel-react-best-practices/`) · `tailwind-4-docs` (`lombiq/tailwind-agent-skills`, `.agents/skills/tailwind-4-docs/`)
 
@@ -163,7 +165,7 @@ export interface PlayHistoryItemDto {
 
 - In desktop mode, `usePlayerStore` must never overwrite hydrated SQLite history with mock fixtures when database queries succeed.
 - Each track must appear at most once in the recently played carousel, showing its most recent playback timestamp.
-- The `listening_history` table maintains a sliding window of approximately 1000 rows, batch pruning older records whenever total rows exceed 1050.
+- The shipped feature 22 implementation maintains a sliding window of approximately 1,000 rows. The feature 28 target keeps all rows from at least the last 30 days and prunes older records by age.
 - Seeking before or after thirty seconds must never trigger duplicate history entries or multiple play count increments within the same play session.
 - Deleting or pruning a track in the local library scanner cascades deletion to all associated `listening_history` rows via `ON DELETE CASCADE`.
 - Invoking `clearRecentPlays` clears all rows in `listening_history` but leaves the `play_count` column in `tracks` completely unchanged.
@@ -235,7 +237,7 @@ export interface PlayHistoryItemDto {
 
 **Negative / tradeoffs**:
 
-- Creating a new history table requires an additional database migration and slightly increases database disk storage over time (capped by the 1000 row sliding window).
+- Creating a new history table requires an additional database migration. The shipped 1,000 row cap bounds its storage. The feature 28 target uses more storage for listeners with frequent playback because it retains at least 30 days.
 - Requires coordination between the audio engine thread and SQLite connection manager to record events without disrupting audio stream timing.
 
 **Neutral**:
@@ -244,5 +246,5 @@ export interface PlayHistoryItemDto {
 
 ## Follow-up
 
-- [ ] In a future phase, explore customizable time ranges for popular tracks (such as most played this month or this week) once listening history data accumulates over several months.
-- [ ] Connect the CuratedGrid "Made for you" section on the Home screen to local playlist recommendations and recently scanned albums.
+- [ ] Explore customizable time ranges for popular tracks after the Home recommendations are built.
+- [ ] Build Home listening recommendations and live visualizer as defined in [spec 0027](../0027-remaining-ui-hydration-and-action-wiring/index.md).

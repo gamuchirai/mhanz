@@ -16,11 +16,13 @@ use tauri::{AppHandle, Emitter};
 
 use crate::db::DatabaseManager;
 
+use super::analyzer::{AnalysisState, AnalyzerConfig, SpectrumFrame};
 use super::error::AudioError;
 use super::models::{
     AudioPlaybackState, AudioPlaybackStateDto, AudioPositionDto, AudioTrackChangedDto,
     AudioTrackEndedDto, AudioTrackSkippedDto, NextTrackCandidate, PlaybackStatus,
 };
+use super::tap::{pack_gain_mute, SampleBuffer, SpectrumTapSource};
 
 /// Whitelisted audio file extensions.
 const SUPPORTED_EXTENSIONS: &[&str] = &["mp3", "flac", "wav", "m4a", "aac", "ogg", "opus"];
@@ -132,6 +134,9 @@ where
     }
 }
 
+type StagedSource =
+    TrackBoundarySource<SpectrumTapSource<UniformSourceIterator<Decoder<BufReader<File>>, i16>>>;
+
 /// Metadata describing an active or queued boundary track.
 #[derive(Clone)]
 pub struct TrackPlaybackMetadata {
@@ -187,6 +192,8 @@ pub struct AudioEngine {
     monitor_running: Arc<AtomicBool>,
     pub is_reloading: Arc<AtomicBool>,
     is_staging: Arc<AtomicBool>,
+    /// Shared spectrum analysis state: tap gate, volume/mute packed atomic, and frame counter.
+    pub analysis: AnalysisState,
 }
 
 /// Dedicated thread initialization that holds the Rodio OutputStream alive.
@@ -228,7 +235,7 @@ impl AudioEngine {
         let inner = Arc::new(Mutex::new(AudioEngineInner {
             stream_handle,
             sink: None,
-            state: initial_state,
+            state: initial_state.clone(),
             queue_generation: 0,
             lookahead: Vec::new(),
             active_track_meta: None,
@@ -246,6 +253,7 @@ impl AudioEngine {
             monitor_running: Arc::new(AtomicBool::new(false)),
             is_reloading: Arc::new(AtomicBool::new(false)),
             is_staging: Arc::new(AtomicBool::new(false)),
+            analysis: AnalysisState::new(initial_state.volume, initial_state.is_muted),
         }
     }
 
@@ -425,7 +433,14 @@ impl AudioEngine {
                         let keep_paused = inner.state.status != PlaybackStatus::Playing;
                         drop(inner);
                         if let (Some(t), Some(f)) = (tid, fp) {
-                            let _ = self.play_track_internal(t, f, Some(cur_pos), ctx_t, ctx_ty, keep_paused);
+                            let _ = self.play_track_internal(
+                                t,
+                                f,
+                                Some(cur_pos),
+                                ctx_t,
+                                ctx_ty,
+                                keep_paused,
+                            );
                         }
                         return Ok(());
                     }
@@ -484,10 +499,7 @@ impl AudioEngine {
         let engine = self.clone();
 
         tauri::async_runtime::spawn_blocking(move || {
-            let mut staged_result: Option<(
-                TrackPlaybackMetadata,
-                TrackBoundarySource<UniformSourceIterator<Decoder<BufReader<File>>, i16>>,
-            )> = None;
+            let mut staged_result: Option<(TrackPlaybackMetadata, StagedSource)> = None;
 
             let mut newly_failed: Vec<String> = Vec::new();
 
@@ -501,7 +513,11 @@ impl AudioEngine {
                     Ok(p) => p,
                     Err(err) => {
                         newly_failed.push(candidate.track_id.clone());
-                        engine.emit_track_skipped(&candidate.track_id, err.code(), next_following_id);
+                        engine.emit_track_skipped(
+                            &candidate.track_id,
+                            err.code(),
+                            next_following_id,
+                        );
                         continue;
                     }
                 };
@@ -511,7 +527,11 @@ impl AudioEngine {
                     Err(err) => {
                         let audio_err = AudioError::FileNotFound(err.to_string());
                         newly_failed.push(candidate.track_id.clone());
-                        engine.emit_track_skipped(&candidate.track_id, audio_err.code(), next_following_id);
+                        engine.emit_track_skipped(
+                            &candidate.track_id,
+                            audio_err.code(),
+                            next_following_id,
+                        );
                         continue;
                     }
                 };
@@ -522,7 +542,11 @@ impl AudioEngine {
                     Err(err) => {
                         let audio_err = AudioError::DecodeError(err.to_string());
                         newly_failed.push(candidate.track_id.clone());
-                        engine.emit_track_skipped(&candidate.track_id, audio_err.code(), next_following_id);
+                        engine.emit_track_skipped(
+                            &candidate.track_id,
+                            audio_err.code(),
+                            next_following_id,
+                        );
                         continue;
                     }
                 };
@@ -536,6 +560,13 @@ impl AudioEngine {
                     decoder,
                     output_channels,
                     output_sample_rate,
+                );
+
+                let tap_source = SpectrumTapSource::new(
+                    uniform_source,
+                    engine.analysis.active.clone(),
+                    engine.analysis.sample_buffer.clone(),
+                    engine.analysis.volume_mute.clone(),
                 );
 
                 let samples_played = Arc::new(AtomicU64::new(0));
@@ -557,7 +588,7 @@ impl AudioEngine {
                 };
 
                 let boundary_source = TrackBoundarySource::new(
-                    uniform_source,
+                    tap_source,
                     candidate.track_id.clone(),
                     duration,
                     queue_generation,
@@ -680,6 +711,13 @@ impl AudioEngine {
 
         let uniform_source = UniformSourceIterator::<_, i16>::new(decoder, channels, sample_rate);
 
+        let tap_source = SpectrumTapSource::new(
+            uniform_source,
+            self.analysis.active.clone(),
+            self.analysis.sample_buffer.clone(),
+            self.analysis.volume_mute.clone(),
+        );
+
         let samples_played = Arc::new(AtomicU64::new(0));
         let started = Arc::new(AtomicBool::new(true));
         let ended = Arc::new(AtomicBool::new(false));
@@ -705,7 +743,7 @@ impl AudioEngine {
         };
 
         let boundary_source = TrackBoundarySource::new(
-            uniform_source,
+            tap_source,
             track_id.clone(),
             duration,
             inner.queue_generation,
@@ -941,12 +979,15 @@ impl AudioEngine {
             let sample_rate = active.sample_rate as f64;
             let channels = active.channels as f64;
             let target_samples = (clamped * sample_rate * channels) as u64;
-            active.samples_played.store(target_samples, Ordering::SeqCst);
+            active
+                .samples_played
+                .store(target_samples, Ordering::SeqCst);
         }
 
         inner.state.position_seconds = clamped;
         let dto = AudioPlaybackStateDto::from(&inner.state);
-        let should_stage = in_staging_window && inner.staged_track_meta.is_none() && !inner.lookahead.is_empty();
+        let should_stage =
+            in_staging_window && inner.staged_track_meta.is_none() && !inner.lookahead.is_empty();
         drop(inner);
 
         self.emit_state_changed(&dto);
@@ -968,11 +1009,16 @@ impl AudioEngine {
             .map_err(|e| AudioError::LockError(e.to_string()))?;
 
         inner.state.volume = clamped;
-        if !inner.state.is_muted {
+        let is_muted = inner.state.is_muted;
+        if !is_muted {
             if let Some(ref sink) = inner.sink {
                 sink.set_volume(clamped);
             }
         }
+
+        self.analysis
+            .volume_mute
+            .store(pack_gain_mute(clamped, is_muted), Ordering::Release);
 
         drop(inner);
 
@@ -999,9 +1045,14 @@ impl AudioEngine {
             .map_err(|e| AudioError::LockError(e.to_string()))?;
 
         inner.state.is_muted = muted;
+        let volume = inner.state.volume;
         if let Some(ref sink) = inner.sink {
-            sink.set_volume(if muted { 0.0 } else { inner.state.volume });
+            sink.set_volume(if muted { 0.0 } else { volume });
         }
+
+        self.analysis
+            .volume_mute
+            .store(pack_gain_mute(volume, muted), Ordering::Release);
 
         drop(inner);
 
@@ -1027,6 +1078,60 @@ impl AudioEngine {
             .lock()
             .map_err(|e| AudioError::LockError(e.to_string()))?;
         Ok(AudioPlaybackStateDto::from(&inner.state))
+    }
+
+    /// Starts streaming spectrum analysis frames through the provided Tauri Channel.
+    pub fn start_spectrum_analysis(
+        &self,
+        channel: tauri::ipc::Channel<SpectrumFrame>,
+    ) -> Result<(), AudioError> {
+        let inner = self
+            .inner
+            .lock()
+            .map_err(|e| AudioError::LockError(e.to_string()))?;
+
+        let sample_rate = inner.output_sample_rate;
+        let track_id = inner
+            .state
+            .track_id
+            .clone()
+            .unwrap_or_else(|| "none".to_string());
+        drop(inner);
+
+        // Stop any active worker and reset sample buffer
+        self.analysis.active.store(false, Ordering::Release);
+
+        let new_buf = SampleBuffer::new();
+        if let Ok(mut buf_guard) = self.analysis.sample_buffer.lock() {
+            *buf_guard = Some(new_buf.clone());
+        }
+
+        self.analysis.active.store(true, Ordering::Release);
+
+        let config = AnalyzerConfig {
+            sample_rate,
+            track_id,
+        };
+
+        super::analyzer::start_analysis_worker(
+            config,
+            new_buf,
+            self.analysis.active.clone(),
+            self.analysis.frame_counter.clone(),
+            channel,
+        )
+        .map_err(AudioError::DeviceError)?;
+
+        Ok(())
+    }
+
+    /// Stops active spectrum analysis and ends the streaming channel.
+    pub fn stop_spectrum_analysis(&self) -> Result<(), AudioError> {
+        self.analysis.active.store(false, Ordering::Release);
+        if let Ok(mut buf_guard) = self.analysis.sample_buffer.lock() {
+            *buf_guard = None;
+        }
+        Ok(())
     }
 
     /// Spawns the background monitor thread if not already running.
@@ -1079,7 +1184,8 @@ impl AudioEngine {
                     };
 
                     let mut track_changed_to_emit: Option<AudioTrackChangedDto> = None;
-                    let mut history_to_record: Option<(String, Option<String>, Option<String>)> = None;
+                    let mut history_to_record: Option<(String, Option<String>, Option<String>)> =
+                        None;
 
                     if is_boundary_transition {
                         let new_active = inner.staged_track_meta.take().unwrap();

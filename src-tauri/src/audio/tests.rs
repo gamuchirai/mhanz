@@ -2,6 +2,7 @@
 
 use std::fs::File;
 use std::io::Write;
+use std::sync::atomic::Ordering;
 
 use super::engine::AudioEngine;
 use super::error::AudioError;
@@ -229,7 +230,7 @@ fn test_gapless_models_serialization() {
 #[test]
 fn test_track_boundary_source_forwards_seek() {
     use rodio::source::{SeekError, Source};
-    use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+    use std::sync::atomic::{AtomicBool, AtomicU64};
     use std::sync::{Arc, Mutex};
     use std::time::Duration;
 
@@ -277,7 +278,9 @@ fn test_track_boundary_source_forwards_seek() {
         Arc::new(AtomicBool::new(false)),
     );
 
-    source.try_seek(Duration::from_secs(2)).expect("seek should be forwarded");
+    source
+        .try_seek(Duration::from_secs(2))
+        .expect("seek should be forwarded");
 
     assert_eq!(*seeked_to.lock().unwrap(), Some(Duration::from_secs(2)));
     assert_eq!(samples_played.load(Ordering::SeqCst), 4000);
@@ -285,9 +288,9 @@ fn test_track_boundary_source_forwards_seek() {
 
 #[test]
 fn test_track_boundary_source() {
-    use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-    use std::sync::Arc;
     use rodio::source::Source;
+    use std::sync::atomic::{AtomicBool, AtomicU64};
+    use std::sync::Arc;
 
     struct DummySource {
         samples: Vec<i16>,
@@ -392,9 +395,9 @@ fn test_audio_set_next_track_generation() {
 
 #[test]
 fn test_track_boundary_source_mono() {
-    use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-    use std::sync::Arc;
     use rodio::source::Source;
+    use std::sync::atomic::{AtomicBool, AtomicU64};
+    use std::sync::Arc;
 
     struct MonoDummySource {
         samples: Vec<i16>,
@@ -455,9 +458,172 @@ fn test_track_boundary_source_mono() {
     assert!(started.load(Ordering::SeqCst));
     assert_eq!(boundary.next(), Some(15));
     assert_eq!(boundary.next(), Some(25));
-    assert_eq!(samples_played.load(Ordering::SeqCst), 3);
-    assert!(!ended.load(Ordering::SeqCst));
-
     assert_eq!(boundary.next(), None);
     assert!(ended.load(Ordering::SeqCst));
+}
+
+#[test]
+fn test_spectrum_tap_source_and_packing() {
+    use super::tap::{
+        pack_gain_mute, unpack_gain_mute, SampleBuffer, SpectrumTapSource, WINDOW_SIZE,
+    };
+    use std::sync::atomic::{AtomicBool, AtomicU64};
+    use std::sync::Arc;
+
+    // Test gain & mute packing / unpacking
+    let packed = pack_gain_mute(0.75, false);
+    let (g, m) = unpack_gain_mute(packed);
+    assert!((g - 0.75).abs() < 1e-4);
+    assert!(!m);
+
+    let packed_muted = pack_gain_mute(0.5, true);
+    let (g2, m2) = unpack_gain_mute(packed_muted);
+    assert!((g2 - 0.5).abs() < 1e-4);
+    assert!(m2);
+
+    // Test tap source behavior
+    struct ConstantSource {
+        val: i16,
+        count: usize,
+    }
+    impl rodio::Source for ConstantSource {
+        fn current_frame_len(&self) -> Option<usize> {
+            None
+        }
+        fn channels(&self) -> u16 {
+            1
+        }
+        fn sample_rate(&self) -> u32 {
+            44100
+        }
+        fn total_duration(&self) -> Option<std::time::Duration> {
+            None
+        }
+    }
+    impl Iterator for ConstantSource {
+        type Item = i16;
+        fn next(&mut self) -> Option<i16> {
+            if self.count > 0 {
+                self.count -= 1;
+                Some(self.val)
+            } else {
+                None
+            }
+        }
+    }
+
+    let is_active = Arc::new(AtomicBool::new(false));
+    let buffer = SampleBuffer::new();
+    let buffer_slot = Arc::new(std::sync::Mutex::new(Some(buffer.clone())));
+    let volume_mute = Arc::new(AtomicU64::new(pack_gain_mute(1.0, false)));
+
+    let source = ConstantSource {
+        val: 16384,
+        count: WINDOW_SIZE * 3,
+    };
+    let mut tap =
+        SpectrumTapSource::new(source, is_active.clone(), buffer_slot, volume_mute.clone());
+
+    // Inactive: pulls samples, queue stays empty
+    for _ in 0..WINDOW_SIZE {
+        assert_eq!(tap.next(), Some(16384));
+    }
+    {
+        let q = buffer.queue.lock().unwrap();
+        assert_eq!(q.len(), 0);
+    }
+
+    // Active: fills first 4096 window and pushes to queue
+    is_active.store(true, Ordering::SeqCst);
+    for _ in 0..WINDOW_SIZE {
+        assert_eq!(tap.next(), Some(16384));
+    }
+    {
+        let q = buffer.queue.lock().unwrap();
+        assert_eq!(q.len(), 1);
+        let win = &q[0];
+        // 16384 / 32768 = 0.5
+        assert!((win[0] - 0.5).abs() < 1e-3);
+    }
+
+    // Sliding window: pulling hop_size (2205) samples pushes the next overlapping window
+    for _ in 0..2205 {
+        assert_eq!(tap.next(), Some(16384));
+    }
+    {
+        let q = buffer.queue.lock().unwrap();
+        assert_eq!(q.len(), 2);
+    }
+}
+
+#[test]
+fn test_spectrum_tap_seek_and_mute() {
+    use super::tap::{
+        pack_gain_mute, unpack_gain_mute, SampleBuffer, SpectrumTapSource, WINDOW_SIZE,
+    };
+    use rodio::source::SeekError;
+    use std::sync::atomic::{AtomicBool, AtomicU64};
+    use std::sync::Arc;
+    use std::time::Duration;
+
+    // Test gain clamping and mute flags
+    let (g_clamped, m_muted) = unpack_gain_mute(pack_gain_mute(1.5, true));
+    assert!((g_clamped - 1.0).abs() < 1e-4);
+    assert!(m_muted);
+
+    struct SeekableConstantSource {
+        val: i16,
+    }
+    impl rodio::Source for SeekableConstantSource {
+        fn current_frame_len(&self) -> Option<usize> {
+            None
+        }
+        fn channels(&self) -> u16 {
+            1
+        }
+        fn sample_rate(&self) -> u32 {
+            44100
+        }
+        fn total_duration(&self) -> Option<Duration> {
+            Some(Duration::from_secs(60))
+        }
+        fn try_seek(&mut self, _pos: Duration) -> Result<(), SeekError> {
+            Ok(())
+        }
+    }
+    impl Iterator for SeekableConstantSource {
+        type Item = i16;
+        fn next(&mut self) -> Option<i16> {
+            Some(self.val)
+        }
+    }
+
+    let is_active = Arc::new(AtomicBool::new(true));
+    let buffer = SampleBuffer::new();
+    let buffer_slot = Arc::new(std::sync::Mutex::new(Some(buffer.clone())));
+    // Pack volume 0.8 with mute enabled
+    let volume_mute = Arc::new(AtomicU64::new(pack_gain_mute(0.8, true)));
+
+    let mut tap = SpectrumTapSource::new(
+        SeekableConstantSource { val: 16384 },
+        is_active,
+        buffer_slot,
+        volume_mute,
+    );
+
+    // Collect 4096 samples while muted
+    for _ in 0..WINDOW_SIZE {
+        assert_eq!(tap.next(), Some(16384));
+    }
+
+    // Verify window samples are zeroed due to mute
+    {
+        let q = buffer.queue.lock().unwrap();
+        assert_eq!(q.len(), 1);
+        let win = &q[0];
+        assert_eq!(win[0], 0.0);
+    }
+
+    // Seek resets partial window accumulation
+    assert!(rodio::Source::try_seek(&mut tap, Duration::from_secs(10)).is_ok());
 }

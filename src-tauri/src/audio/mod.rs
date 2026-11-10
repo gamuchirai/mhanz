@@ -1,8 +1,10 @@
 //! Audio playback subsystem encapsulating Rodio playback, state management, and event emissions.
 
+pub mod analyzer;
 pub mod engine;
 pub mod error;
 pub mod models;
+pub mod tap;
 
 #[cfg(test)]
 mod tests;
