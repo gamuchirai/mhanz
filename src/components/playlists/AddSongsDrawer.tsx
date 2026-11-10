@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { isTauri } from "@tauri-apps/api/core";
 import { allSampleCatalogTracks } from "../../data/playlistFixtures";
 import {
   useActivePlaylist,
@@ -6,6 +7,7 @@ import {
   usePlaylistStore,
   usePlaylistTracksByPlaylistId,
 } from "../../store/usePlaylistStore";
+import { useLibraryStore, useLibraryTracks } from "../../store/useLibraryStore";
 import { formatDuration } from "../../utils/format";
 
 export function AddSongsDrawer() {
@@ -13,11 +15,19 @@ export function AddSongsDrawer() {
   const activePlaylist = useActivePlaylist();
   const setAddSongsDrawerOpen = usePlaylistStore((state) => state.setAddSongsDrawerOpen);
   const addTrackToPlaylist = usePlaylistStore((state) => state.addTrackToPlaylist);
+  const libraryTracks = useLibraryTracks();
 
   const entries = usePlaylistTracksByPlaylistId(activePlaylist ? activePlaylist.id : null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null);
+
+  // When drawer opens in Tauri, ensure library tracks are loaded from SQLite if empty
+  useEffect(() => {
+    if (isOpen && isTauri() && libraryTracks.length === 0) {
+      useLibraryStore.getState().refreshFromDatabase().catch(() => {});
+    }
+  }, [isOpen, libraryTracks.length]);
 
   // Map of trackId -> count of times added in this playlist
   const trackCountInPlaylist = useMemo(() => {
@@ -28,17 +38,25 @@ export function AddSongsDrawer() {
     return map;
   }, [entries]);
 
+  // Determine candidate tracks: prefer user's real library tracks; fall back to catalog fixtures only in non-Tauri preview when library is unpopulated
+  const candidateTracks = useMemo(() => {
+    if (isTauri()) {
+      return libraryTracks;
+    }
+    return libraryTracks.length > 0 ? libraryTracks : allSampleCatalogTracks;
+  }, [libraryTracks]);
+
   const filteredTracks = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    if (!query) return allSampleCatalogTracks;
-    return allSampleCatalogTracks.filter(
+    if (!query) return candidateTracks;
+    return candidateTracks.filter(
       (t) =>
         t.title.toLowerCase().includes(query) ||
         t.artist.toLowerCase().includes(query) ||
         t.album.toLowerCase().includes(query) ||
         (t.genre && t.genre.toLowerCase().includes(query))
     );
-  }, [searchQuery]);
+  }, [searchQuery, candidateTracks]);
 
   if (!isOpen || !activePlaylist) return null;
 
@@ -211,7 +229,18 @@ export function AddSongsDrawer() {
             gap: "4px",
           }}
         >
-          {filteredTracks.length === 0 ? (
+          {candidateTracks.length === 0 ? (
+            <div
+              style={{
+                padding: "36px 16px",
+                textAlign: "center",
+                color: "var(--m)",
+                fontSize: "13px",
+              }}
+            >
+              No songs found in your library. Add music folders in Your Library to add songs to playlists.
+            </div>
+          ) : filteredTracks.length === 0 ? (
             <div
               style={{
                 padding: "36px 16px",
@@ -249,18 +278,33 @@ export function AddSongsDrawer() {
                       overflow: "hidden",
                       background: "rgba(255,255,255,0.05)",
                       flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    <img
-                      src={track.artworkUrl}
-                      alt=""
-                      aria-hidden="true"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
+                    {track.artworkUrl ? (
+                      <img
+                        src={track.artworkUrl}
+                        alt=""
+                        aria-hidden="true"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    ) : (
+                      <svg
+                        className="i"
+                        width="18"
+                        height="18"
+                        style={{ color: "var(--m)" }}
+                        aria-hidden="true"
+                      >
+                        <use href="#disc" />
+                      </svg>
+                    )}
                   </div>
 
                   {/* Title & Artist */}

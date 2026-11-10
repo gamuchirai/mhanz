@@ -2,25 +2,25 @@
 _Steps derived from spec 0027 acceptance criteria. `/check verify` runs these; `/test` locks the durable ones._
 
 ## UI / manual
-- [ ] Launch app in Tauri and navigate to Playlists → verify loading skeletons render while querying SQLite, followed by hydrated playlists with real track counts → AC-1
-- [ ] Trigger a SQLite error by simulating query rejection → verify playlists clear to empty array and display an inline alert with a working Retry action → AC-1
-- [ ] Select an active playlist with tracks → verify detail view displays header banner and track table; for an empty playlist, verify empty guidance is shown → AC-1, AC-5
-- [ ] Navigate to Home screen → verify Your Collections section displays up to 6 cards with playlists ordered first followed by library albums → AC-2
-- [ ] Vary collection counts (such as 5 playlists and 1 album, or 1 playlist and 5 albums) → verify unused slots fill to maintain up to 6 cards → AC-2
-- [ ] Simulate playlist query failure while album query succeeds → verify album cards remain visible and an inline retry card appears in the first slot of playlists → AC-3
-- [ ] Simulate album query failure while playlist query succeeds → verify playlist cards remain visible and an inline retry card appears in the first slot of albums → AC-3
-- [ ] Simulate empty library and empty playlists → verify Your Collections shows empty guidance with functional Open Playlists and Add Music buttons → AC-3
-- [ ] Click See all on Home Your Collections → verify it navigates to the Playlists view without a dead click → AC-4, AC-5
-- [ ] Click an album card → verify it sets active album and navigates to Albums detail → AC-4
-- [ ] Click a playlist card → verify it sets active playlist and navigates to Playlist detail → AC-4
-- [ ] Click quick play on a playlist card with tracks → verify button displays loading spinner, fetches ordered tracks via db_get_playlist_details, and starts playback → AC-4
-- [ ] Observe quick play on an empty playlist → verify button is disabled, has aria-disabled="true", and displays tooltip explaining tracks must be added first → AC-4, AC-5
-- [ ] Simulate database error during detail fetch on quick play → verify desktop toast notice appears and playback is not triggered → AC-4
+- [x] Launch app in Tauri and navigate to Playlists → verify loading skeletons render while querying SQLite, followed by hydrated playlists with real track counts → AC-1
+- [x] Trigger a SQLite error by simulating query rejection → verify playlists clear to empty array and display an inline alert with a working Retry action → AC-1
+- [x] Select an active playlist with tracks → verify detail view displays header banner and track table; for an empty playlist, verify empty guidance is shown → AC-1, AC-5
+- [x] Navigate to Home screen → verify Your Collections section displays up to 6 cards with playlists ordered first followed by library albums → AC-2
+- [x] Vary collection counts (such as 5 playlists and 1 album, or 1 playlist and 5 albums) → verify unused slots fill to maintain up to 6 cards → AC-2
+- [x] Simulate playlist query failure while album query succeeds → verify album cards remain visible and an inline retry card appears in the first slot of playlists → AC-3
+- [x] Simulate album query failure while playlist query succeeds → verify playlist cards remain visible and an inline retry card appears in the first slot of albums → AC-3
+- [x] Simulate empty library and empty playlists → verify Your Collections shows empty guidance with functional Open Playlists and Add Music buttons → AC-3
+- [x] Click See all on Home Your Collections → verify it navigates to the Playlists view without a dead click → AC-4, AC-5
+- [x] Click an album card → verify it sets active album and navigates to Albums detail → AC-4
+- [x] Click a playlist card → verify it sets active playlist and navigates to Playlist detail → AC-4
+- [x] Click quick play on a playlist card with tracks → verify button displays loading spinner, fetches ordered tracks via db_get_playlist_details, and starts playback → AC-4
+- [x] Observe quick play on an empty playlist → verify button is disabled, has aria-disabled="true", and displays tooltip explaining tracks must be added first → AC-4, AC-5
+- [x] Simulate database error during detail fetch on quick play → verify desktop toast notice appears and playback is not triggered → AC-4
 
 ## Commands
-- [ ] `npm test` → 35 test files and 379 tests pass, including all 21 tests in `src/test/playlistCollectionHydration.test.tsx` → AC-1, AC-2, AC-3, AC-4, AC-5
-- [ ] `cargo test --manifest-path src-tauri/Cargo.toml` → all 47 native Rust tests pass cleanly → AC-1
-- [ ] `npm run build` → TypeScript and Vite production bundle compiles cleanly with 0 errors → AC-1, AC-5
+- [x] `npm test` → 35 test files and 382 tests pass, including all 24 tests in `src/test/playlistCollectionHydration.test.tsx` → AC-1, AC-2, AC-3, AC-4, AC-5
+- [x] `cargo test --manifest-path src-tauri/Cargo.toml` → all 47 native Rust tests pass cleanly → AC-1
+- [x] `npm run build` → TypeScript and Vite production bundle compiles cleanly with 0 errors → AC-1, AC-5
 
 ## Acceptance-criteria coverage
 - AC-1 in Tauri, playlist overview and detail data come from SQLite with loading skeletons, empty guidance, and visible retry action; database errors clear items and do not fall back to fixtures; duplicate store initialization calls are ignored while loading is active · covered by UI steps 1, 2, 3 and Command steps 1, 3
@@ -38,3 +38,4 @@ _Steps derived from spec 0027 acceptance criteria. `/check verify` runs these; `
 - Play saved playlist → verified ordered tracks and queue context from SQLite
 - Inline error presentation → verified store error message and targeted retry action
 - Retry failed collection → verified independent store reload without touching successful collection
+

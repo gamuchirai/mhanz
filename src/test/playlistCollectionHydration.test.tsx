@@ -5,14 +5,22 @@ import * as tauriCore from "@tauri-apps/api/core";
 import { computeYourCollectionsCards, CuratedGrid } from "../components/home/CuratedGrid";
 import { Playlists } from "../pages/Playlists";
 import { PlaylistCard } from "../components/playlists/PlaylistCard";
-import { usePlaylistStore } from "../store/usePlaylistStore";
+import { AddSongsDrawer } from "../components/playlists/AddSongsDrawer";
+import {
+  usePlaylistStore,
+  findTrackForPlaylist,
+  calculatePlaylistDuration,
+  formatPlaylistTotalDuration,
+} from "../store/usePlaylistStore";
+import { useLibraryStore } from "../store/useLibraryStore";
 import { useAlbumStore } from "../store/useAlbumStore";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { useToastStore } from "../store/useToastStore";
 import * as dbServices from "../services/db";
 import type { Playlist } from "../types/playlist";
 import type { Album } from "../types/album";
-import type { PlaylistDto, PlaylistDetailDto, AlbumDto } from "../types/database";
+import type { PlaylistDto, PlaylistDetailDto } from "../types/database";
+import type { LibraryTrack } from "../types/library";
 
 vi.mock("@tauri-apps/api/core", () => ({
   isTauri: vi.fn(() => false),
@@ -624,6 +632,397 @@ describe("Playlist and Saved Collection Hydration (Feature 28)", () => {
       expect(toasts.length).toBeGreaterThan(0);
       expect(toasts[0].message).toContain("Failed to load playlist tracks");
       expect(toasts[0].type).toBe("error");
+    });
+  });
+
+  describe("AddSongsDrawer Library Track Sourcing", () => {
+    it("renders user library tracks in Tauri mode instead of demo catalog tracks", async () => {
+      vi.mocked(tauriCore.isTauri).mockReturnValue(true);
+
+      const realTrack: LibraryTrack = {
+        id: "real-lib-track-1",
+        title: "Real Local Track",
+        artist: "Real Local Artist",
+        album: "Real Local Album",
+        durationSeconds: 210,
+        artworkUrl: "http://asset.localhost/real.jpg",
+        playsCount: 5,
+        isLiked: true,
+        filePath: "C:/music/real.mp3",
+        folderId: "folder-1",
+        dateAdded: "2026-11-01",
+        genre: "Acoustic",
+      };
+
+      useLibraryStore.setState({
+        tracks: [realTrack],
+      });
+
+      const playlist: Playlist = {
+        id: "pl-test",
+        title: "Test Playlist",
+        description: "Test",
+        coverGradient: "linear-gradient(180deg, #12141e, #2b2230)",
+        isCurated: false,
+        trackCount: 0,
+        createdAt: "2026-10-20T22:30:00Z",
+        updatedAt: "2026-10-20T22:30:00Z",
+      };
+
+      usePlaylistStore.setState({
+        playlists: [playlist],
+        playlistTracks: { "pl-test": [] },
+        activePlaylistId: "pl-test",
+        isAddSongsDrawerOpen: true,
+      });
+
+      render(<AddSongsDrawer />);
+
+      expect(screen.getByText("Real Local Track")).toBeInTheDocument();
+      expect(screen.getByText(/Real Local Artist/)).toBeInTheDocument();
+      expect(screen.queryByText("Neon Nights")).not.toBeInTheDocument();
+      expect(screen.queryByText("Cyber City")).not.toBeInTheDocument();
+    });
+
+    it("displays empty library guidance in Tauri mode when library has no tracks", async () => {
+      vi.mocked(tauriCore.isTauri).mockReturnValue(true);
+
+      useLibraryStore.setState({
+        tracks: [],
+      });
+
+      const playlist: Playlist = {
+        id: "pl-empty-lib",
+        title: "Empty Lib Playlist",
+        description: "Test",
+        coverGradient: "linear-gradient(180deg, #12141e, #2b2230)",
+        isCurated: false,
+        trackCount: 0,
+        createdAt: "2026-10-20T22:30:00Z",
+        updatedAt: "2026-10-20T22:30:00Z",
+      };
+
+      usePlaylistStore.setState({
+        playlists: [playlist],
+        playlistTracks: { "pl-empty-lib": [] },
+        activePlaylistId: "pl-empty-lib",
+        isAddSongsDrawerOpen: true,
+      });
+
+      render(<AddSongsDrawer />);
+
+      expect(
+        screen.getByText(/No songs found in your library. Add music folders in Your Library/i)
+      ).toBeInTheDocument();
+      expect(screen.queryByText("Neon Nights")).not.toBeInTheDocument();
+    });
+
+    it("persists library track addition to SQLite in Tauri mode", async () => {
+      vi.mocked(tauriCore.isTauri).mockReturnValue(true);
+
+      const addTracksSpy = vi
+        .spyOn(dbServices, "dbAddTracksToPlaylist")
+        .mockResolvedValue(undefined as never);
+      vi.spyOn(dbServices, "dbGetPlaylistDetails").mockResolvedValue({
+        playlist: {
+          id: "pl-persist",
+          name: "Persist Playlist",
+          description: "",
+          gradient_preset: "",
+          cover_art_path: null,
+          is_favorite: false,
+          is_curated: false,
+          created_at: 1000,
+          updated_at: 1000,
+          track_count: 1,
+        },
+        tracks: [
+          {
+            id: "entry-1",
+            playlist_id: "pl-persist",
+            position: 0,
+            added_at: 1000,
+            track: {
+              id: "real-lib-track-1",
+              title: "Real Local Track",
+              artist_name: "Real Local Artist",
+              artist_id: null,
+              album_name: "Real Local Album",
+              album_id: null,
+              album_artist: null,
+              duration: 210,
+              year: 2024,
+              genre: "Acoustic",
+              disc_number: 1,
+              track_number: 1,
+              bitrate: 320,
+              format: "mp3",
+              cover_art_path: null,
+              file_path: "C:/music/real.mp3",
+              is_favorite: true,
+              liked_at: null,
+              play_count: 5,
+              last_played_at: null,
+              file_modified_at: 1000,
+              file_size_bytes: 5000000,
+              folder_id: "folder-1",
+              created_at: 1000,
+              updated_at: 1000,
+            },
+          },
+        ],
+      });
+
+      const realTrack: LibraryTrack = {
+        id: "real-lib-track-1",
+        title: "Real Local Track",
+        artist: "Real Local Artist",
+        album: "Real Local Album",
+        durationSeconds: 210,
+        artworkUrl: "http://asset.localhost/real.jpg",
+        playsCount: 5,
+        isLiked: true,
+        filePath: "C:/music/real.mp3",
+        folderId: "folder-1",
+        dateAdded: "2026-11-01",
+      };
+
+      useLibraryStore.setState({
+        tracks: [realTrack],
+      });
+
+      const playlist: Playlist = {
+        id: "pl-persist",
+        title: "Persist Playlist",
+        description: "Test",
+        coverGradient: "linear-gradient(180deg, #12141e, #2b2230)",
+        isCurated: false,
+        trackCount: 0,
+        createdAt: "2026-10-20T22:30:00Z",
+        updatedAt: "2026-10-20T22:30:00Z",
+      };
+
+      usePlaylistStore.setState({
+        playlists: [playlist],
+        playlistTracks: { "pl-persist": [] },
+        activePlaylistId: "pl-persist",
+        isAddSongsDrawerOpen: true,
+      });
+
+      render(<AddSongsDrawer />);
+
+      const addBtn = screen.getByRole("button", { name: /Add Real Local Track to playlist/i });
+      await act(async () => {
+        fireEvent.click(addBtn);
+      });
+
+      expect(addTracksSpy).toHaveBeenCalledWith("pl-persist", ["real-lib-track-1"]);
+    });
+
+    it("filters available tracks in AddSongsDrawer by search query across multiple fields", () => {
+      vi.mocked(tauriCore.isTauri).mockReturnValue(true);
+
+      const trackA: LibraryTrack = {
+        id: "lib-a",
+        title: "Sunset Chords",
+        artist: "Golden Duo",
+        album: "Summer Horizons",
+        durationSeconds: 190,
+        artworkUrl: "",
+        playsCount: 0,
+        isLiked: false,
+        filePath: "C:/music/a.mp3",
+        folderId: "f1",
+        dateAdded: "2026-11-01",
+        genre: "Chillout",
+      };
+
+      const trackB: LibraryTrack = {
+        id: "lib-b",
+        title: "Electric Pulse",
+        artist: "Cyber Synth",
+        album: "Future Beats",
+        durationSeconds: 240,
+        artworkUrl: "",
+        playsCount: 0,
+        isLiked: false,
+        filePath: "C:/music/b.mp3",
+        folderId: "f1",
+        dateAdded: "2026-11-01",
+        genre: "Electronic",
+      };
+
+      useLibraryStore.setState({ tracks: [trackA, trackB] });
+      usePlaylistStore.setState({
+        playlists: [
+          {
+            id: "pl-search",
+            title: "Search Playlist",
+            description: "",
+            coverGradient: "linear-gradient(180deg, #12141e, #2b2230)",
+            isCurated: false,
+            createdAt: "",
+            updatedAt: "",
+          },
+        ],
+        playlistTracks: { "pl-search": [] },
+        activePlaylistId: "pl-search",
+        isAddSongsDrawerOpen: true,
+      });
+
+      render(<AddSongsDrawer />);
+
+      const searchInput = screen.getByRole("textbox", { name: /Search songs to add/i });
+
+      // Match by genre
+      fireEvent.change(searchInput, { target: { value: "Chillout" } });
+      expect(screen.getByText("Sunset Chords")).toBeInTheDocument();
+      expect(screen.queryByText("Electric Pulse")).not.toBeInTheDocument();
+
+      // Match by album
+      fireEvent.change(searchInput, { target: { value: "Future Beats" } });
+      expect(screen.queryByText("Sunset Chords")).not.toBeInTheDocument();
+      expect(screen.getByText("Electric Pulse")).toBeInTheDocument();
+
+      // No match
+      fireEvent.change(searchInput, { target: { value: "NonExistentTrackQuery" } });
+      expect(screen.getByText(/No songs found matching/i)).toBeInTheDocument();
+    });
+
+    it("displays count badge when track is already in playlist and closes on escape key", () => {
+      vi.mocked(tauriCore.isTauri).mockReturnValue(true);
+
+      const trackA: LibraryTrack = {
+        id: "lib-existing",
+        title: "Already Added Track",
+        artist: "Artist X",
+        album: "Album X",
+        durationSeconds: 180,
+        artworkUrl: "",
+        playsCount: 0,
+        isLiked: false,
+        filePath: "C:/music/x.mp3",
+        folderId: "f1",
+        dateAdded: "2026-11-01",
+      };
+
+      useLibraryStore.setState({ tracks: [trackA] });
+      usePlaylistStore.setState({
+        playlists: [
+          {
+            id: "pl-badge",
+            title: "Badge Playlist",
+            description: "",
+            coverGradient: "linear-gradient(180deg, #12141e, #2b2230)",
+            isCurated: false,
+            createdAt: "",
+            updatedAt: "",
+          },
+        ],
+        playlistTracks: {
+          "pl-badge": [
+            {
+              entryId: "e1",
+              playlistId: "pl-badge",
+              trackId: "lib-existing",
+              position: 0,
+              addedAt: "",
+            },
+          ],
+        },
+        activePlaylistId: "pl-badge",
+        isAddSongsDrawerOpen: true,
+      });
+
+      render(<AddSongsDrawer />);
+
+      expect(screen.getByText("Add (1)")).toBeInTheDocument();
+
+      const dialog = screen.getByRole("dialog", { name: /Add Songs/i });
+      fireEvent.keyDown(dialog, { key: "Escape" });
+
+      expect(usePlaylistStore.getState().isAddSongsDrawerOpen).toBe(false);
+    });
+  });
+
+  describe("Playlist Store Track Resolution and Duration Formatting", () => {
+    it("findTrackForPlaylist resolves from library store and caches in memory", () => {
+      const track: LibraryTrack = {
+        id: "lib-cache-test",
+        title: "Cached Lib Track",
+        artist: "Cache Artist",
+        album: "Cache Album",
+        durationSeconds: 205,
+        artworkUrl: "http://cover.jpg",
+        playsCount: 3,
+        isLiked: true,
+        filePath: "C:/music/cache.mp3",
+        folderId: "f1",
+        dateAdded: "2026-11-01",
+        genre: "Jazz",
+      };
+
+      useLibraryStore.setState({ tracks: [track] });
+
+      const resolved = findTrackForPlaylist("lib-cache-test");
+      expect(resolved).toBeDefined();
+      expect(resolved?.title).toBe("Cached Lib Track");
+      expect(resolved?.artist).toBe("Cache Artist");
+      expect(resolved?.durationSeconds).toBe(205);
+
+      // Verify second lookup uses cache even if removed from library store
+      useLibraryStore.setState({ tracks: [] });
+      const cached = findTrackForPlaylist("lib-cache-test");
+      expect(cached).toBeDefined();
+      expect(cached?.title).toBe("Cached Lib Track");
+    });
+
+    it("formats playlist duration correctly across 0 seconds, minutes, and hours", () => {
+      expect(formatPlaylistTotalDuration(0)).toBe("0 min");
+      expect(formatPlaylistTotalDuration(-10)).toBe("0 min");
+      expect(formatPlaylistTotalDuration(45)).toBe("45 sec");
+      expect(formatPlaylistTotalDuration(185)).toBe("3 min 5 sec");
+      expect(formatPlaylistTotalDuration(3665)).toBe("1 hr 1 min");
+    });
+
+    it("calculates cumulative playlist duration from entries", () => {
+      const trackA: LibraryTrack = {
+        id: "dur-a",
+        title: "Track A",
+        artist: "A",
+        album: "Alb",
+        durationSeconds: 120,
+        artworkUrl: "",
+        playsCount: 0,
+        isLiked: false,
+        filePath: "",
+        folderId: "",
+        dateAdded: "",
+      };
+      const trackB: LibraryTrack = {
+        id: "dur-b",
+        title: "Track B",
+        artist: "B",
+        album: "Alb",
+        durationSeconds: 180,
+        artworkUrl: "",
+        playsCount: 0,
+        isLiked: false,
+        filePath: "",
+        folderId: "",
+        dateAdded: "",
+      };
+
+      useLibraryStore.setState({ tracks: [trackA, trackB] });
+
+      const entries = [
+        { entryId: "e1", playlistId: "p", trackId: "dur-a", position: 0, addedAt: "" },
+        { entryId: "e2", playlistId: "p", trackId: "dur-b", position: 1, addedAt: "" },
+      ];
+
+      const total = calculatePlaylistDuration(entries);
+      expect(total).toBe(300);
+      expect(formatPlaylistTotalDuration(total)).toBe("5 min 0 sec");
     });
   });
 });

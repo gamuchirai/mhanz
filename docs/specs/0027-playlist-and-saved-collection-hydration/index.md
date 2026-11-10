@@ -1,7 +1,7 @@
 # 0027. Playlist and saved collection hydration
 
 **Date**: 2026-11-09
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

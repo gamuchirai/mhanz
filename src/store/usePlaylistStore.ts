@@ -127,7 +127,7 @@ export function findTrackForPlaylist(trackId: string): Track | undefined {
 
   const libTrack = useLibraryStore.getState().tracks.find((t) => t.id === trackId);
   if (libTrack) {
-    return {
+    const track: Track = {
       id: libTrack.id,
       title: libTrack.title,
       artist: libTrack.artist,
@@ -139,6 +139,8 @@ export function findTrackForPlaylist(trackId: string): Track | undefined {
       filePath: libTrack.filePath,
       genre: libTrack.genre,
     };
+    dynamicTrackCache.set(trackId, track);
+    return track;
   }
 
   const playerState = usePlayerStore.getState();
