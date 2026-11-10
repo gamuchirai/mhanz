@@ -2,7 +2,7 @@
 
 use tauri::State;
 
-use crate::audio::{AudioError, AudioPlaybackStateDto, AudioState};
+use crate::audio::{AudioError, AudioPlaybackStateDto, AudioState, NextTrackCandidate};
 
 /// Loads an audio file and initiates playback.
 #[tauri::command]
@@ -72,4 +72,14 @@ pub async fn audio_get_state(
     state: State<'_, AudioState>,
 ) -> Result<AudioPlaybackStateDto, AudioError> {
     state.0.get_state()
+}
+
+/// Updates lookahead candidates for gapless pre staging (AC-4, AC-10).
+#[tauri::command]
+pub async fn audio_set_next_track(
+    lookahead: Vec<NextTrackCandidate>,
+    queue_generation: u64,
+    state: State<'_, AudioState>,
+) -> Result<(), AudioError> {
+    state.0.set_next_track(lookahead, queue_generation)
 }

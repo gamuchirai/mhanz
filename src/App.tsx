@@ -14,6 +14,7 @@ import { LyricsModal } from "./components/lyrics/LyricsModal";
 import { SettingsModal } from "./components/settings/SettingsModal";
 import { NowPlayingFullscreen } from "./components/fullscreen/NowPlayingFullscreen";
 import { TagEditorModal, BatchTagEditorModal } from "./components/tagger";
+import { ToastContainer } from "./components/common/ToastContainer";
 import { useActiveOverlay, useOverlayStore } from "./store/useOverlayStore";
 import { useActivePlaylistId, usePlaylistStore, usePlaylists } from "./store/usePlaylistStore";
 import { useLikedSongsStore } from "./store/useLikedSongsStore";
@@ -191,6 +192,7 @@ export function App() {
           {activeOverlay === "fullscreen" && <NowPlayingFullscreen />}
           <TagEditorModal />
           <BatchTagEditorModal />
+          <ToastContainer />
         </>
       }
     >

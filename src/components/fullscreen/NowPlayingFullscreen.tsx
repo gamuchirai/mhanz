@@ -3,6 +3,7 @@ import { useCurrentTime, useCurrentTrack, usePlayerStore } from "../../store/use
 import { useFullscreenViewMode, useOverlayStore } from "../../store/useOverlayStore";
 import { useSettingsStore } from "../../store/useSettingsStore";
 import type { FullscreenViewMode } from "../../types/overlays";
+import { useSpectrumAnalysis } from "../../hooks/useSpectrumAnalysis";
 import { FullscreenHeader } from "./FullscreenHeader";
 import { FullscreenArtwork } from "./FullscreenArtwork";
 import { FullscreenLyricsView } from "./FullscreenLyricsView";
@@ -36,6 +37,17 @@ export function NowPlayingFullscreen() {
   const visualizerStyle = useSettingsStore((state) => state.settings.visualizerStyle);
   const autoHideChrome = useSettingsStore((state) => state.settings.fullscreenAutoHideChrome);
   const setFullscreenDefaultView = useSettingsStore((state) => state.setFullscreenDefaultView);
+
+  const {
+    frame: spectrumFrame,
+    streamState: visualizerStreamState,
+    retry: retryVisualizer,
+  } = useSpectrumAnalysis({
+    viewMode,
+    visualizerStyle,
+    currentTrackId: currentTrack?.id,
+    isPlaying,
+  });
 
   const [isInactive, setIsInactive] = useState(false);
   const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -331,6 +343,10 @@ export function NowPlayingFullscreen() {
             style={visualizerStyle}
             isPlaying={isPlaying}
             ambientColors={currentTrack.ambientColors}
+            spectrumFrame={spectrumFrame}
+            streamState={visualizerStreamState}
+            onRetry={retryVisualizer}
+            onReturnToArtwork={() => handleViewModeChange("artwork")}
           />
         )}
       </main>

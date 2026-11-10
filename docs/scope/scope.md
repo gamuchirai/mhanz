@@ -37,6 +37,10 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 24  | Universal album and artist navigation links | Phase 2    | done        |
 | 25  | Audio file metadata tag editor     | Phase 2    | done        |
 | 26  | Operating system media keys and transport controls | Phase 3 | in-progress |
+| 27  | Gapless track transitions          | Phase 2    | in-progress |
+| 28  | Playlist and saved collection hydration | Phase 2 | in-progress |
+| 29  | Home listening recommendations     | Phase 2    | in-progress |
+| 30  | Live audio visualizer              | Phase 2    | done        |
 
 
 ## Foundations
@@ -445,6 +449,56 @@ spec [0023](../specs/0023-audio-file-metadata-tag-editor/index.md)
 - [x] Verify it: `/check verify audio file metadata tag editor`
 - [x] Test it: `/test audio file metadata tag editor`
 
+### 28. Playlist and saved collection hydration · in-progress
+
+Connect playlist views and Home saved collections to local SQLite records with loading, empty, and retry states.
+**Done when:** playlists show real data and detail entries from SQLite, Home shows up to six saved playlists and albums with balanced slots and See all navigation, independent data sources fail gracefully without hiding successful cards, and unsupported controls are disabled with accessible explanations.
+
+spec [0027](../specs/0027-playlist-and-saved-collection-hydration/index.md)
+
+- [x] Design it (spec): `/architect playlist and saved collection hydration`
+- [ ] Build it: `/develop playlist and saved collection hydration`
+  - [ ] Loading skeletons, empty guidance, inline error retry cards, and accessible explanations for unsupported controls (AC-1, AC-3, AC-5)
+  - [ ] Connect Home Your Collections section with sequential layout and six card balancing (AC-2)
+  - [ ] Wire See all navigation, album detail navigation, and playlist playback with async track hydration (AC-4)
+  - [ ] Store error states, fixture clearance on SQLite error, and unit test coverage (AC-1, AC-3, AC-4, AC-5)
+- [ ] Verify it: `/check verify playlist and saved collection hydration`
+- [ ] Test it: `/test playlist and saved collection hydration`
+
+### 29. Home listening recommendations · in-progress
+
+Provide four dynamic recommendation collections on Home (Recently Added, Most Played, Best of an Artist, Trending Genre) based on SQLite history and library tracks.
+**Done when:** Home shows the four generated collections with skeletons while loading, ranking rules and time cutoffs are computed via a single aggregate SQLite query, empty history falls back to library tracks with From your library labels, and listening history is pruned after 30 days by age.
+
+spec [0028](../specs/0028-home-listening-recommendations/index.md)
+
+- [x] Design it (spec): `/architect home listening recommendations`
+- [ ] Build it: `/develop home listening recommendations`
+  - [ ] Recommendation card shells, loading skeletons, retry states, and source labels (AC-1, AC-6, AC-10)
+  - [ ] Aggregate SQLite read query for the four rankings, formatted titles, and library fallback tracks (AC-2, AC-3, AC-4, AC-5, AC-6)
+  - [ ] 30 day history age pruning on history recording and startup maintenance (AC-5, AC-9)
+  - [ ] Home recommendation hydration and event driven refresh on history record, scan complete, and history clear (AC-8, AC-10)
+  - [ ] Queue replacement and playback context wiring on play and card clicks (AC-7)
+- [ ] Verify it: `/check verify home listening recommendations`
+- [ ] Test it: `/test home listening recommendations`
+
+### 30. Live audio visualizer · done
+
+Connect the fullscreen visualizer to live audio playback using frequency analysis in the native Rodio engine.
+**Done when:** the fullscreen visualizer displays real frequency data across 32 normalized bands from the active audio output, analysis runs on a background Rust worker with RustFFT and streams via a Tauri Channel only while active, pause decays to baseline, and engine errors show a retry state without simulated fallback.
+
+spec [0029](../specs/0029-live-audio-visualizer/index.md) · code in `src-tauri/src/audio/`, `src-tauri/src/commands/visualizer.rs`, `src/services/audio.ts`, `src/hooks/useSpectrumAnalysis.ts`, `src/components/fullscreen/`
+
+- [x] Design it (spec): `/architect live audio visualizer`
+- [x] Build it: `/develop live audio visualizer`
+  - [x] Visualizer data state, error view, retry action, Artwork return navigation, and disabled control explanations (AC-4, AC-5)
+  - [x] Nonallocating SpectrumTapSource wrapper, Rodio sample tap, and RustFFT background analysis worker (AC-1, AC-3, AC-6)
+  - [x] Tauri Channel streaming command with cancellation token, transition watchdog guards, and TypeScript service (AC-2, AC-3, AC-5)
+  - [x] Bars and wave visualizer style integration with 32 band frames and lifecycle teardown (AC-1, AC-2, AC-3, AC-5)
+  - [x] Tests for low band interpolation, tone analysis, stream lifecycle, pause decay, and error recovery (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6)
+- [x] Verify it: `/check verify live audio visualizer`
+- [x] Test it: `/test live audio visualizer`
+
 
 
 ## Phase 3: Operating system integration
@@ -465,6 +519,23 @@ spec [0025](../specs/0025-system-media-keys-transport-controls/index.md)
         code in `src-tauri/src/media_controls/`, `src-tauri/src/commands/media_controls.rs`, `src/services/mediaControls.ts`, `src/hooks/useMediaControls.ts`, `src/components/settings/SystemMediaControlsToggle.tsx`, `src/test/mediaControls.test.tsx`
 - [x] Verify it: `/check verify operating system media keys and transport controls`
 - [x] Test it: `/test operating system media keys and transport controls`
+
+
+### 27. Gapless track transitions · in-progress · Facade
+
+Let songs flow straight into the next one with no audible silence, for albums, live recordings, and classical movements, including manual Next and Previous and repeat modes.
+**Done when:** playing a continuous album shows no audible gap between tracks, a broken next file is skipped with a short notice, and repeat one and repeat all loop without a gap.
+
+spec [0026](../specs/0026-gapless-track-transitions/index.md)
+
+- [x] Design it (spec): `/architect core audio playback engine: seamless gapless track transitions`
+- [x] Build it: `/develop gapless track transitions`
+  - [x] Staged next track, queue generation counter, and output format conversion in the engine (AC-1, AC-3, AC-10)
+  - [x] Boundary events, skip notice, monitor thread rework, and store wiring for the lookahead list (AC-2, AC-4, AC-5, AC-8)
+  - [x] Seek restaging, manual navigation rules, repeat modes, and encoder delay trimming (AC-6, AC-7, AC-9)
+        code in `src-tauri/src/audio/engine.rs`, `src-tauri/src/audio/models.rs`, `src-tauri/src/commands/audio.rs`, `src/services/audio.ts`, `src/store/usePlayerStore.ts`, `src/store/useToastStore.ts`, `src/components/common/ToastContainer.tsx`, `src/test/gaplessPlayback.test.tsx`, `src/test/toastContainer.test.tsx`
+- [x] Verify it: `/check verify gapless track transitions`
+- [x] Test it: `/test gapless track transitions`
 
 
 ## Deferred

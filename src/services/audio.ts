@@ -4,13 +4,17 @@
  * with a high-fidelity browser/test mock fallback.
  */
 
-import { invoke, isTauri } from "@tauri-apps/api/core";
+import { invoke, isTauri, Channel } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import type {
   AudioErrorDto,
   AudioPlaybackStateDto,
   AudioPositionDto,
+  AudioTrackChangedDto,
   AudioTrackEndedDto,
+  AudioTrackSkippedDto,
+  NextTrackCandidate,
+  SpectrumFrame,
 } from "../types/audio";
 import type { PlayHistoryItemDto } from "../types/database";
 
@@ -18,17 +22,28 @@ import type { PlayHistoryItemDto } from "../types/database";
 type PositionListener = (pos: AudioPositionDto) => void;
 type StateChangedListener = (state: AudioPlaybackStateDto) => void;
 type TrackEndedListener = (event: AudioTrackEndedDto) => void;
+type TrackChangedListener = (event: AudioTrackChangedDto) => void;
+type TrackSkippedListener = (event: AudioTrackSkippedDto) => void;
 type ErrorListener = (error: AudioErrorDto) => void;
 type HistoryListener = (item: PlayHistoryItemDto) => void;
+
+const MOCK_DEFAULT_DURATION_SECONDS = 180.0;
 
 interface MockEngineState {
   state: AudioPlaybackStateDto;
   timerHandle: ReturnType<typeof setInterval> | null;
+  visualizerTimerHandle: ReturnType<typeof setInterval> | null;
+  visualizerChannel: Channel<SpectrumFrame> | null;
+  visualizerSequence: number;
   forceMock: boolean;
   milestoneRecorded: boolean;
+  lookahead: NextTrackCandidate[];
+  queueGeneration: number;
   positionListeners: Set<PositionListener>;
   stateChangedListeners: Set<StateChangedListener>;
   trackEndedListeners: Set<TrackEndedListener>;
+  trackChangedListeners: Set<TrackChangedListener>;
+  trackSkippedListeners: Set<TrackSkippedListener>;
   errorListeners: Set<ErrorListener>;
   historyListeners: Set<HistoryListener>;
 }
@@ -46,11 +61,18 @@ const mockEngine: MockEngineState = {
     context_type: null,
   },
   timerHandle: null,
+  visualizerTimerHandle: null,
+  visualizerChannel: null,
+  visualizerSequence: 0,
   forceMock: false,
   milestoneRecorded: false,
+  lookahead: [],
+  queueGeneration: 0,
   positionListeners: new Set(),
   stateChangedListeners: new Set(),
   trackEndedListeners: new Set(),
+  trackChangedListeners: new Set(),
+  trackSkippedListeners: new Set(),
   errorListeners: new Set(),
   historyListeners: new Set(),
 };
@@ -140,7 +162,41 @@ function startMockTimer(): void {
     }
 
     if (dur > 0 && nextPos >= dur) {
-      // Track ended
+      // Check if lookahead has candidates for gapless transition
+      let transitionedCandidate: NextTrackCandidate | null = null;
+      while (mockEngine.lookahead.length > 0) {
+        const candidate = mockEngine.lookahead.shift()!;
+        if (candidate.file_path.includes("corrupt") || candidate.file_path.includes("missing")) {
+          const followingId = mockEngine.lookahead[0]?.track_id ?? null;
+          notifyTrackSkipped({
+            failed_track_id: candidate.track_id,
+            reason_code: "DECODE_ERROR",
+            following_track_id: followingId,
+          });
+          continue;
+        }
+        transitionedCandidate = candidate;
+        break;
+      }
+
+      if (transitionedCandidate) {
+        // Gapless track change; candidates carry no duration, so use the mock default.
+        mockEngine.state.track_id = transitionedCandidate.track_id;
+        mockEngine.state.file_path = transitionedCandidate.file_path;
+        mockEngine.state.duration_seconds = MOCK_DEFAULT_DURATION_SECONDS;
+        mockEngine.state.position_seconds = 0;
+        mockEngine.milestoneRecorded = false;
+
+        notifyStateChanged({ ...mockEngine.state });
+        notifyTrackChanged({
+          track_id: transitionedCandidate.track_id,
+          duration_seconds: MOCK_DEFAULT_DURATION_SECONDS,
+          queue_generation: mockEngine.queueGeneration,
+        });
+        return;
+      }
+
+      // No more tracks: queue ended naturally
       mockEngine.state.status = "stopped";
       mockEngine.state.position_seconds = 0;
       stopMockTimer();
@@ -171,6 +227,14 @@ function notifyStateChanged(payload: AudioPlaybackStateDto): void {
 
 function notifyTrackEnded(payload: AudioTrackEndedDto): void {
   mockEngine.trackEndedListeners.forEach((fn) => fn(payload));
+}
+
+function notifyTrackChanged(payload: AudioTrackChangedDto): void {
+  mockEngine.trackChangedListeners.forEach((fn) => fn(payload));
+}
+
+function notifyTrackSkipped(payload: AudioTrackSkippedDto): void {
+  mockEngine.trackSkippedListeners.forEach((fn) => fn(payload));
 }
 
 function notifyError(payload: AudioErrorDto): void {
@@ -204,7 +268,7 @@ export async function audioPlayTrack(
     }
 
     const startPos = Math.max(0, startPosition ?? 0);
-    const duration = Math.max(0, durationHint ?? 180.0);
+    const duration = Math.max(0, durationHint ?? MOCK_DEFAULT_DURATION_SECONDS);
 
     mockEngine.milestoneRecorded = false;
     mockEngine.state = {
@@ -361,6 +425,28 @@ export async function audioGetState(): Promise<AudioPlaybackStateDto> {
 }
 
 /**
+ * Pre-stages lookahead candidates in the native engine for gapless playback (AC-4, AC-10).
+ */
+export async function audioSetNextTrack(
+  lookahead: NextTrackCandidate[],
+  queueGeneration: number
+): Promise<void> {
+  if (isAudioMockActive()) {
+    if (queueGeneration < mockEngine.queueGeneration) {
+      return;
+    }
+    mockEngine.queueGeneration = queueGeneration;
+    mockEngine.lookahead = [...lookahead];
+    return;
+  }
+
+  return invoke<void>("audio_set_next_track", {
+    lookahead,
+    queueGeneration,
+  });
+}
+
+/**
  * Subscribes to periodic 100ms timeline position updates during active playback.
  */
 export async function listenAudioPosition(
@@ -415,6 +501,42 @@ export async function listenAudioTrackEnded(
 }
 
 /**
+ * Subscribes to gapless track boundary transition events (AC-4).
+ */
+export async function listenAudioTrackChanged(
+  callback: (event: AudioTrackChangedDto) => void
+): Promise<UnlistenFn> {
+  if (isAudioMockActive()) {
+    mockEngine.trackChangedListeners.add(callback);
+    return () => {
+      mockEngine.trackChangedListeners.delete(callback);
+    };
+  }
+
+  return listen<AudioTrackChangedDto>("audio:track-changed", (event) => {
+    callback(event.payload);
+  });
+}
+
+/**
+ * Subscribes to candidate skip events when a corrupt or missing file is skipped (AC-5).
+ */
+export async function listenAudioTrackSkipped(
+  callback: (event: AudioTrackSkippedDto) => void
+): Promise<UnlistenFn> {
+  if (isAudioMockActive()) {
+    mockEngine.trackSkippedListeners.add(callback);
+    return () => {
+      mockEngine.trackSkippedListeners.delete(callback);
+    };
+  }
+
+  return listen<AudioTrackSkippedDto>("audio:track-skipped", (event) => {
+    callback(event.payload);
+  });
+}
+
+/**
  * Subscribes to audio subsystem error events.
  */
 export async function listenAudioError(
@@ -451,10 +573,81 @@ export async function listenAudioHistoryRecorded(
 }
 
 /**
+ * Starts streaming live spectrum analysis frames through a typed Channel (AC-2).
+ */
+export async function startSpectrumAnalysis(
+  channel: Channel<SpectrumFrame>
+): Promise<void> {
+  if (isAudioMockActive()) {
+    if (mockEngine.visualizerTimerHandle) {
+      clearInterval(mockEngine.visualizerTimerHandle);
+      mockEngine.visualizerTimerHandle = null;
+    }
+    mockEngine.visualizerChannel = channel;
+    mockEngine.visualizerTimerHandle = setInterval(() => {
+      if (!mockEngine.visualizerChannel) return;
+      const isPlaying = mockEngine.state.status === "playing";
+      const isMuted = mockEngine.state.is_muted;
+      const vol = isMuted ? 0 : mockEngine.state.volume;
+
+      const bands = new Array(32).fill(0).map((_, i) => {
+        if (!isPlaying || vol === 0) return 0;
+        const base = Math.sin(Date.now() * 0.005 + i * 0.3) * 0.5 + 0.5;
+        return Math.max(0, Math.min(1, base * vol));
+      });
+
+      mockEngine.visualizerSequence += 1;
+      const frame: SpectrumFrame = {
+        track_id: mockEngine.state.track_id ?? "mock-track",
+        timestamp_ms: Date.now(),
+        sequence: mockEngine.visualizerSequence,
+        bands,
+      };
+
+      try {
+        const chan = mockEngine.visualizerChannel as any;
+        if (typeof chan.onmessage === "function") {
+          chan.onmessage(frame);
+        } else if (typeof chan.send === "function") {
+          chan.send(frame);
+        }
+      } catch {
+        // channel closed or unsupported in mock
+      }
+    }, 50); // ~20 fps
+    return;
+  }
+
+  return invoke<void>("start_spectrum_analysis", { channel });
+}
+
+/**
+ * Halts live spectrum analysis streaming and ends the Channel (AC-2).
+ */
+export async function stopSpectrumAnalysis(): Promise<void> {
+  if (isAudioMockActive()) {
+    if (mockEngine.visualizerTimerHandle) {
+      clearInterval(mockEngine.visualizerTimerHandle);
+      mockEngine.visualizerTimerHandle = null;
+    }
+    mockEngine.visualizerChannel = null;
+    return;
+  }
+
+  return invoke<void>("stop_spectrum_analysis");
+}
+
+/**
  * Helper to reset mock state for clean test assertions.
  */
 export function resetAudioMock(): void {
   stopMockTimer();
+  if (mockEngine.visualizerTimerHandle) {
+    clearInterval(mockEngine.visualizerTimerHandle);
+    mockEngine.visualizerTimerHandle = null;
+  }
+  mockEngine.visualizerChannel = null;
+  mockEngine.visualizerSequence = 0;
   mockEngine.state = {
     track_id: null,
     file_path: null,
@@ -467,9 +660,13 @@ export function resetAudioMock(): void {
     context_type: null,
   };
   mockEngine.milestoneRecorded = false;
+  mockEngine.lookahead = [];
+  mockEngine.queueGeneration = 0;
   mockEngine.positionListeners.clear();
   mockEngine.stateChangedListeners.clear();
   mockEngine.trackEndedListeners.clear();
+  mockEngine.trackChangedListeners.clear();
+  mockEngine.trackSkippedListeners.clear();
   mockEngine.errorListeners.clear();
   mockEngine.historyListeners.clear();
 }

@@ -38,8 +38,9 @@ pub fn run() {
             audio_engine.set_db_manager(db_mgr_arc.clone());
 
             let scanner_manager = Arc::new(scanner::ScannerManager::new());
-            let media_controls_mgr =
-                Arc::new(media_controls::MediaControlsManager::new(app_data_dir.clone()));
+            let media_controls_mgr = Arc::new(media_controls::MediaControlsManager::new(
+                app_data_dir.clone(),
+            ));
             media_controls_mgr.set_app_handle(app.handle().clone());
             media_controls_mgr.set_db_manager(db_mgr_arc.clone());
             if let Some(main_window) = app.get_webview_window("main") {
@@ -88,6 +89,7 @@ pub fn run() {
             commands::audio::audio_set_volume,
             commands::audio::audio_set_muted,
             commands::audio::audio_get_state,
+            commands::audio::audio_set_next_track,
             commands::scanner::scanner_scan_folder,
             commands::scanner::scanner_cancel_scan,
             commands::scanner::scanner_get_scan_status,
@@ -101,6 +103,8 @@ pub fn run() {
             commands::media_controls::media_controls_set_playback_status,
             commands::media_controls::media_controls_set_enabled,
             commands::media_controls::media_controls_clear,
+            commands::visualizer::start_spectrum_analysis,
+            commands::visualizer::stop_spectrum_analysis,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
@@ -112,5 +116,4 @@ pub fn run() {
                 }
             }
         });
-
 }

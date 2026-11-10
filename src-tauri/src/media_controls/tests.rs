@@ -11,10 +11,16 @@ fn test_manager_creates_fallback_icon() {
     let manager = MediaControlsManager::new(test_dir.clone());
 
     let fallback_icon = test_dir.join("fallback_icon.png");
-    assert!(fallback_icon.exists(), "Fallback icon must be created on disk");
+    assert!(
+        fallback_icon.exists(),
+        "Fallback icon must be created on disk"
+    );
 
     let uri = manager.resolve_cover_art_uri("non-existent-track");
-    assert!(uri.is_some(), "Fallback URI must be returned when track not in DB");
+    assert!(
+        uri.is_some(),
+        "Fallback URI must be returned when track not in DB"
+    );
     let uri_str = uri.unwrap();
     assert!(
         uri_str.starts_with("file://"),

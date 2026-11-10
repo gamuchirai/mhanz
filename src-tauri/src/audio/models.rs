@@ -96,3 +96,26 @@ pub struct AudioErrorDto {
     pub message: String,
     pub track_id: Option<String>,
 }
+
+/// Candidate track in the lookahead queue provided by the frontend.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct NextTrackCandidate {
+    pub track_id: String,
+    pub file_path: String,
+}
+
+/// Track transition boundary event payload emitted when seamless handover occurs.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct AudioTrackChangedDto {
+    pub track_id: String,
+    pub duration_seconds: f64,
+    pub queue_generation: u64,
+}
+
+/// Skip event payload emitted when a staged track fails and playback advances to the next valid track.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct AudioTrackSkippedDto {
+    pub failed_track_id: String,
+    pub reason_code: String,
+    pub following_track_id: Option<String>,
+}

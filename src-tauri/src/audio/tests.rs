@@ -2,11 +2,13 @@
 
 use std::fs::File;
 use std::io::Write;
+use std::sync::atomic::Ordering;
 
 use super::engine::AudioEngine;
 use super::error::AudioError;
 use super::models::{
-    AudioPlaybackState, AudioPlaybackStateDto, AudioPositionDto, AudioTrackEndedDto, PlaybackStatus,
+    AudioPlaybackState, AudioPlaybackStateDto, AudioPositionDto, AudioTrackChangedDto,
+    AudioTrackEndedDto, AudioTrackSkippedDto, NextTrackCandidate, PlaybackStatus,
 };
 
 #[test]
@@ -84,7 +86,7 @@ fn test_audio_error_codes() {
 
 #[test]
 fn test_file_path_validation() {
-    // Non-existent path
+    // Non existent path
     let non_existent = AudioEngine::validate_file_path("C:/path/to/non_existent_file.mp3");
     assert!(non_existent.is_err());
     match non_existent {
@@ -195,4 +197,433 @@ fn test_audio_engine_reload_guard() {
     assert!(!engine
         .is_reloading
         .load(std::sync::atomic::Ordering::SeqCst));
+}
+
+#[test]
+fn test_gapless_models_serialization() {
+    let candidate = NextTrackCandidate {
+        track_id: "trk-456".to_string(),
+        file_path: "C:/music/next.mp3".to_string(),
+    };
+    let json_cand = serde_json::to_string(&candidate).expect("Serialization failed");
+    assert!(json_cand.contains("trk-456"));
+
+    let changed = AudioTrackChangedDto {
+        track_id: "trk-456".to_string(),
+        duration_seconds: 195.5,
+        queue_generation: 4,
+    };
+    let json_changed = serde_json::to_string(&changed).expect("Serialization failed");
+    assert!(json_changed.contains("trk-456"));
+    assert!(json_changed.contains("195.5"));
+
+    let skipped = AudioTrackSkippedDto {
+        failed_track_id: "trk-corrupt".to_string(),
+        reason_code: "DECODE_ERROR".to_string(),
+        following_track_id: Some("trk-valid".to_string()),
+    };
+    let json_skipped = serde_json::to_string(&skipped).expect("Serialization failed");
+    assert!(json_skipped.contains("DECODE_ERROR"));
+    assert!(json_skipped.contains("trk-valid"));
+}
+
+#[test]
+fn test_track_boundary_source_forwards_seek() {
+    use rodio::source::{SeekError, Source};
+    use std::sync::atomic::{AtomicBool, AtomicU64};
+    use std::sync::{Arc, Mutex};
+    use std::time::Duration;
+
+    struct SeekableSource {
+        seeked_to: Arc<Mutex<Option<Duration>>>,
+    }
+
+    impl Iterator for SeekableSource {
+        type Item = i16;
+        fn next(&mut self) -> Option<Self::Item> {
+            Some(0)
+        }
+    }
+
+    impl Source for SeekableSource {
+        fn current_frame_len(&self) -> Option<usize> {
+            None
+        }
+        fn channels(&self) -> u16 {
+            2
+        }
+        fn sample_rate(&self) -> u32 {
+            1000
+        }
+        fn total_duration(&self) -> Option<Duration> {
+            Some(Duration::from_secs(10))
+        }
+        fn try_seek(&mut self, pos: Duration) -> Result<(), SeekError> {
+            *self.seeked_to.lock().unwrap() = Some(pos);
+            Ok(())
+        }
+    }
+
+    let seeked_to = Arc::new(Mutex::new(None));
+    let samples_played = Arc::new(AtomicU64::new(0));
+    let mut source = super::engine::TrackBoundarySource::new(
+        SeekableSource {
+            seeked_to: seeked_to.clone(),
+        },
+        "trk-seek".to_string(),
+        10.0,
+        1,
+        samples_played.clone(),
+        Arc::new(AtomicBool::new(false)),
+        Arc::new(AtomicBool::new(false)),
+    );
+
+    source
+        .try_seek(Duration::from_secs(2))
+        .expect("seek should be forwarded");
+
+    assert_eq!(*seeked_to.lock().unwrap(), Some(Duration::from_secs(2)));
+    assert_eq!(samples_played.load(Ordering::SeqCst), 4000);
+}
+
+#[test]
+fn test_track_boundary_source() {
+    use rodio::source::Source;
+    use std::sync::atomic::{AtomicBool, AtomicU64};
+    use std::sync::Arc;
+
+    struct DummySource {
+        samples: Vec<i16>,
+        index: usize,
+    }
+
+    impl Iterator for DummySource {
+        type Item = i16;
+        fn next(&mut self) -> Option<Self::Item> {
+            if self.index < self.samples.len() {
+                let s = self.samples[self.index];
+                self.index += 1;
+                Some(s)
+            } else {
+                None
+            }
+        }
+    }
+
+    impl Source for DummySource {
+        fn current_frame_len(&self) -> Option<usize> {
+            Some(self.samples.len() - self.index)
+        }
+        fn channels(&self) -> u16 {
+            2
+        }
+        fn sample_rate(&self) -> u32 {
+            44100
+        }
+        fn total_duration(&self) -> Option<std::time::Duration> {
+            Some(std::time::Duration::from_millis(100))
+        }
+    }
+
+    let dummy = DummySource {
+        samples: vec![10, 20, 30, 40],
+        index: 0,
+    };
+
+    let samples_played = Arc::new(AtomicU64::new(0));
+    let started = Arc::new(AtomicBool::new(false));
+    let ended = Arc::new(AtomicBool::new(false));
+
+    let mut boundary = super::engine::TrackBoundarySource::new(
+        dummy,
+        "trk-boundary-test".to_string(),
+        0.1,
+        1,
+        samples_played.clone(),
+        started.clone(),
+        ended.clone(),
+    );
+
+    assert_eq!(boundary.channels(), 2);
+    assert_eq!(boundary.sample_rate(), 44100);
+    assert!(!started.load(Ordering::SeqCst));
+    assert!(!ended.load(Ordering::SeqCst));
+
+    // First sample triggers started flag and increments counter
+    let first = boundary.next();
+    assert_eq!(first, Some(10));
+    assert!(started.load(Ordering::SeqCst));
+    assert_eq!(samples_played.load(Ordering::SeqCst), 1);
+
+    // Remaining samples
+    assert_eq!(boundary.next(), Some(20));
+    assert_eq!(boundary.next(), Some(30));
+    assert_eq!(boundary.next(), Some(40));
+    assert_eq!(samples_played.load(Ordering::SeqCst), 4);
+    assert!(!ended.load(Ordering::SeqCst));
+
+    // Exhaustion triggers ended flag
+    assert_eq!(boundary.next(), None);
+    assert!(ended.load(Ordering::SeqCst));
+}
+
+#[test]
+fn test_audio_set_next_track_generation() {
+    let engine = AudioEngine::new();
+
+    let candidate_1 = NextTrackCandidate {
+        track_id: "trk-gen-1".to_string(),
+        file_path: "C:/music/track1.mp3".to_string(),
+    };
+    let candidate_2 = NextTrackCandidate {
+        track_id: "trk-gen-2".to_string(),
+        file_path: "C:/music/track2.mp3".to_string(),
+    };
+
+    // Staging with generation 5 succeeds
+    let res = engine.set_next_track(vec![candidate_1], 5);
+    assert!(res.is_ok());
+
+    // Staging with older generation 3 is ignored (AC-10)
+    let res_stale = engine.set_next_track(vec![candidate_2], 3);
+    assert!(res_stale.is_ok());
+
+    // Staging with newer generation and empty candidate list succeeds (clears staged candidate)
+    let res_clear = engine.set_next_track(vec![], 6);
+    assert!(res_clear.is_ok());
+}
+
+#[test]
+fn test_track_boundary_source_mono() {
+    use rodio::source::Source;
+    use std::sync::atomic::{AtomicBool, AtomicU64};
+    use std::sync::Arc;
+
+    struct MonoDummySource {
+        samples: Vec<i16>,
+        index: usize,
+    }
+
+    impl Iterator for MonoDummySource {
+        type Item = i16;
+        fn next(&mut self) -> Option<Self::Item> {
+            if self.index < self.samples.len() {
+                let s = self.samples[self.index];
+                self.index += 1;
+                Some(s)
+            } else {
+                None
+            }
+        }
+    }
+
+    impl Source for MonoDummySource {
+        fn current_frame_len(&self) -> Option<usize> {
+            Some(self.samples.len() - self.index)
+        }
+        fn channels(&self) -> u16 {
+            1
+        }
+        fn sample_rate(&self) -> u32 {
+            22050
+        }
+        fn total_duration(&self) -> Option<std::time::Duration> {
+            Some(std::time::Duration::from_millis(50))
+        }
+    }
+
+    let dummy = MonoDummySource {
+        samples: vec![5, 15, 25],
+        index: 0,
+    };
+
+    let samples_played = Arc::new(AtomicU64::new(0));
+    let started = Arc::new(AtomicBool::new(false));
+    let ended = Arc::new(AtomicBool::new(false));
+
+    let mut boundary = super::engine::TrackBoundarySource::new(
+        dummy,
+        "trk-mono".to_string(),
+        0.05,
+        2,
+        samples_played.clone(),
+        started.clone(),
+        ended.clone(),
+    );
+
+    assert_eq!(boundary.channels(), 1);
+    assert_eq!(boundary.sample_rate(), 22050);
+
+    assert_eq!(boundary.next(), Some(5));
+    assert!(started.load(Ordering::SeqCst));
+    assert_eq!(boundary.next(), Some(15));
+    assert_eq!(boundary.next(), Some(25));
+    assert_eq!(boundary.next(), None);
+    assert!(ended.load(Ordering::SeqCst));
+}
+
+#[test]
+fn test_spectrum_tap_source_and_packing() {
+    use super::tap::{
+        pack_gain_mute, unpack_gain_mute, SampleBuffer, SpectrumTapSource, WINDOW_SIZE,
+    };
+    use std::sync::atomic::{AtomicBool, AtomicU64};
+    use std::sync::Arc;
+
+    // Test gain & mute packing / unpacking
+    let packed = pack_gain_mute(0.75, false);
+    let (g, m) = unpack_gain_mute(packed);
+    assert!((g - 0.75).abs() < 1e-4);
+    assert!(!m);
+
+    let packed_muted = pack_gain_mute(0.5, true);
+    let (g2, m2) = unpack_gain_mute(packed_muted);
+    assert!((g2 - 0.5).abs() < 1e-4);
+    assert!(m2);
+
+    // Test tap source behavior
+    struct ConstantSource {
+        val: i16,
+        count: usize,
+    }
+    impl rodio::Source for ConstantSource {
+        fn current_frame_len(&self) -> Option<usize> {
+            None
+        }
+        fn channels(&self) -> u16 {
+            1
+        }
+        fn sample_rate(&self) -> u32 {
+            44100
+        }
+        fn total_duration(&self) -> Option<std::time::Duration> {
+            None
+        }
+    }
+    impl Iterator for ConstantSource {
+        type Item = i16;
+        fn next(&mut self) -> Option<i16> {
+            if self.count > 0 {
+                self.count -= 1;
+                Some(self.val)
+            } else {
+                None
+            }
+        }
+    }
+
+    let is_active = Arc::new(AtomicBool::new(false));
+    let buffer = SampleBuffer::new();
+    let buffer_slot = Arc::new(std::sync::Mutex::new(Some(buffer.clone())));
+    let volume_mute = Arc::new(AtomicU64::new(pack_gain_mute(1.0, false)));
+
+    let source = ConstantSource {
+        val: 16384,
+        count: WINDOW_SIZE * 3,
+    };
+    let mut tap =
+        SpectrumTapSource::new(source, is_active.clone(), buffer_slot, volume_mute.clone());
+
+    // Inactive: pulls samples, queue stays empty
+    for _ in 0..WINDOW_SIZE {
+        assert_eq!(tap.next(), Some(16384));
+    }
+    {
+        let q = buffer.queue.lock().unwrap();
+        assert_eq!(q.len(), 0);
+    }
+
+    // Active: fills first 4096 window and pushes to queue
+    is_active.store(true, Ordering::SeqCst);
+    for _ in 0..WINDOW_SIZE {
+        assert_eq!(tap.next(), Some(16384));
+    }
+    {
+        let q = buffer.queue.lock().unwrap();
+        assert_eq!(q.len(), 1);
+        let win = &q[0];
+        // 16384 / 32768 = 0.5
+        assert!((win[0] - 0.5).abs() < 1e-3);
+    }
+
+    // Sliding window: pulling hop_size (2205) samples pushes the next overlapping window
+    for _ in 0..2205 {
+        assert_eq!(tap.next(), Some(16384));
+    }
+    {
+        let q = buffer.queue.lock().unwrap();
+        assert_eq!(q.len(), 2);
+    }
+}
+
+#[test]
+fn test_spectrum_tap_seek_and_mute() {
+    use super::tap::{
+        pack_gain_mute, unpack_gain_mute, SampleBuffer, SpectrumTapSource, WINDOW_SIZE,
+    };
+    use rodio::source::SeekError;
+    use std::sync::atomic::{AtomicBool, AtomicU64};
+    use std::sync::Arc;
+    use std::time::Duration;
+
+    // Test gain clamping and mute flags
+    let (g_clamped, m_muted) = unpack_gain_mute(pack_gain_mute(1.5, true));
+    assert!((g_clamped - 1.0).abs() < 1e-4);
+    assert!(m_muted);
+
+    struct SeekableConstantSource {
+        val: i16,
+    }
+    impl rodio::Source for SeekableConstantSource {
+        fn current_frame_len(&self) -> Option<usize> {
+            None
+        }
+        fn channels(&self) -> u16 {
+            1
+        }
+        fn sample_rate(&self) -> u32 {
+            44100
+        }
+        fn total_duration(&self) -> Option<Duration> {
+            Some(Duration::from_secs(60))
+        }
+        fn try_seek(&mut self, _pos: Duration) -> Result<(), SeekError> {
+            Ok(())
+        }
+    }
+    impl Iterator for SeekableConstantSource {
+        type Item = i16;
+        fn next(&mut self) -> Option<i16> {
+            Some(self.val)
+        }
+    }
+
+    let is_active = Arc::new(AtomicBool::new(true));
+    let buffer = SampleBuffer::new();
+    let buffer_slot = Arc::new(std::sync::Mutex::new(Some(buffer.clone())));
+    // Pack volume 0.8 with mute enabled
+    let volume_mute = Arc::new(AtomicU64::new(pack_gain_mute(0.8, true)));
+
+    let mut tap = SpectrumTapSource::new(
+        SeekableConstantSource { val: 16384 },
+        is_active,
+        buffer_slot,
+        volume_mute,
+    );
+
+    // Collect 4096 samples while muted
+    for _ in 0..WINDOW_SIZE {
+        assert_eq!(tap.next(), Some(16384));
+    }
+
+    // Verify window samples are zeroed due to mute
+    {
+        let q = buffer.queue.lock().unwrap();
+        assert_eq!(q.len(), 1);
+        let win = &q[0];
+        assert_eq!(win[0], 0.0);
+    }
+
+    // Seek resets partial window accumulation
+    assert!(rodio::Source::try_seek(&mut tap, Duration::from_secs(10)).is_ok());
 }
