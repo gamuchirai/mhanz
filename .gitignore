@@ -31,3 +31,7 @@ claude/
 src-tauri/target/
 src-tauri/gen/
 
+# Remotion demo project
+demo/
+
+

@@ -10,15 +10,9 @@
 
 ---
 
-> **⚠️ Demo video / GIF placeholder** — Record a 60-second clip of the app and drop it here.
-> Replace this block with:
-> ```md
-> https://user-images.githubusercontent.com/YOUR_ID/demo.mp4
-> ```
-> or for a GIF:
-> ```md
-> ![Mutinhimira demo](docs/assets/demo.gif)
-> ```
+<div align="center">
+  <img src="docs/assets/demo.gif" alt="Mutinhimira Demo" width="100%" style="border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.6);" />
+</div>
 
 ---
 
@@ -41,11 +35,9 @@
 
 ## 📸 Screenshots
 
-> Replace with actual screenshots once you have them.
-
-| Home | Now Playing | Library |
-|------|-------------|---------|
-| *(home screenshot)* | *(fullscreen screenshot)* | *(library screenshot)* |
+| Home | Now Playing | Library & Visualizer |
+|:---:|:---:|:---:|
+| <img src="demo/public/screenshots/home.png" width="300" /> | <img src="demo/public/screenshots/now_playing.png" width="300" /> | <img src="demo/public/screenshots/visualiser.png" width="300" /> |
 
 ---
 
@@ -174,11 +166,9 @@ MIT © Mutinhimira Contributors
 
 ## 📸 Screenshots
 
-> Replace with actual screenshots once you have them.
-
-| Home | Now Playing | Library |
-|------|-------------|---------|
-| *(home screenshot)* | *(fullscreen screenshot)* | *(library screenshot)* |
+| Home | Now Playing | Library & Visualizer |
+|:---:|:---:|:---:|
+| <img src="demo/public/screenshots/home.png" width="300" /> | <img src="demo/public/screenshots/now_playing.png" width="300" /> | <img src="demo/public/screenshots/visualiser.png" width="300" /> |
 
 ---
 
