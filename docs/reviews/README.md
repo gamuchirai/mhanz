@@ -47,6 +47,7 @@ This directory contains code reviews, audit records, and process analysis report
 
 ## Review and Audit Documents Index
 
+- [Review: Playlist and Saved Collection Hydration](2026-11-10-feat-playlist-and-saved-collection-hydration.md) (2026-11-10)
 - [Review: Live Audio Visualizer](2026-11-10-feat-live-audio-visualizer.md) (2026-11-10)
 - [Process 0004: Whole App Reliability](process-0004-whole-app-reliability.md) (2026-11-03)
 - [Review: Universal Album and Artist Navigation Links](2026-11-02-feat-universal-album-artist-navigation-links.md) (2026-11-02)
