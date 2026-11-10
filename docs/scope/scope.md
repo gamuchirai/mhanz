@@ -38,7 +38,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 25  | Audio file metadata tag editor     | Phase 2    | done        |
 | 26  | Operating system media keys and transport controls | Phase 3 | in-progress |
 | 27  | Gapless track transitions          | Phase 2    | in-progress |
-| 28  | Playlist and saved collection hydration | Phase 2 | in-progress |
+| 28  | Playlist and saved collection hydration | Phase 2 | done        |
 | 29  | Home listening recommendations     | Phase 2    | in-progress |
 | 30  | Live audio visualizer              | Phase 2    | done        |
 
@@ -449,7 +449,7 @@ spec [0023](../specs/0023-audio-file-metadata-tag-editor/index.md)
 - [x] Verify it: `/check verify audio file metadata tag editor`
 - [x] Test it: `/test audio file metadata tag editor`
 
-### 28. Playlist and saved collection hydration · in-progress
+### 28. Playlist and saved collection hydration · done
 
 Connect playlist views and Home saved collections to local SQLite records with loading, empty, and retry states.
 **Done when:** playlists show real data and detail entries from SQLite, Home shows up to six saved playlists and albums with balanced slots and See all navigation, independent data sources fail gracefully without hiding successful cards, and unsupported controls are disabled with accessible explanations.
@@ -457,13 +457,14 @@ Connect playlist views and Home saved collections to local SQLite records with l
 spec [0027](../specs/0027-playlist-and-saved-collection-hydration/index.md)
 
 - [x] Design it (spec): `/architect playlist and saved collection hydration`
-- [ ] Build it: `/develop playlist and saved collection hydration`
-  - [ ] Loading skeletons, empty guidance, inline error retry cards, and accessible explanations for unsupported controls (AC-1, AC-3, AC-5)
-  - [ ] Connect Home Your Collections section with sequential layout and six card balancing (AC-2)
-  - [ ] Wire See all navigation, album detail navigation, and playlist playback with async track hydration (AC-4)
-  - [ ] Store error states, fixture clearance on SQLite error, and unit test coverage (AC-1, AC-3, AC-4, AC-5)
-- [ ] Verify it: `/check verify playlist and saved collection hydration`
-- [ ] Test it: `/test playlist and saved collection hydration`
+- [x] Build it: `/develop playlist and saved collection hydration`
+  - [x] Loading skeletons, empty guidance, inline error retry cards, and accessible explanations for unsupported controls (AC-1, AC-3, AC-5)
+  - [x] Connect Home Your Collections section with sequential layout and six card balancing (AC-2)
+  - [x] Wire See all navigation, album detail navigation, and playlist playback with async track hydration (AC-4)
+  - [x] Store error states, fixture clearance on SQLite error, and unit test coverage (AC-1, AC-2, AC-3, AC-4, AC-5)
+        code in `src/components/home/CuratedGrid.tsx`, `src/pages/Playlists.tsx`, `src/components/playlists/`, `src/store/usePlaylistStore.ts`, `src/store/useAlbumStore.ts`, `src/test/playlistCollectionHydration.test.tsx`
+- [x] Verify it: `/check verify playlist and saved collection hydration`
+- [x] Test it: `/test playlist and saved collection hydration`
 
 ### 29. Home listening recommendations · in-progress
 

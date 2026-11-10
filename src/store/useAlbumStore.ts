@@ -99,6 +99,7 @@ export const useAlbumStore = create<AlbumStoreState>()((set, get) => ({
   error: null,
 
   initializeAlbums: async () => {
+    if (get().isLoading) return;
     if (!isTauri()) {
       // Browser preview and unit testing fallback (AC-11)
       set({
@@ -108,13 +109,14 @@ export const useAlbumStore = create<AlbumStoreState>()((set, get) => ({
         explicitFavoriteAlbumIds: initialFavorites,
         isLoading: false,
         isLoaded: true,
+        error: null,
       });
       return;
     }
 
     set({ isLoading: true, error: null });
     try {
-      const dtos = await dbGetAlbums();
+      const dtos = (await dbGetAlbums()) || [];
       const albums = dtos.map(mapAlbumDtoToAlbum);
       const favoriteAlbumIds = albums.filter((a) => a.isFavorite).map((a) => a.id);
 
@@ -124,10 +126,14 @@ export const useAlbumStore = create<AlbumStoreState>()((set, get) => ({
         explicitFavoriteAlbumIds: favoriteAlbumIds,
         isLoading: false,
         isLoaded: true,
+        error: null,
       });
     } catch (err) {
       console.error("Failed to initialize albums from SQLite:", err);
       set({
+        albums: [],
+        favoriteAlbumIds: [],
+        explicitFavoriteAlbumIds: [],
         error: err instanceof Error ? err.message : String(err),
         isLoading: false,
         isLoaded: true,

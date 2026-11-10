@@ -194,6 +194,7 @@ export function PlaylistDetailBanner({ playlist }: PlaylistDetailBannerProps) {
             type="button"
             onClick={() => playPlaylist(playlist.id, 0)}
             disabled={trackCount === 0}
+            aria-disabled={trackCount === 0}
             aria-label="Play all songs in playlist"
             title={trackCount === 0 ? "Tracks must be added first" : "Play all songs"}
             style={{
@@ -222,6 +223,7 @@ export function PlaylistDetailBanner({ playlist }: PlaylistDetailBannerProps) {
             type="button"
             onClick={() => shufflePlaylist(playlist.id)}
             disabled={trackCount === 0}
+            aria-disabled={trackCount === 0}
             aria-label="Shuffle playlist tracks"
             title={trackCount === 0 ? "Tracks must be added first" : "Shuffle playlist tracks"}
             style={{

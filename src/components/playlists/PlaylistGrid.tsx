@@ -1,5 +1,7 @@
 import {
+  useIsPlaylistsLoading,
   useOverviewSearchQuery,
+  usePlaylistError,
   usePlaylistStore,
   usePlaylists,
 } from "../../store/usePlaylistStore";
@@ -7,9 +9,82 @@ import { PlaylistCard } from "./PlaylistCard";
 
 export function PlaylistGrid() {
   const playlists = usePlaylists();
+  const isLoading = useIsPlaylistsLoading();
+  const error = usePlaylistError();
+  const initializePlaylists = usePlaylistStore((state) => state.initializePlaylists);
   const searchQuery = useOverviewSearchQuery();
   const setSearchQuery = usePlaylistStore((state) => state.setOverviewSearchQuery);
   const setCreateModalOpen = usePlaylistStore((state) => state.setCreateModalOpen);
+
+  if (isLoading && playlists.length === 0) {
+    return (
+      <div
+        role="region"
+        aria-label="Loading playlists"
+        className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] min-[1440px]:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4 max-sm:gap-3 w-full"
+      >
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            aria-hidden="true"
+            className="animate-pulse"
+            style={{
+              height: "220px",
+              borderRadius: "14px",
+              background: "rgba(255, 255, 255, 0.03)",
+              border: "1px solid rgba(255, 255, 255, 0.05)",
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (error && playlists.length === 0) {
+    return (
+      <div
+        role="alert"
+        aria-label="Playlists load error"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "14px",
+          padding: "56px 24px",
+          textAlign: "center",
+          background: "rgba(239, 68, 68, 0.05)",
+          borderRadius: "16px",
+          border: "1px dashed rgba(239, 68, 68, 0.25)",
+        }}
+      >
+        <div style={{ color: "#ff6b6b", fontSize: "16px", fontWeight: 600 }}>
+          Failed to load playlists
+        </div>
+        <p style={{ margin: 0, fontSize: "13px", color: "var(--m)", maxWidth: "400px" }}>
+          {error}
+        </p>
+        <button
+          type="button"
+          onClick={() => initializePlaylists()}
+          aria-label="Retry loading playlists"
+          style={{
+            marginTop: "8px",
+            padding: "8px 20px",
+            borderRadius: "20px",
+            background: "var(--accent)",
+            color: "#18110f",
+            border: 0,
+            fontWeight: 600,
+            fontSize: "13px",
+            cursor: "pointer",
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   const query = searchQuery.trim().toLowerCase();
   const filteredPlaylists = playlists.filter((p) => {

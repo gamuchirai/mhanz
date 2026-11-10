@@ -11,6 +11,7 @@ export interface Playlist {
   coverGradient: string;
   coverUrl?: string;
   isCurated: boolean;
+  trackCount?: number;
   createdAt: string;
   updatedAt: string;
 }
