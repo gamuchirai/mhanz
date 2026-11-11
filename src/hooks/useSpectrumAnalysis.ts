@@ -54,7 +54,12 @@ export function useSpectrumAnalysis({
   }, [currentTrackId]);
 
   const retry = useCallback(() => {
-    setStreamState("starting");
+    // Reset state asynchronously to avoid React 19 cascading render warning
+    queueMicrotask(() => {
+      if (!isCancelled) {
+        setStreamState("starting");
+      }
+    });
     setFrame(null);
     frameTimestampsRef.current = [];
     lastSequenceRef.current = -1;
@@ -69,8 +74,6 @@ export function useSpectrumAnalysis({
     if (!isActive) {
       // Inactive: stop analysis and clear frame state
       stopSpectrumAnalysis().catch(() => {});
-      setStreamState("starting");
-      setFrame(null);
       frameTimestampsRef.current = [];
       hasReceivedAnyFrameRef.current = false;
       lowRateStartRef.current = null;
@@ -81,7 +84,12 @@ export function useSpectrumAnalysis({
       return;
     }
 
-    setStreamState("starting");
+    // Reset state asynchronously to avoid React 19 cascading render warning
+    queueMicrotask(() => {
+      if (!isCancelled) {
+        setStreamState("starting");
+      }
+    });
     frameTimestampsRef.current = [];
     startedAtRef.current = performance.now();
     lastFrameAtRef.current = 0;

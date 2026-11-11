@@ -141,7 +141,7 @@ describe("Audio service spectrum analysis", () => {
       },
     };
 
-    await startSpectrumAnalysis(mockChannel as any);
+    await startSpectrumAnalysis(mockChannel as unknown as Channel<SpectrumFrame>);
 
     await act(async () => {
       await new Promise((r) => setTimeout(r, 120));
@@ -250,12 +250,12 @@ describe("Audio service spectrum analysis", () => {
     const { result, rerender, unmount } = renderHook(
       ({ viewMode }) =>
         useSpectrumAnalysis({
-          viewMode: viewMode as any,
+          viewMode: viewMode as "visualizer" | "artwork" | "lyrics",
           visualizerStyle: "bars",
           currentTrackId: "mock-track",
           isPlaying: true,
         }),
-      { initialProps: { viewMode: "visualizer" } }
+      { initialProps: { viewMode: "visualizer" as "visualizer" | "artwork" | "lyrics" } }
     );
 
     await act(async () => {

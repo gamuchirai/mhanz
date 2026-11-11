@@ -605,7 +605,10 @@ export async function startSpectrumAnalysis(
       };
 
       try {
-        const chan = mockEngine.visualizerChannel as any;
+        const chan = mockEngine.visualizerChannel as unknown as {
+          onmessage?: (data: SpectrumFrame) => void;
+          send?: (data: SpectrumFrame) => void;
+        };
         if (typeof chan.onmessage === "function") {
           chan.onmessage(frame);
         } else if (typeof chan.send === "function") {

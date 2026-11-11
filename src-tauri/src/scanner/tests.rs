@@ -1,6 +1,7 @@
 //! Unit and integration tests for audio discovery, metadata extraction, batch upserts, and pruning.
 
 #[cfg(test)]
+#[allow(clippy::module_inception)]
 mod tests {
     use std::collections::{HashMap, HashSet};
     use std::fs::{self, File};
@@ -154,7 +155,7 @@ mod tests {
         };
 
         let empty_existing = HashMap::new();
-        let stats = commit_track_batch(&mut conn, &[track1.clone()], &empty_existing)
+        let stats = commit_track_batch(&mut conn, std::slice::from_ref(&track1), &empty_existing)
             .expect("First batch commit should succeed");
 
         assert_eq!(stats.new_tracks, 1);
