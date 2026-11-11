@@ -605,6 +605,7 @@ export async function startSpectrumAnalysis(
       };
 
       try {
+<<<<<<< HEAD
         const chan = mockEngine.visualizerChannel as unknown as {
           onmessage?: (data: SpectrumFrame) => void;
           send?: (data: SpectrumFrame) => void;
@@ -614,6 +615,9 @@ export async function startSpectrumAnalysis(
         } else if (typeof chan.send === "function") {
           chan.send(frame);
         }
+=======
+        mockEngine.visualizerChannel?.onmessage(frame);
+>>>>>>> bb7c2e9af47c0d663b93da32833eddaf74a2d7ce
       } catch {
         // channel closed or unsupported in mock
       }
