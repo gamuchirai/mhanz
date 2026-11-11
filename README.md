@@ -3,9 +3,9 @@
   <br/>
   <p><em>A lightweight, modern desktop music player for Windows &mdash; built with Tauri, Rust, and React.</em></p>
 
-  [![CI](https://github.com/gamuchirai/mhanz/actions/workflows/ci.yml/badge.svg)](https://github.com/gamuchirai/mhanz/actions/workflows/ci.yml)
-  [![Release](https://img.shields.io/github/v/release/gamuchirai/mhanz?label=download&logo=windows&logoColor=white)](https://github.com/gamuchirai/mhanz/releases/latest)
-  [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/gamuchirai/mhanz/actions/workflows/ci.yml/badge.svg)](https://github.com/gamuchirai/mhanz/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/gamuchirai/mhanz?label=download&logo=windows&logoColor=white)](https://github.com/gamuchirai/mhanz/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 </div>
 
 ---
@@ -18,18 +18,18 @@
 
 ## ✨ Features
 
-| Feature | Description |
-|---|---|
-| 🎵 **Local library scanner** | Recursively scans folders, reads ID3/FLAC/Ogg tags via Lofty, deduplicates cover art with SHA-256 |
-| 🔍 **Instant search** | SQLite FTS5 full-text index with BM25 scoring returns results in &lt;50 ms |
-| 🎧 **Gapless-ready playback** | Rodio + Symphonia audio engine on a dedicated Rust thread; supports MP3, FLAC, AAC, Ogg, WAV |
-| 📊 **Live audio visualizer** | 32-band FFT spectrum via RustFFT, streamed from the native engine over a Tauri Channel |
-| 🗂️ **Playlists & favorites** | Full CRUD with drag-to-reorder, persisted in SQLite across restarts |
-| 🏷️ **Tag editor** | Edit title, artist, album, genre, year, track/disc number, and cover art &mdash; writes directly to the audio file via Lofty |
-| 🎤 **Synchronized lyrics** | Parses embedded tags and `.lrc` sidecar files; auto-scrolls to the active line during playback |
-| ⌨️ **OS media keys** | Windows SMTC integration via souvlaki &mdash; control playback from the taskbar, lock screen, and media keys |
-| 🏠 **Smart home screen** | Recently added, most played, best of an artist, and trending genre recommendations derived from local listening history |
-| 📐 **Responsive shell** | Collapsible sidebar, virtualized track tables (@tanstack/react-virtual), fluid grid layouts down to 640 &times; 480 px |
+| Feature                       | Description                                                                                                                  |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 🎵 **Local library scanner**  | Recursively scans folders, reads ID3/FLAC/Ogg tags via Lofty, deduplicates cover art with SHA-256                            |
+| 🔍 **Instant search**         | SQLite FTS5 full-text index with BM25 scoring returns results in &lt;50 ms                                                   |
+| 🎧 **Gapless-ready playback** | Rodio + Symphonia audio engine on a dedicated Rust thread; supports MP3, FLAC, AAC, Ogg, WAV                                 |
+| 📊 **Live audio visualizer**  | 32-band FFT spectrum via RustFFT, streamed from the native engine over a Tauri Channel                                       |
+| 🗂️ **Playlists & favorites**  | Full CRUD with drag-to-reorder, persisted in SQLite across restarts                                                          |
+| 🏷️ **Tag editor**             | Edit title, artist, album, genre, year, track/disc number, and cover art &mdash; writes directly to the audio file via Lofty |
+| 🎤 **Synchronized lyrics**    | Parses embedded tags and `.lrc` sidecar files; auto-scrolls to the active line during playback                               |
+| ⌨️ **OS media keys**          | Windows SMTC integration via souvlaki &mdash; control playback from the taskbar, lock screen, and media keys                 |
+| 🏠 **Smart home screen**      | Recently added, most played, best of an artist, and trending genre recommendations derived from local listening history      |
+| 📐 **Responsive shell**       | Collapsible sidebar, virtualized track tables (@tanstack/react-virtual), fluid grid layouts down to 640 &times; 480 px       |
 
 ---
 
@@ -57,6 +57,7 @@ mutinhimira/
 **Clean Architecture layers** &mdash; domain &rarr; application &rarr; infrastructure &rarr; presentation. Outer layers depend on inner layers; the domain has zero external imports.
 
 **Key design decisions:**
+
 - Audio runs on a dedicated OS thread to prevent UI jank
 - SQLite in WAL mode allows concurrent reads during scans
 - Cover art is content-addressed (SHA-256) so duplicates are never stored twice
@@ -78,10 +79,10 @@ Grab `Mutinhimira_x.x.x_x64-setup.exe` (NSIS) or `Mutinhimira_x.x.x_x64_en-US.ms
 
 ### Prerequisites
 
-| Tool | Version |
-|------|---------|
-| Node.js | 20+ |
-| Rust | stable (via [rustup](https://rustup.rs)) |
+| Tool     | Version                                               |
+| -------- | ----------------------------------------------------- |
+| Node.js  | 20+                                                   |
+| Rust     | stable (via [rustup](https://rustup.rs))              |
 | WebView2 | Bundled with Windows 11; auto-installed on Windows 10 |
 
 ### Steps
@@ -118,18 +119,18 @@ cd src-tauri && cargo test
 
 ## 🧰 Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Desktop runtime | [Tauri v2](https://tauri.app) |
-| UI framework | React 19, TypeScript 5.7, Vite 8 |
-| Styling | Tailwind CSS v4 (Midnight design tokens) |
-| State | Zustand 5 |
-| Audio engine | [Rodio](https://github.com/RustAudio/rodio) + [Symphonia](https://github.com/pdeljanov/Symphonia) |
-| Metadata | [Lofty](https://github.com/Serial-ATA/lofty-rs) |
-| FFT | [RustFFT](https://github.com/ejmahler/RustFFT) |
-| Database | SQLite via [rusqlite](https://github.com/rusqlite/rusqlite) (bundled, WAL, FTS5) |
-| OS integration | [souvlaki](https://github.com/Sinono3/souvlaki) (SMTC / media keys) |
-| List virtualization | [@tanstack/react-virtual](https://tanstack.com/virtual) |
+| Layer               | Technology                                                                                        |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| Desktop runtime     | [Tauri v2](https://tauri.app)                                                                     |
+| UI framework        | React 19, TypeScript 5.7, Vite 8                                                                  |
+| Styling             | Tailwind CSS v4 (Midnight design tokens)                                                          |
+| State               | Zustand 5                                                                                         |
+| Audio engine        | [Rodio](https://github.com/RustAudio/rodio) + [Symphonia](https://github.com/pdeljanov/Symphonia) |
+| Metadata            | [Lofty](https://github.com/Serial-ATA/lofty-rs)                                                   |
+| FFT                 | [RustFFT](https://github.com/ejmahler/RustFFT)                                                    |
+| Database            | SQLite via [rusqlite](https://github.com/rusqlite/rusqlite) (bundled, WAL, FTS5)                  |
+| OS integration      | [souvlaki](https://github.com/Sinono3/souvlaki) (SMTC / media keys)                               |
+| List virtualization | [@tanstack/react-virtual](https://tanstack.com/virtual)                                           |
 
 ---
 
