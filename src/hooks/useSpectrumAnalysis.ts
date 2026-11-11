@@ -28,6 +28,25 @@ export function useSpectrumAnalysis({
   const [retryNonce, setRetryNonce] = useState(0);
 
   const isActive = viewMode === "visualizer" && visualizerStyle !== "off";
+  const [previousSession, setPreviousSession] = useState({
+    isActive,
+    retryNonce,
+    isPlaying,
+    currentTrackId,
+  });
+
+  if (
+    previousSession.isActive !== isActive ||
+    previousSession.retryNonce !== retryNonce ||
+    previousSession.isPlaying !== isPlaying ||
+    previousSession.currentTrackId !== currentTrackId
+  ) {
+    setPreviousSession({ isActive, retryNonce, isPlaying, currentTrackId });
+    if (isActive) {
+      setStreamState("starting");
+      setFrame(null);
+    }
+  }
 
   const frameTimestampsRef = useRef<number[]>([]);
   const watchdogTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -69,8 +88,6 @@ export function useSpectrumAnalysis({
     if (!isActive) {
       // Inactive: stop analysis and clear frame state
       stopSpectrumAnalysis().catch(() => {});
-      setStreamState("starting");
-      setFrame(null);
       frameTimestampsRef.current = [];
       hasReceivedAnyFrameRef.current = false;
       lowRateStartRef.current = null;
@@ -81,7 +98,6 @@ export function useSpectrumAnalysis({
       return;
     }
 
-    setStreamState("starting");
     frameTimestampsRef.current = [];
     startedAtRef.current = performance.now();
     lastFrameAtRef.current = 0;
@@ -179,9 +195,8 @@ export function useSpectrumAnalysis({
   }, [isActive, retryNonce, isPlaying, currentTrackId]);
 
   return {
-    frame,
-    streamState,
+    frame: isActive ? frame : null,
+    streamState: isActive ? streamState : "starting",
     retry,
   };
 }
-
