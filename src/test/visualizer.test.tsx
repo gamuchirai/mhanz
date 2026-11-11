@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, act, renderHook } from "@testing-library/react";
+import { Channel } from "@tauri-apps/api/core";
 import { FullscreenVisualizer } from "../components/fullscreen/FullscreenVisualizer";
 import { useSpectrumAnalysis } from "../hooks/useSpectrumAnalysis";
 import {
@@ -9,6 +10,7 @@ import {
   resetAudioMock,
 } from "../services/audio";
 import type { SpectrumFrame } from "../types/audio";
+import type { FullscreenViewMode } from "../types/overlays";
 
 describe("FullscreenVisualizer component", () => {
   it("renders off state with accessible message and return button", () => {
@@ -136,12 +138,10 @@ describe("Audio service spectrum analysis", () => {
   it("streams mock frames at expected sequence intervals", async () => {
     const receivedFrames: SpectrumFrame[] = [];
     const mockChannel = {
-      onmessage: (frame: SpectrumFrame) => {
-        receivedFrames.push(frame);
-      },
-    };
+      onmessage: (frame: SpectrumFrame) => receivedFrames.push(frame),
+    } as unknown as Channel<SpectrumFrame>;
 
-    await startSpectrumAnalysis(mockChannel as any);
+    await startSpectrumAnalysis(mockChannel);
 
     await act(async () => {
       await new Promise((r) => setTimeout(r, 120));
@@ -248,14 +248,14 @@ describe("Audio service spectrum analysis", () => {
 
   it("stops spectrum analysis when viewMode switches away from visualizer (AC-2)", async () => {
     const { result, rerender, unmount } = renderHook(
-      ({ viewMode }) =>
+      ({ viewMode }: { viewMode: FullscreenViewMode }) =>
         useSpectrumAnalysis({
-          viewMode: viewMode as any,
+          viewMode,
           visualizerStyle: "bars",
           currentTrackId: "mock-track",
           isPlaying: true,
         }),
-      { initialProps: { viewMode: "visualizer" } }
+      { initialProps: { viewMode: "visualizer" as FullscreenViewMode } }
     );
 
     await act(async () => {
@@ -270,7 +270,11 @@ describe("Audio service spectrum analysis", () => {
     expect(result.current.streamState).toBe("starting");
     expect(result.current.frame).toBeNull();
 
+    rerender({ viewMode: "visualizer" });
+
+    expect(result.current.streamState).toBe("starting");
+    expect(result.current.frame).toBeNull();
+
     unmount();
   });
 });
-

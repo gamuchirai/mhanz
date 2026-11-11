@@ -605,12 +605,7 @@ export async function startSpectrumAnalysis(
       };
 
       try {
-        const chan = mockEngine.visualizerChannel as any;
-        if (typeof chan.onmessage === "function") {
-          chan.onmessage(frame);
-        } else if (typeof chan.send === "function") {
-          chan.send(frame);
-        }
+        mockEngine.visualizerChannel?.onmessage(frame);
       } catch {
         // channel closed or unsupported in mock
       }
